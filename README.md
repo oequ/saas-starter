@@ -30,6 +30,13 @@ An enterprise-grade B2B SaaS starter built with Angular 20, Nx, and Supabase.
    ```
    Navigate to `http://localhost:4200/`.
 
+4. (Optional) Local database — see [`supabase/README.md`](./supabase/README.md). From the repo root:
+   ```bash
+   supabase start
+   supabase db reset
+   ```
+   Then link your user to the `demo` org (one SQL snippet in that README).
+
 ## License
 
 MIT
