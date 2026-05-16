@@ -2,18 +2,12 @@
   "name": "shell",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/shell/src",
+  "prefix": "oequ",
   "projectType": "library",
   "tags": ["type:shell"],
   "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/libs/shell",
-        "main": "libs/shell/src/index.ts",
-        "tsConfig": "libs/shell/tsconfig.lib.json",
-        "assets": ["libs/shell/*.md"]
-      }
+    "lint": {
+      "executor": "@nx/eslint:lint"
     }
   }
 }

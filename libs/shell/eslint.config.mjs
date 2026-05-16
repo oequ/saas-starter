@@ -1,22 +1,33 @@
+import nx from '@nx/eslint-plugin';
 import baseConfig from '../../eslint.config.mjs';
 
 export default [
+  ...nx.configs['flat/angular'],
+  ...nx.configs['flat/angular-template'],
   ...baseConfig,
   {
-    files: ['**/*.json'],
+    files: ['**/*.ts'],
     rules: {
-      '@nx/dependency-checks': [
+      '@angular-eslint/directive-selector': [
         'error',
         {
-          ignoredFiles: [
-            '{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}',
-            '{projectRoot}/vitest.config.{js,ts,mjs,mts}',
-          ],
+          type: 'attribute',
+          prefix: 'oequ',
+          style: 'camelCase',
+        },
+      ],
+      '@angular-eslint/component-selector': [
+        'error',
+        {
+          type: 'element',
+          prefix: 'oequ',
+          style: 'kebab-case',
         },
       ],
     },
-    languageOptions: {
-      parser: await import('jsonc-eslint-parser'),
-    },
+  },
+  {
+    files: ['**/*.html'],
+    rules: {},
   },
 ];

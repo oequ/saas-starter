@@ -5,6 +5,11 @@
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
+  "peerDependencies": {
+    "@angular/core": ">=21.0.0 <22.0.0",
+    "@oequ/ports": "0.0.1",
+    "rxjs": "^7.5.0"
+  },
   "dependencies": {
     "tslib": "^2.3.0"
   }

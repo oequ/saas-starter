@@ -1,0 +1,59 @@
+<div hlmSidebarWrapper>
+  <hlm-sidebar>
+    <div hlmSidebarHeader class="border-sidebar-border border-b px-4 py-3">
+      <p class="text-sm font-semibold tracking-tight">SaaS Starter</p>
+      <p class="text-muted-foreground text-xs">Demo workspace</p>
+    </div>
+
+    <div hlmSidebarContent>
+      <div hlmSidebarGroup>
+        <div hlmSidebarGroupLabel>Application</div>
+        <div hlmSidebarGroupContent>
+          <ul hlmSidebarMenu>
+            @for (item of navItems; track item.path) {
+              <li hlmSidebarMenuItem>
+                <a
+                  hlmSidebarMenuButton
+                  [routerLink]="item.path"
+                  routerLinkActive
+                  [routerLinkActiveOptions]="{ exact: item.exact }"
+                >
+                  <ng-icon hlm [name]="item.icon" />
+                  <span>{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </div>
+  </hlm-sidebar>
+
+  <main hlmSidebarInset class="flex min-h-svh flex-1 flex-col">
+    <header
+      class="border-border flex h-14 shrink-0 items-center gap-3 border-b px-4"
+    >
+      <button hlmSidebarTrigger type="button" aria-label="Toggle sidebar">
+        <span class="sr-only">Toggle sidebar</span>
+      </button>
+
+      <nav hlmBreadcrumb aria-label="Breadcrumb" class="flex-1">
+        <ol hlmBreadcrumbList>
+          <li hlmBreadcrumbItem>
+            <a hlmBreadcrumbLink link="/settings">Home</a>
+          </li>
+          <li hlmBreadcrumbSeparator></li>
+          <li hlmBreadcrumbItem>
+            <span hlmBreadcrumbPage>{{ pageTitle() }}</span>
+          </li>
+        </ol>
+      </nav>
+
+      <oequ-org-switcher />
+    </header>
+
+    <section class="flex-1 overflow-auto p-6">
+      <router-outlet />
+    </section>
+  </main>
+</div>

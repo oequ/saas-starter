@@ -3,6 +3,9 @@
 @import 'tailwindcss/preflight.css' layer(base);
 @import 'tailwindcss/utilities.css';
 
+@source "../../../libs";
+@source "..";
+
 @import '@spartan-ng/brain/hlm-tailwind-preset.css';
 
 :root {
