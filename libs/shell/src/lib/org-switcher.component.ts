@@ -1,25 +1,33 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ORG_PORT } from '@oequ/ports';
+import { HlmSelectImports } from '@spartan-ng/helm/select';
+
 @Component({
   selector: 'oequ-org-switcher',
-  imports: [],
+  imports: [HlmSelectImports],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <select
-      class="border-input bg-background ring-offset-background focus-visible:ring-ring h-9 min-w-[10rem] rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
-      aria-label="Workspace"
-      [value]="activeOrganization()?.slug ?? ''"
-      (change)="onSelect($event)"
+    <hlm-select
+      class="min-w-[12rem]"
+      [value]="selectedSlug()"
+      [disabled]="organizations().length === 0"
+      (valueChange)="onValueChange($event)"
     >
-      @for (org of organizations(); track org.id) {
-        <option [value]="org.slug">{{ org.name }}</option>
-      }
-    </select>
+      <hlm-select-trigger aria-label="Organization">
+        <hlm-select-value placeholder="Organization" />
+      </hlm-select-trigger>
+      <hlm-select-content *hlmSelectPortal>
+        @for (org of organizations(); track org.id) {
+          <hlm-select-item [value]="org.slug">{{ org.name }}</hlm-select-item>
+        }
+      </hlm-select-content>
+    </hlm-select>
   `,
 })
 export class OrgSwitcherComponent {
@@ -34,8 +42,14 @@ export class OrgSwitcherComponent {
     { initialValue: null },
   );
 
-  protected onSelect(event: Event): void {
-    const slug = (event.target as HTMLSelectElement).value;
+  protected readonly selectedSlug = computed(
+    () => this.activeOrganization()?.slug ?? null,
+  );
+
+  protected onValueChange(slug: string | null): void {
+    if (!slug || slug === this.selectedSlug()) {
+      return;
+    }
     void this.orgPort.selectOrganization(slug);
   }
 }

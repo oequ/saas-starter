@@ -1,25 +1,33 @@
 <div hlmSidebarWrapper>
   <hlm-sidebar>
-    <div hlmSidebarHeader class="border-sidebar-border border-b px-4 py-3">
-      <p class="text-sm font-semibold tracking-tight">SaaS Starter</p>
-      <p class="text-muted-foreground text-xs">Demo workspace</p>
+    <div hlmSidebarHeader class="gap-1 pt-1">
+      <div class="px-2 py-1">
+        <p class="text-foreground text-sm font-medium leading-5">SaaS Starter</p>
+        <p class="text-muted-foreground text-xs leading-4">Demo workspace</p>
+      </div>
     </div>
 
-    <div hlmSidebarContent>
-      <div hlmSidebarGroup>
-        <div hlmSidebarGroupLabel>Application</div>
-        <div hlmSidebarGroupContent>
-          <ul hlmSidebarMenu>
+    <div hlmSidebarContent class="pt-2">
+      <div hlmSidebarGroup class="p-0">
+        <div hlmSidebarGroupContent class="px-2">
+          <ul hlmSidebarMenu class="!gap-px">
             @for (item of navItems; track item.path) {
               <li hlmSidebarMenuItem>
                 <a
                   hlmSidebarMenuButton
+                  class="!h-9 !gap-0 !p-0 text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 data-[active=true]:!bg-gray-200 data-[active=true]:!text-gray-900 data-[active=true]:hover:!bg-gray-200"
                   [routerLink]="item.path"
                   routerLinkActive
+                  #navLink="routerLinkActive"
+                  [isActive]="navLink.isActive"
                   [routerLinkActiveOptions]="{ exact: item.exact }"
                 >
-                  <ng-icon hlm [name]="item.icon" />
-                  <span>{{ item.label }}</span>
+                  <div class="grid size-9 shrink-0 place-content-center">
+                    <ng-icon hlm class="!size-4" [name]="item.icon" />
+                  </div>
+                  <span class="min-w-0 flex-1 truncate text-sm font-medium">{{
+                    item.label
+                  }}</span>
                 </a>
               </li>
             }
@@ -29,9 +37,12 @@
     </div>
   </hlm-sidebar>
 
-  <main hlmSidebarInset class="flex min-h-svh flex-1 flex-col">
+  <main
+    hlmSidebarInset
+    class="flex h-svh min-h-0 flex-1 flex-col overflow-hidden"
+  >
     <header
-      class="border-border flex h-14 shrink-0 items-center gap-3 border-b px-4"
+      class="border-border bg-background sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b px-4"
     >
       <button hlmSidebarTrigger type="button" aria-label="Toggle sidebar">
         <span class="sr-only">Toggle sidebar</span>
@@ -52,8 +63,10 @@
       <oequ-org-switcher />
     </header>
 
-    <section class="flex-1 overflow-auto p-6">
-      <router-outlet />
+    <section class="min-h-0 flex-1 overflow-y-auto p-6">
+      <div class="mx-auto w-full max-w-[1200px]">
+        <router-outlet />
+      </div>
     </section>
   </main>
 </div>

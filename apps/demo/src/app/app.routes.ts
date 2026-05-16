@@ -10,9 +10,7 @@ export const appRoutes: Route[] = [
       {
         path: 'settings',
         loadComponent: () =>
-          import('./pages/settings-placeholder.component').then(
-            (m) => m.SettingsPlaceholderComponent,
-          ),
+          import('@oequ/features-org').then((m) => m.OrgSettingsPageComponent),
         data: { title: 'Settings' },
       },
     ],

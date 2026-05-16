@@ -29,6 +29,9 @@
       "@oequ/ui": [
         "./libs/ui/src/index.ts"
       ],
+      "@oequ/features-org": [
+        "./libs/features-org/src/index.ts"
+      ],
       "@spartan-ng/helm/breadcrumb": [
         "./libs/ui/breadcrumb/src/index.ts"
       ],
@@ -40,6 +43,9 @@
       ],
       "@spartan-ng/helm/input": [
         "./libs/ui/input/src/index.ts"
+      ],
+      "@spartan-ng/helm/select": [
+        "./libs/ui/select/select/src/index.ts"
       ],
       "@spartan-ng/helm/separator": [
         "./libs/ui/separator/src/index.ts"
