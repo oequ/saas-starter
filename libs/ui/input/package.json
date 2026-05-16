@@ -2,8 +2,9 @@
   "name": "@spartan-ng/helm/input",
   "version": "0.0.1",
   "peerDependencies": {
-    "@angular/common": "^21.2.0",
-    "@angular/core": "^21.2.0"
+    "@angular/core": "^21.2.0",
+    "@spartan-ng/brain": "0.0.1-alpha.694",
+    "@spartan-ng/helm/utils": "0.0.1"
   },
   "sideEffects": false
 }

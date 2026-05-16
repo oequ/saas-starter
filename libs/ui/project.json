@@ -7,7 +7,10 @@
   "tags": ["type:ui"],
   "targets": {
     "lint": {
-      "executor": "@nx/eslint:lint"
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["libs/ui/src/**/*.ts", "libs/ui/src/**/*.html"]
+      }
     }
   }
 }
