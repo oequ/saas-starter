@@ -1,6 +1,10 @@
 import type { AuthSession, AuthSessionDevice } from '@oequ/ports';
 import type { Organization, OrganizationMember } from '@oequ/ports';
 
+/** Demo login for mock adapter (shown on login screen). */
+export const MOCK_DEMO_EMAIL = 'demo@example.com';
+export const MOCK_DEMO_PASSWORD = 'demo';
+
 export const MOCK_ORGANIZATIONS: readonly Organization[] = [
   {
     id: '00000000-0000-4000-8000-000000000001',

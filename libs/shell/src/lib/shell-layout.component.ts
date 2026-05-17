@@ -3,10 +3,12 @@ import {
   Component,
   computed,
   effect,
+  ElementRef,
   HostListener,
   inject,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
@@ -114,7 +116,16 @@ export class ShellLayoutComponent {
     { initialValue: this.router.url },
   );
 
+  private readonly mainScroll = viewChild<ElementRef<HTMLElement>>('mainScroll');
+
   constructor() {
+    effect(() => {
+      this.currentUrl();
+      untracked(() => {
+        queueMicrotask(() => this.resetMainScroll());
+      });
+    });
+
     effect(() => {
       const url = this.currentUrl() ?? '';
       if (url.startsWith('/workspace/settings/billing')) {
@@ -193,6 +204,10 @@ export class ShellLayoutComponent {
 
   protected isBillingGroupActive(group: ShellNavGroup): boolean {
     return (this.currentUrl() ?? '').startsWith(group.basePath);
+  }
+
+  private resetMainScroll(): void {
+    this.mainScroll()?.nativeElement.scrollTo({ top: 0, left: 0 });
   }
 
   protected toggleBillingNav(): void {

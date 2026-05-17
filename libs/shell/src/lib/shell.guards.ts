@@ -1,7 +1,35 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { ORG_PORT } from '@oequ/ports';
+import { AUTH_PORT, ORG_PORT } from '@oequ/ports';
 import { firstValueFrom } from 'rxjs';
+
+/** Requires a signed-in session; redirects to login with optional returnUrl. */
+export const authGuard: CanActivateFn = async (_route, state) => {
+  const authPort = inject(AUTH_PORT);
+  const router = inject(Router);
+  const session = await firstValueFrom(authPort.session$);
+
+  if (session) {
+    return true;
+  }
+
+  return router.createUrlTree(['/auth/login'], {
+    queryParams: { returnUrl: state.url },
+  });
+};
+
+/** Login/register screens — redirect authenticated users into the app. */
+export const guestGuard: CanActivateFn = async () => {
+  const authPort = inject(AUTH_PORT);
+  const router = inject(Router);
+  const session = await firstValueFrom(authPort.session$);
+
+  if (!session) {
+    return true;
+  }
+
+  return router.createUrlTree(['/workspace']);
+};
 
 async function organizationCount(): Promise<number> {
   const orgPort = inject(ORG_PORT);

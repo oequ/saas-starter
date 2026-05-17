@@ -13,18 +13,53 @@ import {
 } from '@oequ/ports';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
-import { MOCK_AUTH_SESSION, MOCK_SESSION_DEVICES } from './data/mock-data';
+import {
+  MOCK_AUTH_SESSION,
+  MOCK_DEMO_EMAIL,
+  MOCK_DEMO_PASSWORD,
+  MOCK_SESSION_DEVICES,
+} from './data/mock-data';
+
+const DEMO_SIGNED_OUT_STORAGE_KEY = 'oequ-demo-signed-out';
+
+function readSignedOutFlag(): boolean {
+  if (typeof sessionStorage === 'undefined') {
+    return false;
+  }
+  return sessionStorage.getItem(DEMO_SIGNED_OUT_STORAGE_KEY) === '1';
+}
+
+function setSignedOutFlag(signedOut: boolean): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  if (signedOut) {
+    sessionStorage.setItem(DEMO_SIGNED_OUT_STORAGE_KEY, '1');
+  } else {
+    sessionStorage.removeItem(DEMO_SIGNED_OUT_STORAGE_KEY);
+  }
+}
+
+function initialSession(): AuthSession | null {
+  return readSignedOutFlag() ? null : MOCK_AUTH_SESSION;
+}
 
 @Injectable()
 export class MockAuthAdapter implements AuthPort {
   private sessions = [...MOCK_SESSION_DEVICES];
 
   private readonly sessionSubject = new BehaviorSubject<AuthSession | null>(
-    MOCK_AUTH_SESSION,
+    initialSession(),
   );
 
   readonly session$: Observable<AuthSession | null> =
     this.sessionSubject.asObservable();
+
+  resetMockState(): void {
+    setSignedOutFlag(false);
+    this.sessions = [...MOCK_SESSION_DEVICES];
+    this.sessionSubject.next(MOCK_AUTH_SESSION);
+  }
 
   async getClaims(): Promise<PortResult<AuthClaims | null>> {
     return portOk(this.sessionSubject.value?.claims ?? null);
@@ -37,12 +72,23 @@ export class MockAuthAdapter implements AuthPort {
   async signInWithPassword(
     credentials: EmailPasswordCredentials,
   ): Promise<PortResult<AuthSession>> {
-    void credentials;
+    const email = credentials.email.trim().toLowerCase();
+    const password = credentials.password;
+
+    if (email !== MOCK_DEMO_EMAIL || password !== MOCK_DEMO_PASSWORD) {
+      return portErr({
+        code: 'UNAUTHENTICATED',
+        message: 'Invalid email or password.',
+      });
+    }
+
+    setSignedOutFlag(false);
     this.sessionSubject.next(MOCK_AUTH_SESSION);
     return portOk(MOCK_AUTH_SESSION);
   }
 
   async signOut(): Promise<PortResult<void>> {
+    setSignedOutFlag(true);
     this.sessionSubject.next(null);
     return portOk(undefined);
   }
@@ -100,6 +146,7 @@ export class MockAuthAdapter implements AuthPort {
 
   setSession(session: AuthSession | null): void {
     this.sessionSubject.next(session);
+    setSignedOutFlag(session === null);
   }
 }
 

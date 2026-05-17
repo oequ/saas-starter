@@ -39,9 +39,11 @@ export function provideDemoAdapters(): EnvironmentProviders {
       if (typeof window === 'undefined') {
         return;
       }
+      const auth = inject(MockAuthAdapter);
       const billing = inject(MockBillingAdapter);
       const org = inject(MockOrgAdapter);
       window.__oequResetMock = () => {
+        auth.resetMockState();
         billing.resetMockState();
         org.resetMockState();
         void org.selectOrganization('acme');

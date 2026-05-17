@@ -4,7 +4,7 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideDemoAdapters } from '@oequ/adapters-mock';
 import { ThemeService } from '@oequ/shell';
 import { appRoutes } from './app.routes';
@@ -12,7 +12,10 @@ import { appRoutes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(appRoutes),
+    provideRouter(
+      appRoutes,
+      withInMemoryScrolling({ scrollPositionRestoration: 'top' }),
+    ),
     provideDemoAdapters(),
     provideAppInitializer(() => {
       inject(ThemeService).init();

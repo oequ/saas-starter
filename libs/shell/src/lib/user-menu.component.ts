@@ -202,7 +202,10 @@ export class UserMenuComponent {
   }
 
   protected async signOut(): Promise<void> {
-    await this.authPort.signOut();
+    const result = await this.authPort.signOut();
+    if (result.ok) {
+      await this.router.navigate(['/auth/login']);
+    }
   }
 
   protected async navigateToAccount(path: string): Promise<void> {

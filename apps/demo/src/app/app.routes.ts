@@ -1,6 +1,8 @@
 import { Route } from '@angular/router';
 import {
   accountContextGuard,
+  authGuard,
+  guestGuard,
   onboardingGuard,
   ShellLayoutComponent,
   workspaceContextGuard,
@@ -8,14 +10,22 @@ import {
 
 export const appRoutes: Route[] = [
   {
+    path: 'auth/login',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('@oequ/features-auth').then((m) => m.LoginPageComponent),
+  },
+  {
     path: 'onboarding',
-    canActivate: [onboardingGuard],
+    canActivate: [authGuard, onboardingGuard],
     loadComponent: () =>
       import('@oequ/features-org').then((m) => m.OnboardingPageComponent),
   },
   {
     path: '',
     component: ShellLayoutComponent,
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'workspace' },
       {
