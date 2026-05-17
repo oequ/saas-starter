@@ -34,6 +34,9 @@ export interface OrgPort {
    * Select workspace for the current user. Adapter must sync auth claims (JWT org context).
    */
   selectOrganization(slug: string): Promise<PortResult<Organization>>;
+
+  /** Clear active workspace (personal context). Adapter must clear org claims. */
+  selectPersonal(): Promise<PortResult<void>>;
 }
 
 export const ORG_PORT = new InjectionToken<OrgPort>('ORG_PORT');

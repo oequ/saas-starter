@@ -1,0 +1,128 @@
+<div class="space-y-8">
+  <section hlmCard class="gap-0 overflow-hidden py-0">
+    <div hlmCardContent class="!p-6">
+      <form id="account-profile-form" (ngSubmit)="saveProfile()">
+        <h2 class="text-xl leading-8 font-semibold tracking-tight">
+          Public profile
+        </h2>
+        <p class="text-muted-foreground my-3 text-sm leading-6">
+          Your name is shown in the sidebar and across workspaces you join.
+        </p>
+        <div class="mb-4 flex items-start gap-4">
+          <div
+            class="bg-muted text-foreground border-input flex size-20 shrink-0 items-center justify-center rounded-full border text-2xl font-semibold"
+            aria-hidden="true"
+          >
+            {{ userInitial() }}
+          </div>
+          <div class="min-w-0 pt-1">
+            <p class="text-sm font-medium">Profile picture</p>
+            <p class="text-muted-foreground mt-1 text-sm leading-6">
+              JPG or PNG. Upload will be available in v0.3.
+            </p>
+            <button
+              hlmBtn
+              type="button"
+              variant="secondary"
+              class="mt-3"
+              disabled
+            >
+              Upload
+            </button>
+          </div>
+        </div>
+        <div [class]="fieldClass">
+          <label for="display-name" class="sr-only">Display name</label>
+          <input
+            id="display-name"
+            hlmInput
+            type="text"
+            class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+            [formControl]="profileForm.controls.displayName"
+            autocomplete="name"
+          />
+          @if (
+            profileForm.controls.displayName.invalid &&
+            profileForm.controls.displayName.touched
+          ) {
+            <p class="text-destructive mt-2 text-sm">
+              Please enter between 2 and 64 characters.
+            </p>
+          }
+        </div>
+      </form>
+    </div>
+    <div
+      hlmCardFooter
+      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
+    >
+      @if (statusMessage(); as message) {
+        <p role="status">{{ message }}</p>
+      } @else {
+        <p class="text-muted-foreground">Use 64 characters at maximum.</p>
+      }
+      <button
+        hlmBtn
+        type="submit"
+        form="account-profile-form"
+        [disabled]="!canSaveProfile()"
+      >
+        {{ saving() ? 'Saving…' : 'Save changes' }}
+      </button>
+    </div>
+  </section>
+
+  <section hlmCard class="gap-0 overflow-hidden py-0">
+    <div hlmCardContent class="!p-6">
+      <h2 class="text-xl leading-8 font-semibold tracking-tight">
+        Email address
+      </h2>
+      <p class="text-muted-foreground my-3 text-sm leading-6">
+        Used to sign in and receive security notifications.
+      </p>
+      <div [class]="fieldClass">
+        <input
+          hlmInput
+          type="email"
+          class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+          [value]="userEmail()"
+          disabled
+          aria-readonly="true"
+        />
+      </div>
+    </div>
+    <div
+      hlmCardFooter
+      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
+    >
+      <button hlmBtn type="button" variant="secondary" (click)="updateEmail()">
+        Update email
+      </button>
+    </div>
+  </section>
+
+  <section hlmCard class="gap-0 overflow-hidden border-destructive/40 py-0">
+    <div hlmCardContent class="!p-6">
+      <h2 class="text-destructive text-xl leading-8 font-semibold tracking-tight">
+        Danger zone
+      </h2>
+      <p class="text-muted-foreground my-3 text-sm leading-6">
+        Permanently delete your personal account. This does not delete any
+        workspace you own — manage workspaces separately.
+      </p>
+    </div>
+    <div
+      hlmCardFooter
+      class="border-destructive/40 bg-destructive/10 flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
+    >
+      <button
+        hlmBtn
+        type="button"
+        class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
+        (click)="deleteAccount()"
+      >
+        Delete account
+      </button>
+    </div>
+  </section>
+</div>

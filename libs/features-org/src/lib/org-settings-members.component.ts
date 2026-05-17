@@ -19,7 +19,7 @@ import { switchMap } from 'rxjs';
       <div hlmCardContent class="!p-6">
         <h2 class="text-xl leading-8 font-semibold tracking-tight">Members</h2>
         <p class="text-muted-foreground my-3 text-sm leading-6">
-          People who have access to this organization.
+          People who have access to this workspace.
         </p>
         <div>
         @if (members().length === 0) {

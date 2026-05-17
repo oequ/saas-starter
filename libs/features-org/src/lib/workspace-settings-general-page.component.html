@@ -1,0 +1,144 @@
+<div class="space-y-8">
+  <section hlmCard class="gap-0 overflow-hidden py-0">
+    <div hlmCardContent class="!p-6">
+      <form id="org-general-form" (ngSubmit)="saveGeneral()">
+        <h2
+          id="org-name-title"
+          class="text-xl leading-8 font-semibold tracking-tight"
+        >
+          Workspace name
+        </h2>
+        <p class="text-muted-foreground my-3 text-sm leading-6">
+          Shown in the sidebar, breadcrumbs, and workspace switcher.
+        </p>
+        <div [class]="fieldClass">
+          <input
+            id="org-name"
+            hlmInput
+            type="text"
+            aria-labelledby="org-name-title"
+            class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+            [formControl]="generalForm.controls.name"
+            autocomplete="organization"
+          />
+          @if (
+            generalForm.controls.name.invalid &&
+            generalForm.controls.name.touched
+          ) {
+            <p class="text-destructive mt-2 text-sm">
+              @if (generalForm.controls.name.hasError('maxlength')) {
+                Please use 64 characters at maximum.
+              } @else {
+                Please enter at least 2 characters.
+              }
+            </p>
+          }
+        </div>
+      </form>
+    </div>
+
+    <div
+      hlmCardFooter
+      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
+    >
+      @if (statusMessage(); as message) {
+        <p role="status">{{ message }}</p>
+      } @else {
+        <p class="text-muted-foreground">Please use 64 characters at maximum.</p>
+      }
+      <button
+        hlmBtn
+        type="submit"
+        form="org-general-form"
+        [disabled]="!canSaveGeneral()"
+      >
+        {{ saving() ? 'Saving…' : 'Save' }}
+      </button>
+    </div>
+  </section>
+
+  <section hlmCard class="gap-0 overflow-hidden py-0">
+    <div hlmCardContent class="!p-6">
+      <div class="flex items-start justify-between gap-6">
+        <div class="min-w-0 flex-1">
+          <h2 class="text-xl leading-8 font-semibold tracking-tight">Logo</h2>
+          <p class="text-muted-foreground mt-3 text-sm leading-6">
+            This is your workspace logo.
+          </p>
+          <p class="text-muted-foreground text-sm leading-6">
+            Click on the logo to upload a custom one from your files.
+          </p>
+        </div>
+        <input
+          #logoFileInput
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          class="sr-only"
+          (change)="onLogoSelected($event)"
+        />
+        <button
+          type="button"
+          class="border-input focus-visible:ring-ring/50 shrink-0 rounded-full border focus-visible:ring-3 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+          [attr.aria-label]="
+            logoUploading() ? 'Uploading logo' : 'Upload workspace logo'
+          "
+          [disabled]="logoUploading()"
+          (click)="logoFileInput.click()"
+        >
+          @if (logoDisplayUrl(); as logoUrl) {
+            <img
+              [src]="logoUrl"
+              alt=""
+              class="size-20 rounded-full object-cover"
+            />
+          } @else {
+            <span
+              class="from-primary/25 via-primary/15 to-muted flex size-20 items-center justify-center rounded-full bg-gradient-to-br text-2xl font-semibold tracking-tight"
+              aria-hidden="true"
+            >
+              {{ workspaceInitial() }}
+            </span>
+          }
+        </button>
+      </div>
+    </div>
+
+    <div
+      hlmCardFooter
+      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center border-t !py-3 text-sm leading-relaxed"
+    >
+      @if (logoStatusMessage(); as message) {
+        <p role="status">{{ message }}</p>
+      } @else {
+        <p class="text-muted-foreground">
+          A logo is optional but strongly recommended.
+        </p>
+      }
+    </div>
+  </section>
+
+  <section hlmCard class="gap-0 overflow-hidden border-destructive/40 py-0">
+    <div hlmCardContent class="!p-6">
+      <h2 class="text-destructive text-xl leading-8 font-semibold tracking-tight">
+        Danger zone
+      </h2>
+      <p class="text-muted-foreground my-3 text-sm leading-6">
+        Permanently remove this workspace and all of its data. This action is
+        not reversible, so please continue with caution.
+      </p>
+    </div>
+    <div
+      hlmCardFooter
+      class="border-destructive/40 bg-destructive/10 flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
+    >
+      <button
+        hlmBtn
+        type="button"
+        disabled
+        class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
+      >
+        Delete workspace
+      </button>
+    </div>
+  </section>
+</div>

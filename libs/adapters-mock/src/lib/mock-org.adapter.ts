@@ -114,6 +114,23 @@ export class MockOrgAdapter implements OrgPort {
 
     return portOk(result.data);
   }
+
+  async selectPersonal(): Promise<PortResult<void>> {
+    this.activeOrganizationSubject.next(null);
+
+    const session = await this.authAdapter.getClaims();
+    if (session.ok && session.data) {
+      this.authAdapter.setSession({
+        user: MOCK_AUTH_SESSION.user,
+        claims: {
+          ...session.data,
+          org: null,
+        },
+      });
+    }
+
+    return portOk(undefined);
+  }
 }
 
 export const MOCK_ORG_PROVIDER = {

@@ -6,6 +6,7 @@ import {
   type AuthSession,
   type AuthUser,
   type EmailPasswordCredentials,
+  portErr,
   portOk,
   type PortResult,
 } from '@oequ/ports';
@@ -45,6 +46,27 @@ export class MockAuthAdapter implements AuthPort {
 
   async refreshSession(): Promise<PortResult<AuthSession | null>> {
     return portOk(this.sessionSubject.value);
+  }
+
+  async updateProfile(input: {
+    displayName: string;
+  }): Promise<PortResult<AuthUser>> {
+    const current = this.sessionSubject.value;
+    if (!current) {
+      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+    }
+
+    const user: AuthUser = {
+      ...current.user,
+      displayName: input.displayName.trim(),
+    };
+
+    this.sessionSubject.next({
+      user,
+      claims: current.claims,
+    });
+
+    return portOk(user);
   }
 
   setSession(session: AuthSession | null): void {

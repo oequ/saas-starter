@@ -32,6 +32,9 @@
       "@oequ/features-org": [
         "./libs/features-org/src/index.ts"
       ],
+      "@oequ/features-auth": [
+        "./libs/features-auth/src/index.ts"
+      ],
       "@spartan-ng/helm/breadcrumb": [
         "./libs/ui/breadcrumb/src/index.ts"
       ],

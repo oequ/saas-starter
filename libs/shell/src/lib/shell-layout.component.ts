@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -13,13 +14,24 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideSettings } from '@ng-icons/lucide';
+import {
+  lucideMonitor,
+  lucideSettings,
+  lucideShield,
+  lucideUser,
+  lucideUsers,
+} from '@ng-icons/lucide';
+import { ORG_PORT } from '@oequ/ports';
 import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmIcon } from '@spartan-ng/helm/icon';
 import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
-import { filter, map } from 'rxjs';
+import { filter, map, startWith } from 'rxjs';
 
-import { OrgSwitcherComponent } from './org-switcher.component';
+import {
+  resolveSettingsContext,
+} from './settings-layout.tokens';
+import { UserMenuComponent } from './user-menu.component';
+import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
 
 interface ShellNavItem {
   readonly label: string;
@@ -27,6 +39,42 @@ interface ShellNavItem {
   readonly icon: string;
   readonly exact: boolean;
 }
+
+const WORKSPACE_NAV: readonly ShellNavItem[] = [
+  {
+    label: 'General',
+    path: '/workspace/settings/general',
+    icon: 'lucideSettings',
+    exact: true,
+  },
+  {
+    label: 'Members',
+    path: '/workspace/settings/members',
+    icon: 'lucideUsers',
+    exact: true,
+  },
+];
+
+const PERSONAL_NAV: readonly ShellNavItem[] = [
+  {
+    label: 'Profile',
+    path: '/account/profile',
+    icon: 'lucideUser',
+    exact: true,
+  },
+  {
+    label: 'Security',
+    path: '/account/security',
+    icon: 'lucideShield',
+    exact: true,
+  },
+  {
+    label: 'Sessions',
+    path: '/account/sessions',
+    icon: 'lucideMonitor',
+    exact: true,
+  },
+];
 
 @Component({
   selector: 'oequ-shell-layout',
@@ -38,33 +86,70 @@ interface ShellNavItem {
     HlmBreadcrumbImports,
     NgIcon,
     HlmIcon,
-    OrgSwitcherComponent,
+    WorkspaceSwitcherComponent,
+    UserMenuComponent,
   ],
   templateUrl: './shell-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
-    provideIcons({ lucideSettings }),
+    provideIcons({
+      lucideSettings,
+      lucideUser,
+      lucideShield,
+      lucideMonitor,
+      lucideUsers,
+    }),
   ],
 })
 export class ShellLayoutComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly orgPort = inject(ORG_PORT);
 
-  protected readonly navItems: readonly ShellNavItem[] = [
+  private readonly activeOrganization = toSignal(
+    this.orgPort.activeOrganization$,
+    { initialValue: null },
+  );
+
+  protected readonly shellContext = computed(() =>
+    this.activeOrganization() ? 'workspace' : 'personal',
+  );
+
+  protected readonly navItems = computed(() =>
+    this.shellContext() === 'workspace' ? WORKSPACE_NAV : PERSONAL_NAV,
+  );
+
+  private readonly settingsContext = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      startWith(null),
+      map(() => resolveSettingsContext(this.router)),
+    ),
     {
-      label: 'Settings',
-      path: '/settings',
-      icon: 'lucideSettings',
-      exact: true,
+      initialValue: resolveSettingsContext(this.router),
     },
-  ];
+  );
+
+  protected readonly isAccountRoute = computed(
+    () => this.settingsContext() === 'account',
+  );
 
   protected readonly pageTitle = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
       map(() => this.resolveTitle()),
     ),
-    { initialValue: 'Settings' },
+    { initialValue: this.resolveTitle() },
+  );
+
+  protected readonly breadcrumbRoot = computed(() =>
+    this.settingsContext() === 'account'
+      ? '/account/profile'
+      : '/workspace/settings/general',
+  );
+
+  protected readonly breadcrumbRootLabel = computed(() =>
+    this.settingsContext() === 'account' ? 'Account' : 'Home',
   );
 
   private resolveTitle(): string {

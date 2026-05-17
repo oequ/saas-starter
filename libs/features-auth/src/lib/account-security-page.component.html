@@ -1,0 +1,90 @@
+<div class="space-y-8">
+  <section hlmCard class="gap-0 overflow-hidden py-0">
+    <div hlmCardContent class="!p-6">
+      <form id="account-password-form" (ngSubmit)="savePassword()">
+        <h2 class="text-xl leading-8 font-semibold tracking-tight">Password</h2>
+        <p class="text-muted-foreground my-3 text-sm leading-6">
+          Re-enter your current password before setting a new one.
+        </p>
+        <div [class]="fieldClass + ' space-y-3'">
+          <input
+            hlmInput
+            type="password"
+            placeholder="Current password"
+            class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+            [formControl]="passwordForm.controls.currentPassword"
+            autocomplete="current-password"
+          />
+          <input
+            hlmInput
+            type="password"
+            placeholder="New password"
+            class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+            [formControl]="passwordForm.controls.newPassword"
+            autocomplete="new-password"
+          />
+          <input
+            hlmInput
+            type="password"
+            placeholder="Confirm new password"
+            class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+            [formControl]="passwordForm.controls.confirmPassword"
+            autocomplete="new-password"
+          />
+        </div>
+      </form>
+    </div>
+    <div
+      hlmCardFooter
+      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
+    >
+      @if (statusMessage(); as message) {
+        <p role="status">{{ message }}</p>
+      } @else {
+        <p class="text-muted-foreground">Minimum 8 characters.</p>
+      }
+      <button
+        hlmBtn
+        type="submit"
+        form="account-password-form"
+        [disabled]="!canSavePassword()"
+      >
+        {{ saving() ? 'Saving…' : 'Save changes' }}
+      </button>
+    </div>
+  </section>
+
+  <section hlmCard class="gap-0 overflow-hidden py-0">
+    <div hlmCardContent class="!p-6">
+      <h2 class="text-xl leading-8 font-semibold tracking-tight">
+        Two-factor authentication
+      </h2>
+      <p class="text-muted-foreground my-3 text-sm leading-6">
+        Add an authenticator app for an extra layer of security.
+      </p>
+      <span
+        class="bg-muted text-muted-foreground inline-flex rounded-md px-2 py-1 text-xs font-medium"
+        >Disabled</span
+      >
+    </div>
+    <div
+      hlmCardFooter
+      class="border-border bg-muted/50 text-foreground flex min-h-[57px] items-center justify-end gap-4 border-t !py-3 text-sm leading-relaxed"
+    >
+      <button hlmBtn type="button" (click)="enableTwoFactor()">
+        Enable 2FA
+      </button>
+    </div>
+  </section>
+
+  <section hlmCard class="gap-0 overflow-hidden py-0">
+    <div hlmCardContent class="!p-6">
+      <h2 class="text-xl leading-8 font-semibold tracking-tight">
+        Connected accounts
+      </h2>
+      <p class="text-muted-foreground my-3 text-sm leading-6">
+        Link Google or GitHub for passwordless sign-in (coming soon).
+      </p>
+    </div>
+  </section>
+</div>

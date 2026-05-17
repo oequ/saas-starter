@@ -36,6 +36,11 @@ export interface AuthPort {
 
   /** Re-fetch session/claims after org switch or token refresh. */
   refreshSession(): Promise<PortResult<AuthSession | null>>;
+
+  /** Update profile fields for the signed-in user (demo / full-stack adapter). */
+  updateProfile(input: {
+    displayName: string;
+  }): Promise<PortResult<AuthUser>>;
 }
 
 export const AUTH_PORT = new InjectionToken<AuthPort>('AUTH_PORT');

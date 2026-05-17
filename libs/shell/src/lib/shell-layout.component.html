@@ -1,18 +1,18 @@
 <div hlmSidebarWrapper>
   <hlm-sidebar>
     <div hlmSidebarHeader class="px-2 pt-1">
-      <oequ-org-switcher />
+      <oequ-workspace-switcher />
     </div>
 
     <div hlmSidebarContent class="pt-2">
       <div hlmSidebarGroup class="p-0">
         <div hlmSidebarGroupContent class="px-2">
           <ul hlmSidebarMenu class="!gap-px">
-            @for (item of navItems; track item.path) {
+            @for (item of navItems(); track item.path) {
               <li hlmSidebarMenuItem>
                 <a
                   hlmSidebarMenuButton
-                  class="!h-9 !gap-0 !p-0 text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 data-[active=true]:!bg-gray-200 data-[active=true]:!text-gray-900 data-[active=true]:hover:!bg-gray-200"
+                  class="!h-9 !gap-0 !p-0 font-normal text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 data-[active=true]:!bg-gray-200 data-[active=true]:!font-normal data-[active=true]:!text-gray-900 data-[active=true]:hover:!bg-gray-200"
                   [routerLink]="item.path"
                   routerLinkActive
                   #navLink="routerLinkActive"
@@ -22,7 +22,7 @@
                   <div class="grid size-9 shrink-0 place-content-center">
                     <ng-icon hlm class="!size-4" [name]="item.icon" />
                   </div>
-                  <span class="min-w-0 flex-1 truncate text-sm font-medium">{{
+                  <span class="min-w-0 flex-1 truncate text-sm font-normal">{{
                     item.label
                   }}</span>
                 </a>
@@ -31,6 +31,10 @@
           </ul>
         </div>
       </div>
+    </div>
+
+    <div hlmSidebarFooter class="mt-auto border-border border-t p-2">
+      <oequ-user-menu />
     </div>
   </hlm-sidebar>
 
@@ -48,7 +52,9 @@
       <nav hlmBreadcrumb aria-label="Breadcrumb" class="flex-1">
         <ol hlmBreadcrumbList>
           <li hlmBreadcrumbItem>
-            <a hlmBreadcrumbLink link="/settings">Home</a>
+            <a hlmBreadcrumbLink [link]="breadcrumbRoot()">{{
+              breadcrumbRootLabel()
+            }}</a>
           </li>
           <li hlmBreadcrumbSeparator></li>
           <li hlmBreadcrumbItem>
