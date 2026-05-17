@@ -7,7 +7,7 @@ import {
   resource,
   signal,
 } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import {
   FormControl,
@@ -15,36 +15,58 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { lucideEllipsis } from '@ng-icons/lucide';
 import {
   BILLING_PORT,
   billingSeatUsagePercent,
   isBillingSeatsExhausted,
   ORG_PORT,
+  type OrganizationMember,
   type OrgRole,
+  type PortError,
 } from '@oequ/ports';
 import {
   SETTINGS_DIALOG_CONTENT_CLASS,
   SETTINGS_FORM_FIELD_CLASS,
 } from '@oequ/shell';
+import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
+import {
+  HlmDropdownMenuImports,
+  provideHlmDropdownMenuConfig,
+} from '@spartan-ng/helm/dropdown-menu';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
-import { startWith, switchMap } from 'rxjs';
+import { HlmTableImports } from '@spartan-ng/helm/table';
+import { startWith } from 'rxjs';
+
+import { ChangeMemberRoleDialogComponent } from './change-member-role-dialog.component';
+import { RemoveMemberDialogComponent } from './remove-member-dialog.component';
 
 @Component({
   selector: 'oequ-org-settings-members',
   imports: [
     ReactiveFormsModule,
     RouterLink,
+    NgIcon,
     HlmCardImports,
     HlmButtonImports,
     HlmDialogImports,
     HlmInput,
     HlmSelectImports,
+    HlmTableImports,
+    HlmDropdownMenuImports,
+    ChangeMemberRoleDialogComponent,
+    RemoveMemberDialogComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    provideIcons({ lucideEllipsis }),
+    provideHlmDropdownMenuConfig({ align: 'end', side: 'bottom' }),
+  ],
   template: `
     <section hlmCard class="gap-0 overflow-hidden py-0">
       <div hlmCardContent class="!p-6">
@@ -112,29 +134,33 @@ import { startWith, switchMap } from 'rxjs';
           }
         }
 
-        <div class="border-input mt-6 overflow-hidden rounded-[5px] border">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-muted/50 text-muted-foreground border-b text-xs font-medium">
-              <tr>
-                <th class="px-4 py-2.5 font-medium">Member</th>
-                <th class="hidden px-4 py-2.5 font-medium sm:table-cell">Role</th>
-                <th class="px-4 py-2.5 font-medium">Status</th>
+        <div hlmTableContainer class="border-input mt-6 rounded-[5px] border">
+          <table hlmTable>
+            <thead hlmTHead>
+              <tr hlmTr class="bg-muted/50 text-muted-foreground text-xs">
+                <th hlmTh class="px-4">Member</th>
+                <th hlmTh class="hidden px-4 sm:table-cell">Role</th>
+                <th hlmTh class="px-4">Status</th>
+                <th hlmTh class="w-12 px-2 text-end">
+                  <span class="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
-            <tbody class="divide-border divide-y">
+            <tbody hlmTBody>
               @if (filteredMembers().length === 0) {
-                <tr>
+                <tr hlmTr>
                   <td
-                    colspan="3"
-                    class="text-muted-foreground px-4 py-8 text-center"
+                    hlmTd
+                    colspan="4"
+                    class="text-muted-foreground px-4 py-8 text-center whitespace-normal"
                   >
                     No members match your search.
                   </td>
                 </tr>
               } @else {
                 @for (member of filteredMembers(); track member.userId) {
-                  <tr class="hover:bg-muted/30">
-                    <td class="px-4 py-3">
+                  <tr hlmTr>
+                    <td hlmTd class="px-4 py-3 whitespace-normal">
                       <p class="font-medium">
                         {{ member.displayName ?? member.email }}
                       </p>
@@ -145,11 +171,12 @@ import { startWith, switchMap } from 'rxjs';
                       }
                     </td>
                     <td
+                      hlmTd
                       class="text-muted-foreground hidden px-4 py-3 capitalize sm:table-cell"
                     >
                       {{ member.role }}
                     </td>
-                    <td class="px-4 py-3">
+                    <td hlmTd class="px-4 py-3">
                       <span
                         class="rounded-md px-2 py-0.5 text-xs font-medium capitalize"
                         [class]="statusClass(member.status)"
@@ -157,26 +184,63 @@ import { startWith, switchMap } from 'rxjs';
                         {{ member.status }}
                       </span>
                     </td>
+                    <td hlmTd class="px-2 py-3 text-end">
+                      @if (member.role !== 'owner') {
+                        <button
+                          type="button"
+                          hlmBtn
+                          variant="ghost"
+                          size="icon"
+                          class="size-8"
+                          [hlmDropdownMenuTrigger]="memberActionsMenu"
+                          [attr.aria-label]="
+                            'Actions for ' +
+                            (member.displayName ?? member.email)
+                          "
+                        >
+                          <ng-icon
+                            name="lucideEllipsis"
+                            class="size-4"
+                            aria-hidden="true"
+                          />
+                        </button>
+                        <ng-template #memberActionsMenu>
+                          <div hlmDropdownMenu class="min-w-44 p-1">
+                            <button
+                              type="button"
+                              hlmDropdownMenuItem
+                              (triggered)="openChangeRoleDialog(member)"
+                            >
+                              Change role
+                            </button>
+                            <div hlmDropdownMenuSeparator></div>
+                            <button
+                              type="button"
+                              hlmDropdownMenuItem
+                              variant="destructive"
+                              (triggered)="openRemoveDialog(member)"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </ng-template>
+                      }
+                    </td>
                   </tr>
                 }
               }
             </tbody>
           </table>
         </div>
-
       </div>
 
       <div
         hlmCardFooter
         class="border-border bg-muted/50 text-foreground flex min-h-[57px] flex-wrap items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
       >
-        @if (statusMessage(); as message) {
-          <p role="status" class="min-w-0 flex-1">{{ message }}</p>
-        } @else {
-          <p class="text-muted-foreground min-w-0 flex-1">
-            Invite teammates by email. They receive a link to join this workspace.
-          </p>
-        }
+        <p class="text-muted-foreground min-w-0 flex-1">
+          Invite teammates by email. They receive a link to join this workspace.
+        </p>
         <button
           hlmBtn
           type="button"
@@ -226,7 +290,10 @@ import { startWith, switchMap } from 'rxjs';
             </div>
 
             <div class="w-full min-w-0">
-              <label for="invite-role-trigger" class="mb-1.5 block text-sm font-medium">
+              <label
+                for="invite-role-trigger"
+                class="mb-1.5 block text-sm font-medium"
+              >
                 Role
               </label>
               <hlm-select
@@ -240,11 +307,16 @@ import { startWith, switchMap } from 'rxjs';
                 >
                   <span hlmSelectValue placeholder="Select a role"></span>
                 </hlm-select-trigger>
-                <hlm-select-content *hlmSelectPortal class="w-[var(--brn-select-width)]">
+                <hlm-select-content
+                  *hlmSelectPortal
+                  class="w-[var(--brn-select-width)]"
+                >
                   @for (option of inviteRoleOptions; track option.value) {
                     <hlm-select-item [value]="option.value">
                       <span class="font-medium">{{ option.label }}</span>
-                      <span class="text-muted-foreground block text-xs font-normal">
+                      <span
+                        class="text-muted-foreground block text-xs font-normal"
+                      >
                         {{ option.description }}
                       </span>
                     </hlm-select-item>
@@ -257,12 +329,31 @@ import { startWith, switchMap } from 'rxjs';
               <button hlmBtn type="button" variant="secondary" hlmDialogClose>
                 Cancel
               </button>
-              <button hlmBtn type="submit">Send invite</button>
+              <button hlmBtn type="submit" [disabled]="inviting()">
+                {{ inviting() ? 'Sending…' : 'Send invite' }}
+              </button>
             </hlm-dialog-footer>
           </form>
         </hlm-dialog-content>
       </ng-template>
     </hlm-dialog>
+
+    <oequ-change-member-role-dialog
+      [open]="changeRoleDialogOpen()"
+      [memberLabel]="changeRoleTargetLabel()"
+      [currentRole]="changeRoleCurrentRole()"
+      [saving]="changingRole()"
+      (confirmed)="confirmChangeRole($event)"
+      (cancelled)="closeChangeRoleDialog()"
+    />
+
+    <oequ-remove-member-dialog
+      [open]="removeDialogOpen()"
+      [memberLabel]="removeTargetLabel()"
+      [removing]="removing()"
+      (confirmed)="confirmRemove()"
+      (cancelled)="closeRemoveDialog()"
+    />
   `,
 })
 export class OrgSettingsMembersComponent {
@@ -276,13 +367,32 @@ export class OrgSettingsMembersComponent {
 
   protected readonly seatUsagePercent = billingSeatUsagePercent;
 
+  private readonly dataRefresh = signal(0);
+
   protected readonly billingResource = resource({
-    params: () => ({ orgId: this.organizationId() }),
+    params: () => ({
+      orgId: this.organizationId(),
+      refresh: this.dataRefresh(),
+    }),
     loader: async ({ params, abortSignal }) => {
       const result = await this.billingPort.getSummary(
         params.orgId,
         abortSignal,
       );
+      if (!result.ok) {
+        throw new Error(result.error.message);
+      }
+      return result.data;
+    },
+  });
+
+  protected readonly membersResource = resource({
+    params: () => ({
+      orgId: this.organizationId(),
+      refresh: this.dataRefresh(),
+    }),
+    loader: async ({ params }) => {
+      const result = await this.orgPort.getMembers(params.orgId);
       if (!result.ok) {
         throw new Error(result.error.message);
       }
@@ -323,7 +433,7 @@ export class OrgSettingsMembersComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
-    role: new FormControl<OrgRole>('member', {
+    role: new FormControl<'admin' | 'member'>('member', {
       nonNullable: true,
       validators: [Validators.required],
     }),
@@ -331,27 +441,39 @@ export class OrgSettingsMembersComponent {
 
   protected readonly inviteSubmitAttempted = signal(false);
   protected readonly inviteDialogOpen = signal(false);
+  protected readonly inviting = signal(false);
   protected readonly inviteDialogState = computed(() =>
     this.inviteDialogOpen() ? 'open' : 'closed',
   );
-  protected readonly statusMessage = signal<string | null>(null);
+
+  protected readonly changeRoleDialogOpen = signal(false);
+  protected readonly changeRoleTarget = signal<OrganizationMember | null>(null);
+  protected readonly changingRole = signal(false);
+  protected readonly changeRoleTargetLabel = computed(() => {
+    const member = this.changeRoleTarget();
+    return member ? (member.displayName ?? member.email) : '';
+  });
+  protected readonly changeRoleCurrentRole = computed((): 'admin' | 'member' => {
+    const member = this.changeRoleTarget();
+    return member?.role === 'admin' ? 'admin' : 'member';
+  });
+
+  protected readonly removeDialogOpen = signal(false);
+  protected readonly removeTarget = signal<OrganizationMember | null>(null);
+  protected readonly removing = signal(false);
+  protected readonly removeTargetLabel = computed(() => {
+    const member = this.removeTarget();
+    return member ? (member.displayName ?? member.email) : '';
+  });
 
   private readonly searchQuery = toSignal(
     this.searchControl.valueChanges.pipe(startWith('')),
     { initialValue: '' },
   );
 
-  private readonly membersResult = toSignal(
-    toObservable(this.organizationId).pipe(
-      switchMap((id) => this.orgPort.getMembers(id)),
-    ),
-    { initialValue: null },
+  protected readonly members = computed(
+    () => this.membersResource.value() ?? [],
   );
-
-  protected readonly members = computed(() => {
-    const result = this.membersResult();
-    return result?.ok ? result.data : [];
-  });
 
   protected readonly filteredMembers = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
@@ -390,7 +512,6 @@ export class OrgSettingsMembersComponent {
       return;
     }
     this.inviteSubmitAttempted.set(false);
-    this.statusMessage.set(null);
     this.inviteForm.reset({ email: '', role: 'member' });
     this.inviteDialogOpen.set(true);
   }
@@ -400,19 +521,123 @@ export class OrgSettingsMembersComponent {
     this.inviteDialogOpen.set(false);
   }
 
-  protected submitInvite(): void {
+  protected async submitInvite(): Promise<void> {
     this.inviteSubmitAttempted.set(true);
-    if (this.inviteForm.invalid) {
+    if (this.inviteForm.invalid || this.inviting()) {
       return;
     }
 
     const email = this.inviteForm.controls.email.value.trim();
     const role = this.inviteForm.controls.role.value;
+
+    this.inviting.set(true);
+    const result = await this.orgPort.inviteMember(this.organizationId(), {
+      email,
+      role,
+    });
+    this.inviting.set(false);
+
+    if (!result.ok) {
+      toast.error(this.portErrorMessage(result.error));
+      return;
+    }
+
+    this.closeInviteDialog();
+    this.dataRefresh.update((value) => value + 1);
+    toast.success(`Invitation sent to ${email}.`);
+  }
+
+  protected openChangeRoleDialog(member: OrganizationMember): void {
+    this.changeRoleTarget.set(member);
+    this.changeRoleDialogOpen.set(true);
+  }
+
+  protected closeChangeRoleDialog(): void {
+    if (this.changingRole()) {
+      return;
+    }
+    this.changeRoleDialogOpen.set(false);
+    this.changeRoleTarget.set(null);
+  }
+
+  protected async confirmChangeRole(role: 'admin' | 'member'): Promise<void> {
+    const member = this.changeRoleTarget();
+    if (!member || this.changingRole()) {
+      return;
+    }
+
+    this.changingRole.set(true);
+    const result = await this.orgPort.updateMemberRole(
+      this.organizationId(),
+      member.userId,
+      { role },
+    );
+    this.changingRole.set(false);
+
+    if (!result.ok) {
+      toast.error(this.portErrorMessage(result.error));
+      return;
+    }
+
+    const label = member.displayName ?? member.email;
     const roleLabel =
       this.inviteRoleOptions.find((o) => o.value === role)?.label ?? role;
-    this.closeInviteDialog();
-    this.statusMessage.set(
-      `Invitation sent to ${email} as ${roleLabel}.`,
+    this.changeRoleDialogOpen.set(false);
+    this.changeRoleTarget.set(null);
+    this.dataRefresh.update((value) => value + 1);
+    toast.success(`${label} is now ${roleLabel}.`);
+  }
+
+  protected openRemoveDialog(member: OrganizationMember): void {
+    this.removeTarget.set(member);
+    this.removeDialogOpen.set(true);
+  }
+
+  protected closeRemoveDialog(): void {
+    if (this.removing()) {
+      return;
+    }
+    this.removeDialogOpen.set(false);
+    this.removeTarget.set(null);
+  }
+
+  protected async confirmRemove(): Promise<void> {
+    const member = this.removeTarget();
+    if (!member || this.removing()) {
+      return;
+    }
+
+    this.removing.set(true);
+    const result = await this.orgPort.removeMember(
+      this.organizationId(),
+      member.userId,
     );
+    this.removing.set(false);
+
+    if (!result.ok) {
+      toast.error(this.portErrorMessage(result.error));
+      return;
+    }
+
+    const label = member.displayName ?? member.email;
+    this.removeDialogOpen.set(false);
+    this.removeTarget.set(null);
+    this.dataRefresh.update((value) => value + 1);
+    toast.success(`${label} was removed from the workspace.`);
+  }
+
+  private portErrorMessage(error: PortError): string {
+    switch (error.code) {
+      case 'SEATS_EXHAUSTED':
+        return 'No seats available. Upgrade your plan.';
+      case 'CONFLICT':
+        return 'This email is already a member or has a pending invite.';
+      case 'FORBIDDEN':
+        return error.message.includes('role')
+          ? 'The workspace owner role cannot be changed.'
+          : 'The workspace owner cannot be removed.';
+      default:
+        return error.message || 'Something went wrong.';
+    }
   }
 }

@@ -4,6 +4,8 @@ import type { Observable } from 'rxjs';
 import type { PortResult } from './models/common.model';
 import type {
   CreateOrganizationInput,
+  InviteMemberInput,
+  UpdateMemberRoleInput,
   Organization,
   OrganizationId,
   OrganizationMember,
@@ -25,6 +27,22 @@ export interface OrgPort {
   getMembers(
     organizationId: OrganizationId,
   ): Promise<PortResult<readonly OrganizationMember[]>>;
+
+  inviteMember(
+    organizationId: OrganizationId,
+    input: InviteMemberInput,
+  ): Promise<PortResult<OrganizationMember>>;
+
+  removeMember(
+    organizationId: OrganizationId,
+    userId: string,
+  ): Promise<PortResult<void>>;
+
+  updateMemberRole(
+    organizationId: OrganizationId,
+    userId: string,
+    input: UpdateMemberRoleInput,
+  ): Promise<PortResult<OrganizationMember>>;
 
   update(
     organizationId: OrganizationId,

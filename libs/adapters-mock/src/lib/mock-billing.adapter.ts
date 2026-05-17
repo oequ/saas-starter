@@ -160,6 +160,18 @@ export class MockBillingAdapter implements BillingPort {
     }
   }
 
+  adjustSeatsUsed(organizationId: OrganizationId, delta: number): void {
+    const current = this.getOrCreateSummary(organizationId);
+    const next: BillingSummary = {
+      ...current,
+      seatsUsed: Math.max(0, current.seatsUsed + delta),
+    };
+    this.summaries.set(organizationId, next);
+    if (this.summarySubject.value?.organizationId === organizationId) {
+      this.summarySubject.next(next);
+    }
+  }
+
   /** Restores fixture billing data (E2E / screenshot runs). */
   resetMockState(): void {
     this.pendingCheckout = null;

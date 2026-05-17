@@ -3,6 +3,8 @@ import {
   isValidOrganizationSlug,
   ORG_PORT,
   type CreateOrganizationInput,
+  type InviteMemberInput,
+  type UpdateMemberRoleInput,
   type Organization,
   type OrganizationId,
   type OrganizationMember,
@@ -38,13 +40,23 @@ function ownerMember(organizationId: OrganizationId): OrganizationMember {
   };
 }
 
-function cloneMembersMap(): Map<string, readonly OrganizationMember[]> {
+function cloneMembersMap(): Map<string, OrganizationMember[]> {
   return new Map(
     Object.entries(MOCK_MEMBERS_BY_ORG_ID).map(([id, members]) => [
       id,
-      [...members],
+      members.map((member) => ({ ...member })),
     ]),
   );
+}
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function normalizeInviteEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+function countsTowardSeat(member: OrganizationMember): boolean {
+  return member.status === 'active' || member.status === 'invited';
 }
 
 const DEMO_ZERO_ORGS_STORAGE_KEY = 'oequ-demo-zero-orgs';
@@ -68,7 +80,7 @@ export class MockOrgAdapter implements OrgPort {
     );
 
   private membersByOrgId = readDemoZeroOrgsFlag()
-    ? new Map<string, readonly OrganizationMember[]>()
+    ? new Map<string, OrganizationMember[]>()
     : cloneMembersMap();
 
   readonly organizations$: Observable<readonly Organization[]> =
@@ -148,6 +160,139 @@ export class MockOrgAdapter implements OrgPort {
     }
 
     return portOk(this.membersByOrgId.get(organizationId) ?? []);
+  }
+
+  async inviteMember(
+    organizationId: OrganizationId,
+    input: InviteMemberInput,
+  ): Promise<PortResult<OrganizationMember>> {
+    const session = await this.authAdapter.getClaims();
+    if (!session.ok || !session.data) {
+      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+    }
+
+    const email = normalizeInviteEmail(input.email);
+    if (!EMAIL_PATTERN.test(email)) {
+      return portErr({
+        code: 'VALIDATION',
+        message: 'Enter a valid email address.',
+      });
+    }
+
+    const members = this.membersByOrgId.get(organizationId) ?? [];
+    if (members.some((member) => member.email.toLowerCase() === email)) {
+      return portErr({
+        code: 'CONFLICT',
+        message: 'This email is already a member or has a pending invite.',
+      });
+    }
+
+    const billing = await this.billingAdapter.getSummary(organizationId);
+    if (!billing.ok) {
+      return portErr(billing.error);
+    }
+    const { seatsUsed, seatsLimit } = billing.data;
+    if (seatsLimit !== null && seatsUsed >= seatsLimit) {
+      return portErr({
+        code: 'SEATS_EXHAUSTED',
+        message: 'No seats available. Upgrade your plan.',
+      });
+    }
+
+    await delay(300);
+
+    const localPart = email.split('@')[0] ?? email;
+    const displayName =
+      localPart.charAt(0).toUpperCase() + localPart.slice(1).replace(/[.+]/g, ' ');
+
+    const member: OrganizationMember = {
+      organizationId,
+      userId: crypto.randomUUID(),
+      email,
+      displayName,
+      role: input.role,
+      status: 'invited',
+    };
+
+    this.membersByOrgId.set(organizationId, [...members, member]);
+    this.billingAdapter.adjustSeatsUsed(organizationId, 1);
+
+    return portOk(member);
+  }
+
+  async removeMember(
+    organizationId: OrganizationId,
+    userId: string,
+  ): Promise<PortResult<void>> {
+    const session = await this.authAdapter.getClaims();
+    if (!session.ok || !session.data) {
+      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+    }
+
+    const members = this.membersByOrgId.get(organizationId) ?? [];
+    const index = members.findIndex((member) => member.userId === userId);
+    if (index === -1) {
+      return portErr({ code: 'NOT_FOUND', message: 'Member not found.' });
+    }
+
+    const target = members[index];
+    if (target.role === 'owner') {
+      return portErr({
+        code: 'FORBIDDEN',
+        message: 'The workspace owner cannot be removed.',
+      });
+    }
+
+    await delay(300);
+
+    const next = members.filter((member) => member.userId !== userId);
+    this.membersByOrgId.set(organizationId, next);
+    if (countsTowardSeat(target)) {
+      this.billingAdapter.adjustSeatsUsed(organizationId, -1);
+    }
+
+    return portOk(undefined);
+  }
+
+  async updateMemberRole(
+    organizationId: OrganizationId,
+    userId: string,
+    input: UpdateMemberRoleInput,
+  ): Promise<PortResult<OrganizationMember>> {
+    const session = await this.authAdapter.getClaims();
+    if (!session.ok || !session.data) {
+      return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
+    }
+
+    if (input.role !== 'admin' && input.role !== 'member') {
+      return portErr({
+        code: 'VALIDATION',
+        message: 'Role must be admin or member.',
+      });
+    }
+
+    const members = this.membersByOrgId.get(organizationId) ?? [];
+    const index = members.findIndex((member) => member.userId === userId);
+    if (index === -1) {
+      return portErr({ code: 'NOT_FOUND', message: 'Member not found.' });
+    }
+
+    const target = members[index];
+    if (target.role === 'owner') {
+      return portErr({
+        code: 'FORBIDDEN',
+        message: 'The workspace owner role cannot be changed.',
+      });
+    }
+
+    await delay(300);
+
+    const updated: OrganizationMember = { ...target, role: input.role };
+    const next = [...members];
+    next[index] = updated;
+    this.membersByOrgId.set(organizationId, next);
+
+    return portOk(updated);
   }
 
   async update(

@@ -5,6 +5,7 @@ export type PortErrorCode =
   | 'NOT_FOUND'
   | 'VALIDATION'
   | 'CONFLICT'
+  | 'SEATS_EXHAUSTED'
   | 'RATE_LIMITED'
   | 'UNAVAILABLE'
   | 'UNKNOWN';

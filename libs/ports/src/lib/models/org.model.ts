@@ -28,3 +28,12 @@ export interface CreateOrganizationInput {
   readonly name: string;
   readonly slug: string;
 }
+
+export interface InviteMemberInput {
+  readonly email: string;
+  readonly role: 'admin' | 'member';
+}
+
+export interface UpdateMemberRoleInput {
+  readonly role: 'admin' | 'member';
+}
