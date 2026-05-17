@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import {
+  isValidOrganizationSlug,
   ORG_PORT,
+  type CreateOrganizationInput,
   type Organization,
   type OrganizationId,
   type OrganizationMember,
@@ -12,21 +14,62 @@ import {
 } from '@oequ/ports';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
+import { addDaysIso } from './data/mock-billing-data';
 import {
   MOCK_AUTH_SESSION,
   MOCK_MEMBERS_BY_ORG_ID,
   MOCK_ORGANIZATIONS,
 } from './data/mock-data';
 import { MockAuthAdapter } from './mock-auth.adapter';
+import { MockBillingAdapter } from './mock-billing.adapter';
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function ownerMember(organizationId: OrganizationId): OrganizationMember {
+  return {
+    organizationId,
+    userId: MOCK_AUTH_SESSION.user.id,
+    email: MOCK_AUTH_SESSION.user.email,
+    displayName: MOCK_AUTH_SESSION.user.displayName,
+    role: 'owner',
+    status: 'active',
+  };
+}
+
+function cloneMembersMap(): Map<string, readonly OrganizationMember[]> {
+  return new Map(
+    Object.entries(MOCK_MEMBERS_BY_ORG_ID).map(([id, members]) => [
+      id,
+      [...members],
+    ]),
+  );
+}
+
+const DEMO_ZERO_ORGS_STORAGE_KEY = 'oequ-demo-zero-orgs';
+
+function readDemoZeroOrgsFlag(): boolean {
+  if (typeof sessionStorage === 'undefined') {
+    return false;
+  }
+  return sessionStorage.getItem(DEMO_ZERO_ORGS_STORAGE_KEY) === '1';
+}
 
 @Injectable()
 export class MockOrgAdapter implements OrgPort {
   private readonly organizationsSubject = new BehaviorSubject<
     readonly Organization[]
-  >([...MOCK_ORGANIZATIONS]);
+  >(readDemoZeroOrgsFlag() ? [] : [...MOCK_ORGANIZATIONS]);
 
   private readonly activeOrganizationSubject =
-    new BehaviorSubject<Organization | null>(MOCK_ORGANIZATIONS[0]);
+    new BehaviorSubject<Organization | null>(
+      readDemoZeroOrgsFlag() ? null : MOCK_ORGANIZATIONS[0],
+    );
+
+  private membersByOrgId = readDemoZeroOrgsFlag()
+    ? new Map<string, readonly OrganizationMember[]>()
+    : cloneMembersMap();
 
   readonly organizations$: Observable<readonly Organization[]> =
     this.organizationsSubject.asObservable();
@@ -34,7 +77,52 @@ export class MockOrgAdapter implements OrgPort {
   readonly activeOrganization$: Observable<Organization | null> =
     this.activeOrganizationSubject.asObservable();
 
-  constructor(private readonly authAdapter: MockAuthAdapter) {}
+  constructor(
+    private readonly authAdapter: MockAuthAdapter,
+    private readonly billingAdapter: MockBillingAdapter,
+  ) {}
+
+  resetMockState(): void {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(DEMO_ZERO_ORGS_STORAGE_KEY);
+    }
+    this.organizationsSubject.next([...MOCK_ORGANIZATIONS]);
+    this.membersByOrgId = cloneMembersMap();
+    this.activeOrganizationSubject.next(MOCK_ORGANIZATIONS[0]);
+    void this.syncPersonalClaims();
+  }
+
+  organizationCount(): number {
+    return this.organizationsSubject.value.length;
+  }
+
+  /** E2E / demo: simulate a signed-in user with no workspaces yet. */
+  setZeroOrganizations(): void {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(DEMO_ZERO_ORGS_STORAGE_KEY, '1');
+    }
+    this.organizationsSubject.next([]);
+    this.membersByOrgId = new Map();
+    this.activeOrganizationSubject.next(null);
+    void this.syncPersonalClaims();
+  }
+
+  private async syncPersonalClaims(): Promise<void> {
+    const session = await this.authAdapter.getClaims();
+    if (!session.ok || !session.data) {
+      return;
+    }
+    const active = this.activeOrganizationSubject.value;
+    this.authAdapter.setSession({
+      user: MOCK_AUTH_SESSION.user,
+      claims: {
+        ...session.data,
+        org: active
+          ? { organizationId: active.id, role: 'owner' }
+          : null,
+      },
+    });
+  }
 
   async listOrganizations(): Promise<PortResult<readonly Organization[]>> {
     return portOk(this.organizationsSubject.value);
@@ -43,7 +131,10 @@ export class MockOrgAdapter implements OrgPort {
   async getBySlug(slug: string): Promise<PortResult<Organization>> {
     const org = this.organizationsSubject.value.find((o) => o.slug === slug);
     if (!org) {
-      return portErr({ code: 'NOT_FOUND', message: `Organization not found: ${slug}` });
+      return portErr({
+        code: 'NOT_FOUND',
+        message: `Organization not found: ${slug}`,
+      });
     }
     return portOk(org);
   }
@@ -56,7 +147,7 @@ export class MockOrgAdapter implements OrgPort {
       return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
     }
 
-    return portOk(MOCK_MEMBERS_BY_ORG_ID[organizationId] ?? []);
+    return portOk(this.membersByOrgId.get(organizationId) ?? []);
   }
 
   async update(
@@ -86,6 +177,94 @@ export class MockOrgAdapter implements OrgPort {
     }
 
     return portOk(updated);
+  }
+
+  async createOrganization(
+    input: CreateOrganizationInput,
+  ): Promise<PortResult<Organization>> {
+    const name = input.name.trim();
+    const slug = input.slug.trim().toLowerCase();
+
+    if (name.length < 2 || name.length > 64) {
+      return portErr({
+        code: 'VALIDATION',
+        message: 'Name must be between 2 and 64 characters.',
+      });
+    }
+
+    if (!isValidOrganizationSlug(slug)) {
+      return portErr({
+        code: 'VALIDATION',
+        message:
+          'Slug must be 2–48 characters: lowercase letters, numbers, and hyphens.',
+      });
+    }
+
+    if (this.organizationsSubject.value.some((o) => o.slug === slug)) {
+      return portErr({
+        code: 'CONFLICT',
+        message: 'This workspace URL is already taken.',
+      });
+    }
+
+    await delay(400);
+
+    const organization: Organization = {
+      id: crypto.randomUUID(),
+      slug,
+      name,
+      logoUrl: null,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.organizationsSubject.next([
+      ...this.organizationsSubject.value,
+      organization,
+    ]);
+    this.membersByOrgId.set(organization.id, [ownerMember(organization.id)]);
+    this.billingAdapter.seedOrganization(organization.id);
+
+    return portOk(organization);
+  }
+
+  async deleteOrganization(
+    organizationId: OrganizationId,
+  ): Promise<PortResult<void>> {
+    const orgs = this.organizationsSubject.value;
+    const org = orgs.find((o) => o.id === organizationId);
+    if (!org) {
+      return portErr({ code: 'NOT_FOUND', message: 'Organization not found' });
+    }
+
+    await delay(400);
+
+    const remaining = orgs.filter((o) => o.id !== organizationId);
+    this.organizationsSubject.next(remaining);
+    this.membersByOrgId.delete(organizationId);
+    this.billingAdapter.removeOrganization(organizationId);
+
+    const wasActive = this.activeOrganizationSubject.value?.id === organizationId;
+    if (!wasActive) {
+      return portOk(undefined);
+    }
+
+    const nextActive = remaining[0] ?? null;
+    this.activeOrganizationSubject.next(nextActive);
+
+    const session = await this.authAdapter.getClaims();
+    if (session.ok && session.data) {
+      this.authAdapter.setSession({
+        user: MOCK_AUTH_SESSION.user,
+        claims: {
+          ...session.data,
+          org: nextActive
+            ? { organizationId: nextActive.id, role: 'owner' }
+            : null,
+        },
+      });
+    }
+
+    return portOk(undefined);
   }
 
   async selectOrganization(slug: string): Promise<PortResult<Organization>> {

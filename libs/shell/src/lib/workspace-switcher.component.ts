@@ -16,6 +16,7 @@ import {
   lucidePlus,
 } from '@ng-icons/lucide';
 import { ORG_PORT } from '@oequ/ports';
+import { CreateWorkspaceDialogService } from './create-workspace-dialog.service';
 import { SHELL_SIDEBAR_SELECT_TRIGGER_CLASS } from './settings-layout.tokens';
 import {
   HlmDropdownMenuImports,
@@ -126,7 +127,7 @@ export const PERSONAL_WORKSPACE_VALUE = '__personal__';
           type="button"
           hlmDropdownMenuItem
           class="text-muted-foreground gap-2"
-          [disabled]="true"
+          (triggered)="onCreateWorkspace()"
         >
           <ng-icon name="lucidePlus" class="size-4 shrink-0" aria-hidden="true" />
           <span>Create workspace</span>
@@ -143,9 +144,9 @@ export class WorkspaceSwitcherComponent {
 
   private readonly orgPort = inject(ORG_PORT);
   private readonly router = inject(Router);
+  private readonly createWorkspaceDialog = inject(CreateWorkspaceDialogService);
 
   protected readonly personalValue = PERSONAL_WORKSPACE_VALUE;
-  protected readonly createWorkspaceValue = '__create_workspace__';
 
   protected readonly organizations = toSignal(this.orgPort.organizations$, {
     initialValue: [],
@@ -183,12 +184,16 @@ export class WorkspaceSwitcherComponent {
     }
   }
 
+  protected onCreateWorkspace(): void {
+    this.createWorkspaceDialog.requestOpen();
+  }
+
   protected async onWorkspaceSelect(value: string): Promise<void> {
     await this.onValueChange(value);
   }
 
   protected async onValueChange(value: string | null): Promise<void> {
-    if (!value || value === this.createWorkspaceValue) {
+    if (!value) {
       return;
     }
 
@@ -212,8 +217,11 @@ export class WorkspaceSwitcherComponent {
       return;
     }
 
-    if (this.router.url.startsWith('/account')) {
-      await this.router.navigate(['/workspace/settings/general']);
+    if (
+      this.router.url.startsWith('/account') ||
+      this.router.url.startsWith('/workspace')
+    ) {
+      await this.router.navigate(['/workspace']);
     }
   }
 }

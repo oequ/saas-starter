@@ -1,16 +1,23 @@
 import { Route } from '@angular/router';
 import {
   accountContextGuard,
+  onboardingGuard,
   ShellLayoutComponent,
   workspaceContextGuard,
 } from '@oequ/shell';
 
 export const appRoutes: Route[] = [
   {
+    path: 'onboarding',
+    canActivate: [onboardingGuard],
+    loadComponent: () =>
+      import('@oequ/features-org').then((m) => m.OnboardingPageComponent),
+  },
+  {
     path: '',
     component: ShellLayoutComponent,
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'workspace/settings/general' },
+      { path: '', pathMatch: 'full', redirectTo: 'workspace' },
       {
         path: 'account',
         canActivate: [accountContextGuard],
@@ -48,58 +55,73 @@ export const appRoutes: Route[] = [
         ],
       },
       {
-        path: 'workspace/settings',
+        path: 'workspace',
         canActivate: [workspaceContextGuard],
-        loadComponent: () =>
-          import('@oequ/features-org').then(
-            (m) => m.WorkspaceSettingsLayoutComponent,
-          ),
-        data: { title: 'Workspace settings', settingsContext: 'workspace' },
+        canActivateChild: [workspaceContextGuard],
         children: [
-          { path: '', pathMatch: 'full', redirectTo: 'general' },
           {
-            path: 'general',
+            path: '',
+            pathMatch: 'full',
             loadComponent: () =>
               import('@oequ/features-org').then(
-                (m) => m.WorkspaceSettingsGeneralPageComponent,
+                (m) => m.WorkspaceHomePageComponent,
               ),
-            data: { title: 'General' },
+            data: { title: 'Overview' },
           },
           {
-            path: 'members',
+            path: 'settings',
             loadComponent: () =>
               import('@oequ/features-org').then(
-                (m) => m.WorkspaceSettingsMembersPageComponent,
+                (m) => m.WorkspaceSettingsLayoutComponent,
               ),
-            data: { title: 'Members' },
-          },
-          {
-            path: 'billing',
+            data: { title: 'Workspace settings', settingsContext: 'workspace' },
             children: [
-              { path: '', pathMatch: 'full', redirectTo: 'overview' },
+              { path: '', pathMatch: 'full', redirectTo: 'general' },
               {
-                path: 'overview',
+                path: 'general',
                 loadComponent: () =>
                   import('@oequ/features-org').then(
-                    (m) => m.WorkspaceSettingsBillingPageComponent,
+                    (m) => m.WorkspaceSettingsGeneralPageComponent,
                   ),
-                data: { title: 'Overview', billingSection: 'overview' },
+                data: { title: 'General' },
               },
               {
-                path: 'invoices',
+                path: 'members',
                 loadComponent: () =>
                   import('@oequ/features-org').then(
-                    (m) => m.WorkspaceSettingsBillingPageComponent,
+                    (m) => m.WorkspaceSettingsMembersPageComponent,
                   ),
-                data: { title: 'Invoices', billingSection: 'invoices' },
+                data: { title: 'Members' },
               },
               {
-                path: 'payment',
-                loadComponent: () =>
-                  import('@oequ/features-org').then(
-                    (m) => m.WorkspaceSettingsBillingPageComponent,
-                  ),
-                data: { title: 'Payment method', billingSection: 'payment' },
+                path: 'billing',
+                children: [
+                  { path: '', pathMatch: 'full', redirectTo: 'overview' },
+                  {
+                    path: 'overview',
+                    loadComponent: () =>
+                      import('@oequ/features-org').then(
+                        (m) => m.WorkspaceSettingsBillingPageComponent,
+                      ),
+                    data: { title: 'Overview', billingSection: 'overview' },
+                  },
+                  {
+                    path: 'invoices',
+                    loadComponent: () =>
+                      import('@oequ/features-org').then(
+                        (m) => m.WorkspaceSettingsBillingPageComponent,
+                      ),
+                    data: { title: 'Invoices', billingSection: 'invoices' },
+                  },
+                  {
+                    path: 'payment',
+                    loadComponent: () =>
+                      import('@oequ/features-org').then(
+                        (m) => m.WorkspaceSettingsBillingPageComponent,
+                      ),
+                    data: { title: 'Payment method', billingSection: 'payment' },
+                  },
+                ],
               },
             ],
           },

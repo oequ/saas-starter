@@ -16,6 +16,15 @@ export async function resetMockDemoState(page: Page): Promise<void> {
   await page.evaluate(() => window.__oequResetMock?.());
 }
 
+export async function setZeroOrganizations(page: Page): Promise<void> {
+  await page.goto('/account/profile');
+  await page.evaluate(() => {
+    sessionStorage.setItem('oequ-demo-zero-orgs', '1');
+    window.__oequSetZeroOrgs?.();
+  });
+  await page.reload();
+}
+
 export async function switchWorkspace(
   page: Page,
   workspaceName: string,

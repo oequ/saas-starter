@@ -21,6 +21,8 @@ import {
 declare global {
   interface Window {
     __oequResetMock?: () => void;
+    __oequSetZeroOrgs?: () => void;
+    __oequOrganizationCount?: () => number;
     __oequSelectWorkspace?: (slug: string) => Promise<void>;
   }
 }
@@ -41,8 +43,13 @@ export function provideDemoAdapters(): EnvironmentProviders {
       const org = inject(MockOrgAdapter);
       window.__oequResetMock = () => {
         billing.resetMockState();
+        org.resetMockState();
         void org.selectOrganization('acme');
       };
+      window.__oequSetZeroOrgs = () => {
+        org.setZeroOrganizations();
+      };
+      window.__oequOrganizationCount = () => org.organizationCount();
       window.__oequSelectWorkspace = async (slug) => {
         await org.selectOrganization(slug);
       };

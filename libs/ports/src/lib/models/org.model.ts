@@ -23,3 +23,8 @@ export interface UpdateOrganizationInput {
   readonly name?: string;
   readonly logoUrl?: string | null;
 }
+
+export interface CreateOrganizationInput {
+  readonly name: string;
+  readonly slug: string;
+}

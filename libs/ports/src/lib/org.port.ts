@@ -3,6 +3,7 @@ import type { Observable } from 'rxjs';
 
 import type { PortResult } from './models/common.model';
 import type {
+  CreateOrganizationInput,
   Organization,
   OrganizationId,
   OrganizationMember,
@@ -29,6 +30,14 @@ export interface OrgPort {
     organizationId: OrganizationId,
     input: UpdateOrganizationInput,
   ): Promise<PortResult<Organization>>;
+
+  createOrganization(
+    input: CreateOrganizationInput,
+  ): Promise<PortResult<Organization>>;
+
+  deleteOrganization(
+    organizationId: OrganizationId,
+  ): Promise<PortResult<void>>;
 
   /**
    * Select workspace for the current user. Adapter must sync auth claims (JWT org context).

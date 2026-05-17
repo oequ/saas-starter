@@ -22,13 +22,14 @@ import {
   lucideChevronDown,
   lucideChevronUp,
   lucideCreditCard,
+  lucideHome,
   lucideMonitor,
   lucideSettings,
   lucideShield,
   lucideUser,
   lucideUsers,
 } from '@ng-icons/lucide';
-import { ORG_PORT } from '@oequ/ports';
+import { ORG_PORT, type Organization } from '@oequ/ports';
 import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmIcon } from '@spartan-ng/helm/icon';
 import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
@@ -66,6 +67,7 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     provideIcons({
+      lucideHome,
       lucideSettings,
       lucideUser,
       lucideShield,
@@ -90,6 +92,19 @@ export class ShellLayoutComponent {
 
   protected readonly billingNavExpanded = signal(false);
 
+  private readonly organizations = toSignal(this.orgPort.organizations$, {
+    initialValue: [] as readonly Organization[],
+  });
+
+  private readonly activeOrganization = toSignal(
+    this.orgPort.activeOrganization$,
+    { initialValue: null },
+  );
+
+  protected readonly shellContext = computed(() =>
+    this.activeOrganization() ? 'workspace' : 'personal',
+  );
+
   private readonly currentUrl = toSignal(
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
@@ -104,6 +119,16 @@ export class ShellLayoutComponent {
       const url = this.currentUrl() ?? '';
       if (url.startsWith('/workspace/settings/billing')) {
         untracked(() => this.billingNavExpanded.set(true));
+      }
+    });
+
+    // Guards do not re-run on in-app mock changes (E2E); redirect when org list becomes empty.
+    effect(() => {
+      const url = this.currentUrl() ?? '';
+      if (this.organizations().length === 0 && url.startsWith('/workspace')) {
+        untracked(() => {
+          void this.router.navigate(['/onboarding']);
+        });
       }
     });
   }
@@ -130,15 +155,6 @@ export class ShellLayoutComponent {
     this.themeService.toggle();
   }
 
-  private readonly activeOrganization = toSignal(
-    this.orgPort.activeOrganization$,
-    { initialValue: null },
-  );
-
-  protected readonly shellContext = computed(() =>
-    this.activeOrganization() ? 'workspace' : 'personal',
-  );
-
   private readonly settingsContext = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
@@ -162,14 +178,17 @@ export class ShellLayoutComponent {
     { initialValue: this.resolveTitle() },
   );
 
+  protected readonly isWorkspaceOverview = computed(() => {
+    const url = this.currentUrl() ?? '';
+    return url === '/workspace' || url === '/workspace/';
+  });
+
   protected readonly breadcrumbRoot = computed(() =>
-    this.settingsContext() === 'account'
-      ? '/account/profile'
-      : '/workspace/settings/general',
+    this.settingsContext() === 'account' ? '/account/profile' : '/workspace',
   );
 
   protected readonly breadcrumbRootLabel = computed(() =>
-    this.settingsContext() === 'account' ? 'Account' : 'Home',
+    this.settingsContext() === 'account' ? 'Account' : 'Overview',
   );
 
   protected isBillingGroupActive(group: ShellNavGroup): boolean {

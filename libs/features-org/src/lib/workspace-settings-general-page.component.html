@@ -134,11 +134,22 @@
       <button
         hlmBtn
         type="button"
-        disabled
         class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
+        (click)="openDeleteDialog()"
       >
         Delete workspace
       </button>
     </div>
   </section>
+
+  @if (activeOrganization(); as org) {
+    <oequ-delete-workspace-dialog
+      [open]="deleteDialogOpen()"
+      [workspaceName]="org.name"
+      [expectedSlug]="org.slug"
+      [deleting]="deletingWorkspace()"
+      (confirmed)="confirmDeleteWorkspace()"
+      (cancelled)="closeDeleteDialog()"
+    />
+  }
 </div>

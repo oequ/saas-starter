@@ -18,6 +18,12 @@ export const SETTINGS_PAGE_MAX_WIDTH: Record<SettingsContext, string> = {
 /** Narrow column for inputs inside settings cards (Vercel-style). */
 export const SETTINGS_FORM_FIELD_CLASS = 'max-w-[300px]';
 
+/** Form / confirm dialogs — slightly narrower than default `sm:max-w-lg`. */
+export const SETTINGS_DIALOG_CONTENT_CLASS = 'sm:!max-w-[380px]';
+
+/** Full-width fields inside dialogs (overrides {@link SETTINGS_FORM_FIELD_CLASS}). */
+export const SETTINGS_DIALOG_FIELD_CLASS = 'w-full min-w-0';
+
 /** Workspace switcher + user menu triggers (light/dark via sidebar tokens). */
 export const SHELL_SIDEBAR_SELECT_TRIGGER_CLASS =
   'text-sidebar-foreground !h-9 w-full !justify-start !gap-0 !rounded-md !border-0 !bg-transparent !p-0 !shadow-none hover:!bg-sidebar-accent hover:!text-sidebar-accent-foreground focus-visible:!ring-sidebar-ring focus-visible:!ring-2 [&>ng-icon]:hidden';

@@ -10,7 +10,7 @@ import { MOCK_ORGANIZATIONS } from './mock-data';
 const ACME_ID = MOCK_ORGANIZATIONS[0].id;
 const GLOBEX_ID = MOCK_ORGANIZATIONS[1].id;
 
-function addDaysIso(days: number): string {
+export function addDaysIso(days: number): string {
   const date = new Date();
   date.setDate(date.getDate() + days);
   return date.toISOString();

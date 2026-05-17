@@ -15,6 +15,7 @@ import {
   formatSubscriptionStatus,
   type Invoice,
 } from '@oequ/ports';
+import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -192,7 +193,7 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
 
     <hlm-dialog [state]="upgradeDialogState()" (closed)="closeUpgradeDialog()">
       <ng-template hlmDialogPortal>
-        <hlm-dialog-content class="sm:!max-w-[420px]">
+        <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
             <h3 hlmDialogTitle>Upgrade plan</h3>
             <p hlmDialogDescription>
@@ -236,6 +237,7 @@ export class OrgSettingsBillingComponent {
 
   private readonly billingPort = inject(BILLING_PORT);
 
+  protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
   protected readonly formatPlanLabel = formatPlanLabel;
   protected readonly formatSubscriptionStatus = formatSubscriptionStatus;
   protected readonly seatUsagePercent = billingSeatUsagePercent;

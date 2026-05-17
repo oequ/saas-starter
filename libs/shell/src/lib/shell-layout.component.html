@@ -133,15 +133,21 @@
 
       <nav hlmBreadcrumb aria-label="Breadcrumb" class="flex-1">
         <ol hlmBreadcrumbList>
-          <li hlmBreadcrumbItem>
-            <a hlmBreadcrumbLink [link]="breadcrumbRoot()">{{
-              breadcrumbRootLabel()
-            }}</a>
-          </li>
-          <li hlmBreadcrumbSeparator></li>
-          <li hlmBreadcrumbItem>
-            <span hlmBreadcrumbPage>{{ pageTitle() }}</span>
-          </li>
+          @if (isWorkspaceOverview()) {
+            <li hlmBreadcrumbItem>
+              <span hlmBreadcrumbPage>Overview</span>
+            </li>
+          } @else {
+            <li hlmBreadcrumbItem>
+              <a hlmBreadcrumbLink [link]="breadcrumbRoot()">{{
+                breadcrumbRootLabel()
+              }}</a>
+            </li>
+            <li hlmBreadcrumbSeparator></li>
+            <li hlmBreadcrumbItem>
+              <span hlmBreadcrumbPage>{{ pageTitle() }}</span>
+            </li>
+          }
         </ol>
       </nav>
     </header>

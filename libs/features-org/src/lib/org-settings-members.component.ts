@@ -22,7 +22,10 @@ import {
   ORG_PORT,
   type OrgRole,
 } from '@oequ/ports';
-import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
+import {
+  SETTINGS_DIALOG_CONTENT_CLASS,
+  SETTINGS_FORM_FIELD_CLASS,
+} from '@oequ/shell';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -187,7 +190,7 @@ import { startWith, switchMap } from 'rxjs';
 
     <hlm-dialog [state]="inviteDialogState()" (closed)="closeInviteDialog()">
       <ng-template hlmDialogPortal>
-        <hlm-dialog-content class="sm:!max-w-[400px]">
+        <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
             <h3 hlmDialogTitle>Invite member</h3>
             <p hlmDialogDescription>
@@ -265,6 +268,7 @@ import { startWith, switchMap } from 'rxjs';
 export class OrgSettingsMembersComponent {
   readonly organizationId = input.required<string>();
 
+  protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
   protected readonly fieldClass = SETTINGS_FORM_FIELD_CLASS;
 
   private readonly orgPort = inject(ORG_PORT);

@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 import {
   FormControl,
   FormGroup,
@@ -19,6 +20,8 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
 
+import { DeleteWorkspaceDialogComponent } from './delete-workspace-dialog.component';
+
 @Component({
   selector: 'oequ-workspace-settings-general-page',
   imports: [
@@ -26,6 +29,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
     HlmCardImports,
     HlmButtonImports,
     HlmInput,
+    DeleteWorkspaceDialogComponent,
   ],
   templateUrl: './workspace-settings-general-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,6 +38,7 @@ export class WorkspaceSettingsGeneralPageComponent {
   protected readonly fieldClass = SETTINGS_FORM_FIELD_CLASS;
 
   private readonly orgPort = inject(ORG_PORT);
+  private readonly router = inject(Router);
 
   protected readonly activeOrganization = toSignal(
     this.orgPort.activeOrganization$,
@@ -68,6 +73,9 @@ export class WorkspaceSettingsGeneralPageComponent {
       !this.saving()
     );
   });
+
+  protected readonly deleteDialogOpen = signal(false);
+  protected readonly deletingWorkspace = signal(false);
 
   protected readonly logoUploading = signal(false);
   protected readonly logoStatusMessage = signal<string | null>(null);
@@ -160,6 +168,38 @@ export class WorkspaceSettingsGeneralPageComponent {
       this.logoStatusMessage.set('Something went wrong. Please try again.');
     } finally {
       this.logoUploading.set(false);
+    }
+  }
+
+  protected openDeleteDialog(): void {
+    this.deleteDialogOpen.set(true);
+  }
+
+  protected closeDeleteDialog(): void {
+    this.deleteDialogOpen.set(false);
+  }
+
+  protected async confirmDeleteWorkspace(): Promise<void> {
+    const org = this.activeOrganization();
+    if (!org) {
+      return;
+    }
+
+    this.deletingWorkspace.set(true);
+    const result = await this.orgPort.deleteOrganization(org.id);
+    this.deletingWorkspace.set(false);
+    this.deleteDialogOpen.set(false);
+
+    if (!result.ok) {
+      this.statusMessage.set(result.error.message);
+      return;
+    }
+
+    const stillActive = this.activeOrganization();
+    if (stillActive) {
+      await this.router.navigate(['/workspace']);
+    } else {
+      await this.router.navigate(['/onboarding']);
     }
   }
 

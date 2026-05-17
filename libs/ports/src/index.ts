@@ -2,6 +2,7 @@ export * from './lib/auth.port';
 export * from './lib/billing.port';
 export * from './lib/billing.utils';
 export * from './lib/org.port';
+export * from './lib/org.utils';
 export * from './lib/models/auth.model';
 export * from './lib/models/billing.model';
 export * from './lib/models/common.model';

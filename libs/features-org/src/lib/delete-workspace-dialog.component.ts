@@ -25,7 +25,7 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmInput } from '@spartan-ng/helm/input';
 
 @Component({
-  selector: 'oequ-delete-account-dialog',
+  selector: 'oequ-delete-workspace-dialog',
   imports: [
     ReactiveFormsModule,
     HlmButtonImports,
@@ -36,36 +36,33 @@ import { HlmInput } from '@spartan-ng/helm/input';
   template: `
     <hlm-dialog [state]="dialogState()" (closed)="onDialogClosed()">
       <ng-template hlmDialogPortal>
-        <hlm-dialog-content>
+        <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle class="text-destructive">Delete account</h3>
+            <h3 hlmDialogTitle class="text-destructive">Delete workspace</h3>
             <p hlmDialogDescription>
-              This permanently deletes your personal account and signs you out.
-              Workspaces you own are not deleted — transfer ownership first.
+              This permanently deletes <strong>{{ workspaceName() }}</strong> and
+              its data in this demo. Type the workspace URL to confirm.
             </p>
           </hlm-dialog-header>
 
-          <form
-            class="space-y-4"
-            [formGroup]="form"
-            (ngSubmit)="confirm()"
-          >
+          <form class="space-y-4" [formGroup]="form" (ngSubmit)="confirm()">
             <div [class]="fieldClass">
-              <label for="delete-email" class="mb-1.5 block text-sm font-medium">
-                Type your email to confirm
+              <label for="delete-workspace-slug" class="mb-1.5 block text-sm font-medium">
+                Type <span class="font-mono">{{ expectedSlug() }}</span> to confirm
               </label>
               <input
-                id="delete-email"
+                id="delete-workspace-slug"
                 hlmInput
-                type="email"
-                [attr.placeholder]="expectedEmail()"
+                type="text"
                 class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
-                [formControl]="form.controls.email"
-                autocomplete="email"
+                [attr.placeholder]="expectedSlug()"
+                formControlName="slug"
+                spellcheck="false"
+                autocomplete="off"
               />
               @if (submitAttempted() && !canConfirm()) {
                 <p class="text-destructive mt-1.5 text-sm">
-                  Enter your account email exactly as shown.
+                  Enter the workspace URL exactly as shown.
                 </p>
               }
             </div>
@@ -78,8 +75,9 @@ import { HlmInput } from '@spartan-ng/helm/input';
                 hlmBtn
                 type="submit"
                 class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
+                [disabled]="deleting()"
               >
-                Delete account
+                {{ deleting() ? 'Deleting…' : 'Delete workspace' }}
               </button>
             </hlm-dialog-footer>
           </form>
@@ -88,9 +86,12 @@ import { HlmInput } from '@spartan-ng/helm/input';
     </hlm-dialog>
   `,
 })
-export class DeleteAccountDialogComponent {
+export class DeleteWorkspaceDialogComponent {
   readonly open = input(false);
-  readonly expectedEmail = input.required<string>();
+  readonly workspaceName = input.required<string>();
+  readonly expectedSlug = input.required<string>();
+
+  readonly deleting = input(false);
 
   readonly confirmed = output<void>();
   readonly cancelled = output<void>();
@@ -105,22 +106,22 @@ export class DeleteAccountDialogComponent {
   protected readonly submitAttempted = signal(false);
 
   protected readonly form = new FormGroup({
-    email: new FormControl('', {
+    slug: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.email],
+      validators: [Validators.required],
     }),
   });
 
-  private readonly emailValue = signal('');
+  private readonly slugValue = signal('');
   private confirming = false;
 
   constructor() {
     const destroyRef = inject(DestroyRef);
 
-    this.form.controls.email.valueChanges
+    this.form.controls.slug.valueChanges
       .pipe(takeUntilDestroyed(destroyRef))
       .subscribe((value) => {
-        this.emailValue.set(value);
+        this.slugValue.set(value);
       });
 
     effect(() => {
@@ -131,7 +132,7 @@ export class DeleteAccountDialogComponent {
   }
 
   protected canConfirm(): boolean {
-    return this.emailValue().trim() === this.expectedEmail().trim();
+    return this.slugValue().trim() === this.expectedSlug().trim();
   }
 
   protected confirm(): void {
@@ -156,6 +157,6 @@ export class DeleteAccountDialogComponent {
   private resetForm(): void {
     this.submitAttempted.set(false);
     this.form.reset();
-    this.emailValue.set('');
+    this.slugValue.set('');
   }
 }

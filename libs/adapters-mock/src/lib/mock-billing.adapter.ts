@@ -14,6 +14,7 @@ import {
 import { BehaviorSubject, type Observable } from 'rxjs';
 
 import {
+  addDaysIso,
   MOCK_BILLING_LATENCY_MS,
   MOCK_BILLING_PLANS,
   mockBillingSummaryForOrg,
@@ -137,9 +138,32 @@ export class MockBillingAdapter implements BillingPort {
     return portOk(undefined);
   }
 
+  seedOrganization(organizationId: OrganizationId): void {
+    this.summaries.set(organizationId, {
+      organizationId,
+      planId: 'starter',
+      planName: 'Starter',
+      status: 'trialing',
+      currentPeriodEnd: addDaysIso(14),
+      cancelAtPeriodEnd: false,
+      seatsUsed: 1,
+      seatsLimit: 10,
+      meters: [],
+      trialEnd: addDaysIso(14),
+    });
+  }
+
+  removeOrganization(organizationId: OrganizationId): void {
+    this.summaries.delete(organizationId);
+    if (this.summarySubject.value?.organizationId === organizationId) {
+      this.summarySubject.next(null);
+    }
+  }
+
   /** Restores fixture billing data (E2E / screenshot runs). */
   resetMockState(): void {
     this.pendingCheckout = null;
+    this.summaries.clear();
     for (const org of MOCK_ORGANIZATIONS) {
       this.summaries.set(org.id, { ...mockBillingSummaryForOrg(org.id) });
     }

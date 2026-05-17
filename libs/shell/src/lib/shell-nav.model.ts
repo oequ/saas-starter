@@ -25,6 +25,13 @@ export type ShellNavEntry = ShellNavLink | ShellNavGroup;
 export const WORKSPACE_SHELL_NAV: readonly ShellNavEntry[] = [
   {
     kind: 'link',
+    label: 'Overview',
+    path: '/workspace',
+    icon: 'lucideHome',
+    exact: true,
+  },
+  {
+    kind: 'link',
     label: 'General',
     path: '/workspace/settings/general',
     icon: 'lucideSettings',
