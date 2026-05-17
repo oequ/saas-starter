@@ -76,6 +76,9 @@
       ],
       "@spartan-ng/helm/dialog": [
         "./libs/ui/dialog/src/index.ts"
+      ],
+      "@spartan-ng/helm/dropdown-menu": [
+        "./libs/ui/dropdown-menu/src/index.ts"
       ]
     }
   },

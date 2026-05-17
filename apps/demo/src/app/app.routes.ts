@@ -73,6 +73,14 @@ export const appRoutes: Route[] = [
               ),
             data: { title: 'Members' },
           },
+          {
+            path: 'billing',
+            loadComponent: () =>
+              import('@oequ/features-org').then(
+                (m) => m.WorkspaceSettingsBillingPageComponent,
+              ),
+            data: { title: 'Billing' },
+          },
         ],
       },
       {

@@ -15,7 +15,7 @@ export class MockBillingAdapter implements BillingPort {
     organizationId: '00000000-0000-4000-8000-000000000001',
     status: 'trialing',
     planId: 'starter',
-    seatsUsed: 1,
+    seatsUsed: 5,
     seatsLimit: 5,
   });
 
@@ -29,7 +29,7 @@ export class MockBillingAdapter implements BillingPort {
       organizationId,
       status: 'trialing',
       planId: 'starter',
-      seatsUsed: 1,
+      seatsUsed: 5,
       seatsLimit: 5,
     });
   }

@@ -12,7 +12,7 @@
               <li hlmSidebarMenuItem>
                 <a
                   hlmSidebarMenuButton
-                  class="!h-9 !gap-0 !p-0 font-normal text-gray-900 hover:!bg-gray-100 hover:!text-gray-900 data-[active=true]:!bg-gray-200 data-[active=true]:!font-normal data-[active=true]:!text-gray-900 data-[active=true]:hover:!bg-gray-200"
+                  [class]="shellSidebarNavButtonClass"
                   [routerLink]="item.path"
                   routerLinkActive
                   #navLink="routerLinkActive"
@@ -20,7 +20,11 @@
                   [routerLinkActiveOptions]="{ exact: item.exact }"
                 >
                   <div class="grid size-9 shrink-0 place-content-center">
-                    <ng-icon hlm class="!size-4" [name]="item.icon" />
+                    <ng-icon
+                      hlm
+                      class="!size-4 text-current"
+                      [name]="item.icon"
+                    />
                   </div>
                   <span class="min-w-0 flex-1 truncate text-sm font-normal">{{
                     item.label

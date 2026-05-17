@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  HostListener,
   inject,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -15,6 +16,7 @@ import {
 } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
+  lucideCreditCard,
   lucideMonitor,
   lucideSettings,
   lucideShield,
@@ -29,7 +31,9 @@ import { filter, map, startWith } from 'rxjs';
 
 import {
   resolveSettingsContext,
+  SHELL_SIDEBAR_NAV_BUTTON_CLASS,
 } from './settings-layout.tokens';
+import { ThemeService } from './theme.service';
 import { UserMenuComponent } from './user-menu.component';
 import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
 
@@ -51,6 +55,12 @@ const WORKSPACE_NAV: readonly ShellNavItem[] = [
     label: 'Members',
     path: '/workspace/settings/members',
     icon: 'lucideUsers',
+    exact: true,
+  },
+  {
+    label: 'Billing',
+    path: '/workspace/settings/billing',
+    icon: 'lucideCreditCard',
     exact: true,
   },
 ];
@@ -97,14 +107,40 @@ const PERSONAL_NAV: readonly ShellNavItem[] = [
       lucideUser,
       lucideShield,
       lucideMonitor,
+      lucideCreditCard,
       lucideUsers,
     }),
   ],
 })
 export class ShellLayoutComponent {
+  protected readonly shellSidebarNavButtonClass = SHELL_SIDEBAR_NAV_BUTTON_CLASS;
+
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly orgPort = inject(ORG_PORT);
+  private readonly themeService = inject(ThemeService);
+
+  @HostListener('document:keydown', ['$event'])
+  protected onDocumentKeydown(event: KeyboardEvent): void {
+    if (event.key.toLowerCase() !== 'm' || event.metaKey || event.ctrlKey || event.altKey) {
+      return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    if (
+      target.isContentEditable ||
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    this.themeService.toggle();
+  }
 
   private readonly activeOrganization = toSignal(
     this.orgPort.activeOrganization$,
