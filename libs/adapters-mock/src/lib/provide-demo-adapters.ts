@@ -10,6 +10,10 @@ import {
   MockAuthAdapter,
 } from './mock-auth.adapter';
 import {
+  MOCK_ACTIVATION_PROVIDER,
+  MockActivationAdapter,
+} from './mock-activation.adapter';
+import {
   MOCK_BILLING_PROVIDER,
   MockBillingAdapter,
 } from './mock-billing.adapter';
@@ -32,19 +36,23 @@ export function provideDemoAdapters(): EnvironmentProviders {
     MockAuthAdapter,
     MockOrgAdapter,
     MockBillingAdapter,
+    MockActivationAdapter,
     MOCK_AUTH_PROVIDER,
     MOCK_ORG_PROVIDER,
     MOCK_BILLING_PROVIDER,
+    MOCK_ACTIVATION_PROVIDER,
     provideAppInitializer(() => {
       if (typeof window === 'undefined') {
         return;
       }
       const auth = inject(MockAuthAdapter);
       const billing = inject(MockBillingAdapter);
+      const activation = inject(MockActivationAdapter);
       const org = inject(MockOrgAdapter);
       window.__oequResetMock = () => {
         auth.resetMockState();
         billing.resetMockState();
+        activation.resetMockState();
         org.resetMockState();
         void org.selectOrganization('parcel');
       };

@@ -8,7 +8,7 @@ test.describe('auth', () => {
   test('signs out and signs back in with demo credentials', async ({ page }) => {
     await resetMockDemoState(page);
     await page.goto('/workspace');
-    await expect(page).toHaveURL(/\/workspace$/);
+    await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
 
     await page.getByRole('button', { name: 'User menu' }).click();
     await page.getByRole('menuitem', { name: 'Sign out' }).click();
@@ -21,9 +21,9 @@ test.describe('auth', () => {
     await page.getByLabel('Password').fill('demo');
     await page.getByRole('button', { name: 'Sign in' }).click();
 
-    await expect(page).toHaveURL(/\/workspace$/);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'Parcel',
+    await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Workspace settings',
     );
   });
 

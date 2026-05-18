@@ -3,8 +3,9 @@ import {
   accountContextGuard,
   authGuard,
   guestGuard,
-  onboardingGuard,
+  onboardingRouteGuard,
   ShellLayoutComponent,
+  WorkspaceEntryComponent,
   workspaceContextGuard,
 } from '@oequ/shell';
 
@@ -16,17 +17,18 @@ export const appRoutes: Route[] = [
       import('@oequ/features-auth').then((m) => m.LoginPageComponent),
   },
   {
-    path: 'onboarding',
-    canActivate: [authGuard, onboardingGuard],
-    loadComponent: () =>
-      import('@oequ/features-org').then((m) => m.OnboardingPageComponent),
-  },
-  {
     path: '',
     component: ShellLayoutComponent,
     canActivate: [authGuard],
     canActivateChild: [authGuard],
     children: [
+      {
+        path: 'onboarding',
+        canActivate: [onboardingRouteGuard],
+        loadComponent: () =>
+          import('@oequ/features-org').then((m) => m.OnboardingPageComponent),
+        data: { title: 'Onboarding' },
+      },
       { path: '', pathMatch: 'full', redirectTo: 'workspace' },
       {
         path: 'account',
@@ -72,11 +74,7 @@ export const appRoutes: Route[] = [
           {
             path: '',
             pathMatch: 'full',
-            loadComponent: () =>
-              import('@oequ/features-org').then(
-                (m) => m.WorkspaceHomePageComponent,
-              ),
-            data: { title: 'Overview' },
+            component: WorkspaceEntryComponent,
           },
           {
             path: 'settings',

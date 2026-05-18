@@ -47,5 +47,7 @@ Thumbs.db
 
 # Playwright screenshots accidentally written with wrong cwd
 apps/demo-e2e/docs/
+test-results/
+playwright-report/
 
 vitest.config.*.timestamp*

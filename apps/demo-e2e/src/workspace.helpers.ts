@@ -23,6 +23,7 @@ export async function setZeroOrganizations(page: Page): Promise<void> {
     window.__oequSetZeroOrgs?.();
   });
   await page.reload();
+  await page.waitForFunction(() => window.__oequOrganizationCount?.() === 0);
 }
 
 export async function switchWorkspace(
@@ -45,4 +46,26 @@ export async function waitForBillingLoaded(page: Page): Promise<void> {
 export async function waitForMembersPageLoaded(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
   await expect(page.getByRole('table')).toBeVisible();
+}
+
+/** Creates a workspace from the zero-org onboarding form and waits for activation UI. */
+export async function createWorkspaceViaOnboarding(
+  page: Page,
+  workspaceName: string,
+): Promise<void> {
+  await expect(
+    page.getByRole('heading', { name: 'Create your workspace' }),
+  ).toBeVisible();
+  await page.getByLabel('Workspace name').fill(workspaceName);
+  await page.getByRole('button', { name: 'Create workspace' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Send your first email' }),
+  ).toBeVisible();
+}
+
+/** Mock activation: add API key, send email, land on general settings. */
+export async function completeActivationViaOnboarding(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Add API Key' }).click();
+  await page.getByRole('button', { name: 'Send email' }).click();
+  await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
 }

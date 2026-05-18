@@ -155,7 +155,11 @@ interface ChecklistGroup {
                         class="border-input hover:bg-muted/40 rounded-[5px] border p-4 transition-colors"
                         [class.bg-muted/30]="isStepComplete(step.id)"
                       >
-                        <label class="flex cursor-pointer gap-3">
+                        <div
+                          class="flex cursor-pointer gap-3"
+                          role="group"
+                          [attr.aria-label]="step.title"
+                        >
                           <span
                             class="flex h-5 shrink-0 items-center self-start"
                             aria-hidden="true"
@@ -179,7 +183,7 @@ interface ChecklistGroup {
                               {{ step.description }}
                             </span>
                           </span>
-                        </label>
+                        </div>
                       </li>
                     }
                   </ul>

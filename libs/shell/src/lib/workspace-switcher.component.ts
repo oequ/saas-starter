@@ -221,7 +221,7 @@ export class WorkspaceSwitcherComponent {
       this.router.url.startsWith('/account') ||
       this.router.url.startsWith('/workspace')
     ) {
-      await this.router.navigate(['/workspace']);
+      await this.router.navigate(['/workspace/settings/general']);
     }
   }
 }

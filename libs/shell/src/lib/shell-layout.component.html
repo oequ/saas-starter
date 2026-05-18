@@ -133,9 +133,9 @@
 
       <nav hlmBreadcrumb aria-label="Breadcrumb" class="flex-1">
         <ol hlmBreadcrumbList>
-          @if (isWorkspaceOverview()) {
+          @if (isOnboardingRoute()) {
             <li hlmBreadcrumbItem>
-              <span hlmBreadcrumbPage>Overview</span>
+              <span hlmBreadcrumbPage>Onboarding</span>
             </li>
           } @else {
             <li hlmBreadcrumbItem>
@@ -154,11 +154,13 @@
 
     <section #mainScroll class="min-h-0 flex-1 overflow-y-auto p-6">
       <div class="mx-auto w-full max-w-[1200px]">
-        @if (shellContext() === 'workspace') {
+        @if (shellContext() === 'workspace' && !isOnboardingRoute()) {
           <oequ-billing-status-banner />
         }
         <router-outlet />
       </div>
     </section>
   </main>
+
+  <oequ-create-workspace-dialog />
 </div>

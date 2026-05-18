@@ -64,6 +64,20 @@ libs/ui                # Spartan helm components (@spartan-ng/helm/*)
 libs/adapters-mock     # Mock port implementations for demo
 ```
 
+## Workspace activation (onboarding)
+
+After a user creates a workspace, the demo requires a **pluggable activation** step (target action) before the workspace root (`/workspace`) opens **General** settings. Deep links such as `/workspace/settings/members` stay available while activation is pending.
+
+| Piece | Location |
+|-------|----------|
+| `ActivationPort` | `libs/ports` — `getStatus` / `markComplete` per organization |
+| UI token & types | `libs/ports` — `ACTIVATION_ONBOARDING_CONFIG`, step `kind` (`prerequisite` \| `complete`) |
+| Demo copy & steps | `apps/demo/src/app/demo-activation.config.ts` |
+| Onboarding UI | `libs/features-org` — timeline + checklist components |
+| Mock persistence | `libs/adapters-mock` — `localStorage` keys `oequ:activation:{orgId}` |
+
+Replace the port in your app providers and supply your own `ACTIVATION_ONBOARDING_CONFIG` (title, timeline steps, explore cards). The demo UI follows the Resend onboarding reference in [oequ/saas-starter — `design/reference/resend`](https://github.com/oequ/saas-starter/tree/main/design/reference/resend).
+
 ## Quality
 
 This project follows the open **[Quality Framework](https://github.com/oequ/quality-framework)** (rubric + maturity levels for Angular B2B SaaS).

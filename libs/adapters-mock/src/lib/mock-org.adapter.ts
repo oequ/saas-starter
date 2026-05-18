@@ -16,12 +16,12 @@ import {
 } from '@oequ/ports';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
-import { addDaysIso } from './data/mock-billing-data';
 import {
   MOCK_AUTH_SESSION,
   MOCK_MEMBERS_BY_ORG_ID,
   MOCK_ORGANIZATIONS,
 } from './data/mock-data';
+import { MockActivationAdapter } from './mock-activation.adapter';
 import { MockAuthAdapter } from './mock-auth.adapter';
 import { MockBillingAdapter } from './mock-billing.adapter';
 
@@ -60,6 +60,13 @@ function countsTowardSeat(member: OrganizationMember): boolean {
 }
 
 const DEMO_ZERO_ORGS_STORAGE_KEY = 'oequ-demo-zero-orgs';
+const DEMO_ORGS_SNAPSHOT_KEY = 'oequ-demo-orgs-snapshot';
+
+interface DemoOrgsSnapshot {
+  organizations: Organization[];
+  activeSlug: string | null;
+  membersByOrgId: Record<string, OrganizationMember[]>;
+}
 
 function readDemoZeroOrgsFlag(): boolean {
   if (typeof sessionStorage === 'undefined') {
@@ -68,20 +75,77 @@ function readDemoZeroOrgsFlag(): boolean {
   return sessionStorage.getItem(DEMO_ZERO_ORGS_STORAGE_KEY) === '1';
 }
 
+function readDemoOrgsSnapshot(): DemoOrgsSnapshot | null {
+  if (typeof sessionStorage === 'undefined') {
+    return null;
+  }
+  const raw = sessionStorage.getItem(DEMO_ORGS_SNAPSHOT_KEY);
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw) as DemoOrgsSnapshot;
+  } catch {
+    return null;
+  }
+}
+
+function writeDemoOrgsSnapshot(snapshot: DemoOrgsSnapshot | null): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  if (!snapshot) {
+    sessionStorage.removeItem(DEMO_ORGS_SNAPSHOT_KEY);
+    return;
+  }
+  sessionStorage.setItem(DEMO_ORGS_SNAPSHOT_KEY, JSON.stringify(snapshot));
+}
+
+function resolveInitialDemoOrgState(): {
+  organizations: Organization[];
+  active: Organization | null;
+  membersByOrgId: Map<string, OrganizationMember[]>;
+} {
+  if (readDemoZeroOrgsFlag()) {
+    return {
+      organizations: [],
+      active: null,
+      membersByOrgId: new Map(),
+    };
+  }
+
+  const snapshot = readDemoOrgsSnapshot();
+  if (snapshot) {
+    const active =
+      snapshot.organizations.find((org) => org.slug === snapshot.activeSlug) ??
+      snapshot.organizations[0] ??
+      null;
+    return {
+      organizations: snapshot.organizations,
+      active,
+      membersByOrgId: new Map(Object.entries(snapshot.membersByOrgId)),
+    };
+  }
+
+  return {
+    organizations: [...MOCK_ORGANIZATIONS],
+    active: MOCK_ORGANIZATIONS[0],
+    membersByOrgId: cloneMembersMap(),
+  };
+}
+
 @Injectable()
 export class MockOrgAdapter implements OrgPort {
+  private readonly initialState = resolveInitialDemoOrgState();
+
   private readonly organizationsSubject = new BehaviorSubject<
     readonly Organization[]
-  >(readDemoZeroOrgsFlag() ? [] : [...MOCK_ORGANIZATIONS]);
+  >(this.initialState.organizations);
 
   private readonly activeOrganizationSubject =
-    new BehaviorSubject<Organization | null>(
-      readDemoZeroOrgsFlag() ? null : MOCK_ORGANIZATIONS[0],
-    );
+    new BehaviorSubject<Organization | null>(this.initialState.active);
 
-  private membersByOrgId = readDemoZeroOrgsFlag()
-    ? new Map<string, OrganizationMember[]>()
-    : cloneMembersMap();
+  private membersByOrgId = this.initialState.membersByOrgId;
 
   readonly organizations$: Observable<readonly Organization[]> =
     this.organizationsSubject.asObservable();
@@ -92,12 +156,14 @@ export class MockOrgAdapter implements OrgPort {
   constructor(
     private readonly authAdapter: MockAuthAdapter,
     private readonly billingAdapter: MockBillingAdapter,
+    private readonly activationAdapter: MockActivationAdapter,
   ) {}
 
   resetMockState(): void {
     if (typeof sessionStorage !== 'undefined') {
       sessionStorage.removeItem(DEMO_ZERO_ORGS_STORAGE_KEY);
     }
+    writeDemoOrgsSnapshot(null);
     this.organizationsSubject.next([...MOCK_ORGANIZATIONS]);
     this.membersByOrgId = cloneMembersMap();
     this.activeOrganizationSubject.next(MOCK_ORGANIZATIONS[0]);
@@ -113,10 +179,30 @@ export class MockOrgAdapter implements OrgPort {
     if (typeof sessionStorage !== 'undefined') {
       sessionStorage.setItem(DEMO_ZERO_ORGS_STORAGE_KEY, '1');
     }
+    writeDemoOrgsSnapshot(null);
     this.organizationsSubject.next([]);
     this.membersByOrgId = new Map();
     this.activeOrganizationSubject.next(null);
     void this.syncPersonalClaims();
+  }
+
+  private persistDemoSession(): void {
+    if (readDemoZeroOrgsFlag()) {
+      return;
+    }
+
+    const organizations = [...this.organizationsSubject.value];
+    if (organizations.length === 0) {
+      writeDemoOrgsSnapshot(null);
+      return;
+    }
+
+    const membersByOrgId = Object.fromEntries(this.membersByOrgId.entries());
+    writeDemoOrgsSnapshot({
+      organizations,
+      activeSlug: this.activeOrganizationSubject.value?.slug ?? null,
+      membersByOrgId,
+    });
   }
 
   private async syncPersonalClaims(): Promise<void> {
@@ -362,12 +448,18 @@ export class MockOrgAdapter implements OrgPort {
       createdAt: new Date().toISOString(),
     };
 
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(DEMO_ZERO_ORGS_STORAGE_KEY);
+    }
+
     this.organizationsSubject.next([
       ...this.organizationsSubject.value,
       organization,
     ]);
     this.membersByOrgId.set(organization.id, [ownerMember(organization.id)]);
     this.billingAdapter.seedOrganization(organization.id);
+    this.activationAdapter.seedPending(organization.id);
+    this.persistDemoSession();
 
     return portOk(organization);
   }
@@ -387,6 +479,7 @@ export class MockOrgAdapter implements OrgPort {
     this.organizationsSubject.next(remaining);
     this.membersByOrgId.delete(organizationId);
     this.billingAdapter.removeOrganization(organizationId);
+    this.activationAdapter.clearOrganization(organizationId);
 
     const wasActive = this.activeOrganizationSubject.value?.id === organizationId;
     if (!wasActive) {
@@ -431,6 +524,7 @@ export class MockOrgAdapter implements OrgPort {
       });
     }
 
+    this.persistDemoSession();
     return portOk(result.data);
   }
 

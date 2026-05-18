@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AUTH_PORT, ORG_PORT } from '@oequ/ports';
+import { ACTIVATION_PORT, AUTH_PORT, ORG_PORT } from '@oequ/ports';
 import { firstValueFrom } from 'rxjs';
 
 /** Requires a signed-in session; redirects to login with optional returnUrl. */
@@ -31,20 +31,39 @@ export const guestGuard: CanActivateFn = async () => {
   return router.createUrlTree(['/workspace']);
 };
 
-async function organizationCount(): Promise<number> {
-  const orgPort = inject(ORG_PORT);
-  return (await firstValueFrom(orgPort.organizations$)).length;
-}
-
-/** First-run wizard — only when the user belongs to zero workspaces. */
-export const onboardingGuard: CanActivateFn = async () => {
+/**
+ * `/onboarding` — create workspace (0 orgs) or activation checklist (pending).
+ * Redirect away when activation is already complete.
+ */
+export const onboardingRouteGuard: CanActivateFn = async () => {
   const router = inject(Router);
-  const count = await organizationCount();
-  if (count > 0) {
-    return router.createUrlTree(['/workspace']);
+  const orgPort = inject(ORG_PORT);
+  const activationPort = inject(ACTIVATION_PORT);
+
+  const orgs = await firstValueFrom(orgPort.organizations$);
+  if (orgs.length === 0) {
+    return true;
   }
+
+  let active = await firstValueFrom(orgPort.activeOrganization$);
+  if (!active) {
+    const selectResult = await orgPort.selectOrganization(orgs[0].slug);
+    if (!selectResult.ok) {
+      return true;
+    }
+    active = selectResult.data;
+  }
+
+  const result = await activationPort.getStatus(active.id);
+  if (result.ok && result.data === 'complete') {
+    return router.createUrlTree(['/workspace/settings/general']);
+  }
+
   return true;
 };
+
+/** @deprecated Use onboardingRouteGuard */
+export const onboardingGuard = onboardingRouteGuard;
 
 /**
  * Workspace routes require at least one org; auto-select first when in personal context.
