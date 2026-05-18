@@ -40,6 +40,7 @@ import {
 } from '@spartan-ng/helm/dropdown-menu';
 import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
+import { HlmBadgeImports, type BadgeVariants } from '@spartan-ng/helm/badge';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { startWith } from 'rxjs';
 
@@ -58,6 +59,7 @@ import { RemoveMemberDialogComponent } from './remove-member-dialog.component';
     HlmInput,
     HlmSelectImports,
     HlmTableImports,
+    HlmBadgeImports,
     HlmDropdownMenuImports,
     ChangeMemberRoleDialogComponent,
     RemoveMemberDialogComponent,
@@ -177,9 +179,11 @@ import { RemoveMemberDialogComponent } from './remove-member-dialog.component';
                       {{ member.role }}
                     </td>
                     <td hlmTd class="px-4 py-3">
+                      @let statusBadge = memberStatusBadge(member.status);
                       <span
-                        class="rounded-md px-2 py-0.5 text-xs font-medium capitalize"
-                        [class]="statusClass(member.status)"
+                        hlmBadge
+                        [variant]="statusBadge.variant"
+                        [class]="statusBadge.class"
                       >
                         {{ member.status }}
                       </span>
@@ -488,16 +492,27 @@ export class OrgSettingsMembersComponent {
     });
   });
 
-  protected statusClass(status: string): string {
+  protected memberStatusBadge(status: OrganizationMember['status']): {
+    variant: BadgeVariants['variant'];
+    class: string;
+  } {
     switch (status) {
       case 'active':
-        return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400';
+        return {
+          variant: 'outline',
+          class:
+            'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 capitalize dark:text-emerald-400',
+        };
       case 'invited':
-        return 'bg-amber-500/10 text-amber-800 dark:text-amber-400';
+        return {
+          variant: 'outline',
+          class:
+            'border-amber-500/25 bg-amber-500/10 text-amber-800 capitalize dark:text-amber-400',
+        };
       case 'suspended':
-        return 'bg-muted text-muted-foreground';
+        return { variant: 'secondary', class: 'capitalize' };
       default:
-        return 'bg-muted text-muted-foreground';
+        return { variant: 'secondary', class: 'capitalize' };
     }
   }
 

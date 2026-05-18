@@ -5,12 +5,13 @@ import {
   signal,
 } from '@angular/core';
 import { AUTH_PORT, type AuthSessionDevice } from '@oequ/ports';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 
 @Component({
   selector: 'oequ-account-sessions-page',
-  imports: [HlmCardImports, HlmButtonImports],
+  imports: [HlmCardImports, HlmButtonImports, HlmBadgeImports],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="space-y-8">
@@ -67,7 +68,9 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
                           {{ session.deviceLabel }}
                           @if (session.current) {
                             <span
-                              class="bg-primary/10 text-primary ml-2 rounded-md px-1.5 py-0.5 text-xs font-medium"
+                              hlmBadge
+                              variant="outline"
+                              class="border-primary/25 bg-primary/10 text-primary ms-2"
                               >Current</span
                             >
                           }

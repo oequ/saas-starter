@@ -14,8 +14,11 @@ import {
   formatPlanLabel,
   formatSubscriptionStatus,
   type Invoice,
+  type InvoiceStatus,
+  type SubscriptionStatus,
 } from '@oequ/ports';
 import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
+import { HlmBadgeImports, type BadgeVariants } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -29,6 +32,7 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
     DatePipe,
     HlmCardImports,
     HlmButtonImports,
+    HlmBadgeImports,
     HlmDialogImports,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,11 +63,17 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
                     <h3 class="mt-1 text-xl font-semibold tracking-tight">
                       {{ formatPlanLabel(billing.planId, billing.planName) }}
                     </h3>
-                    <p class="text-muted-foreground mt-1 text-sm">
-                      Status:
-                      <span class="text-foreground font-medium">{{
-                        formatSubscriptionStatus(billing.status)
-                      }}</span>
+                    <p class="text-muted-foreground mt-1 flex flex-wrap items-center gap-2 text-sm">
+                      Status
+                      @let subscriptionBadge =
+                        subscriptionStatusBadge(billing.status);
+                      <span
+                        hlmBadge
+                        [variant]="subscriptionBadge.variant"
+                        [class]="subscriptionBadge.class"
+                      >
+                        {{ formatSubscriptionStatus(billing.status) }}
+                      </span>
                     </p>
                     @if (billing.currentPeriodEnd; as periodEnd) {
                       <p class="text-muted-foreground mt-1 text-sm">
@@ -144,8 +154,15 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
                             | currency: invoice.currency
                         }}
                       </td>
-                      <td class="px-4 py-3 capitalize">
-                        {{ invoice.status }}
+                      <td class="px-4 py-3">
+                        @let invoiceBadge = invoiceStatusBadge(invoice.status);
+                        <span
+                          hlmBadge
+                          [variant]="invoiceBadge.variant"
+                          [class]="invoiceBadge.class"
+                        >
+                          {{ invoice.status }}
+                        </span>
                       </td>
                       <td class="px-4 py-3 text-right">
                         <a
@@ -334,6 +351,55 @@ export class OrgSettingsBillingComponent {
       window.location.assign(result.data.url);
     } else if (!result.ok) {
       this.statusMessage.set(result.error.message);
+    }
+  }
+
+  protected subscriptionStatusBadge(status: SubscriptionStatus): {
+    variant: BadgeVariants['variant'];
+    class: string;
+  } {
+    switch (status) {
+      case 'active':
+        return {
+          variant: 'outline',
+          class:
+            'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+        };
+      case 'trialing':
+        return {
+          variant: 'outline',
+          class:
+            'border-amber-500/25 bg-amber-500/10 text-amber-800 dark:text-amber-400',
+        };
+      case 'past_due':
+      case 'unpaid':
+        return { variant: 'destructive', class: '' };
+      default:
+        return { variant: 'secondary', class: '' };
+    }
+  }
+
+  protected invoiceStatusBadge(status: InvoiceStatus): {
+    variant: BadgeVariants['variant'];
+    class: string;
+  } {
+    switch (status) {
+      case 'paid':
+        return {
+          variant: 'outline',
+          class:
+            'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 capitalize dark:text-emerald-400',
+        };
+      case 'open':
+        return {
+          variant: 'outline',
+          class:
+            'border-amber-500/25 bg-amber-500/10 text-amber-800 capitalize dark:text-amber-400',
+        };
+      case 'uncollectible':
+        return { variant: 'destructive', class: 'capitalize' };
+      default:
+        return { variant: 'secondary', class: 'capitalize' };
     }
   }
 }

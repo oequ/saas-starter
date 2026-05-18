@@ -88,6 +88,9 @@
       ],
       "@spartan-ng/helm/table": [
         "./libs/ui/table/src/index.ts"
+      ],
+      "@spartan-ng/helm/badge": [
+        "./libs/ui/badge/src/index.ts"
       ]
     }
   },

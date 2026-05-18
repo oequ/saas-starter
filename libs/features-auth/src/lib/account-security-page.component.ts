@@ -13,6 +13,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -23,6 +24,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
     ReactiveFormsModule,
     HlmCardImports,
     HlmButtonImports,
+    HlmBadgeImports,
     HlmInput,
   ],
   templateUrl: './account-security-page.component.html',

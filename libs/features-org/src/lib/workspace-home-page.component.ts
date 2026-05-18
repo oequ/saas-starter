@@ -20,6 +20,7 @@ import {
   formatPlanLabel,
   ORG_PORT,
 } from '@oequ/ports';
+import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmIcon } from '@spartan-ng/helm/icon';
@@ -51,6 +52,7 @@ interface ChecklistGroup {
     RouterLink,
     NgIcon,
     HlmIcon,
+    HlmBadgeImports,
     HlmButtonImports,
     HlmCheckboxImports,
   ],
@@ -78,9 +80,7 @@ interface ChecklistGroup {
               {{ workspaceName() }}
             </h1>
             @if (billingSummary(); as billing) {
-              <span
-                class="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-xs font-medium"
-              >
+              <span hlmBadge variant="secondary">
                 {{ formatPlanLabel(billing.planId, billing.planName) }}
               </span>
             }

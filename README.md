@@ -64,6 +64,13 @@ libs/ui                # Spartan helm components (@spartan-ng/helm/*)
 libs/adapters-mock     # Mock port implementations for demo
 ```
 
+## Quality
+
+This project follows the open **[Quality Framework](https://github.com/oequ/quality-framework)** (rubric + maturity levels for Angular B2B SaaS).
+
+- Self-assessment: [docs/QUALITY.md](./docs/QUALITY.md)
+- Rubric v1.0: [docs/rubric](https://github.com/oequ/quality-framework/tree/main/docs/rubric)
+
 ## Scripts
 
 | Command | Description |
