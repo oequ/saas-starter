@@ -42,6 +42,7 @@ export async function waitForBillingLoaded(page: Page): Promise<void> {
   await page.getByText('Loading billing…').waitFor({ state: 'hidden' });
 }
 
-export async function waitForMembersBillingLoaded(page: Page): Promise<void> {
-  await page.getByText('Loading seat usage…').waitFor({ state: 'hidden' });
+export async function waitForMembersPageLoaded(page: Page): Promise<void> {
+  await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible();
+  await expect(page.getByRole('table')).toBeVisible();
 }

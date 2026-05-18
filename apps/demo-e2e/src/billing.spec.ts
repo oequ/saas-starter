@@ -5,7 +5,7 @@ import {
   resetMockDemoState,
   switchWorkspace,
   waitForBillingLoaded,
-  waitForMembersBillingLoaded,
+  waitForMembersPageLoaded,
 } from './workspace.helpers';
 
 test.describe('Billing v0.3 (mock demo)', () => {
@@ -47,9 +47,7 @@ test.describe('Billing v0.3 (mock demo)', () => {
   }) => {
     await page.goto('/workspace/settings/members');
     await switchWorkspace(page, ACME_WORKSPACE);
-    await waitForMembersBillingLoaded(page);
-
-    await expect(page.getByText('5 / 5 used')).toBeVisible();
+    await waitForMembersPageLoaded(page);
     await expect(page.getByText(/Seat limit reached/)).toBeVisible();
     await expect(
       page.getByRole('link', { name: 'upgrade your plan' }),

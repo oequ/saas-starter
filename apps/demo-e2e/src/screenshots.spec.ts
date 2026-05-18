@@ -8,7 +8,7 @@ import {
   resetMockDemoState,
   switchWorkspace,
   waitForBillingLoaded,
-  waitForMembersBillingLoaded,
+  waitForMembersPageLoaded,
 } from './workspace.helpers';
 
 const assetsDir = path.join(workspaceRoot, 'docs', 'assets');
@@ -57,7 +57,7 @@ test.describe('README screenshots', () => {
 
     await page.goto('/workspace/settings/members');
     await switchWorkspace(page, ACME_WORKSPACE);
-    await waitForMembersBillingLoaded(page);
+    await waitForMembersPageLoaded(page);
     await page.getByText(/Seat limit reached/).waitFor();
     await page.screenshot({
       path: path.join(assetsDir, 'demo-members-seats.png'),

@@ -19,7 +19,6 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideEllipsis } from '@ng-icons/lucide';
 import {
   BILLING_PORT,
-  billingSeatUsagePercent,
   isBillingSeatsExhausted,
   ORG_PORT,
   type OrganizationMember,
@@ -94,33 +93,7 @@ import { RemoveMemberDialogComponent } from './remove-member-dialog.component';
           </div>
         </div>
 
-        @if (billingResource.isLoading()) {
-          <p class="text-muted-foreground mt-4 text-sm">Loading seat usage…</p>
-        } @else if (billingSummary(); as billing) {
-          @if (seatUsagePercent(billing); as percent) {
-            <div class="mt-4 max-w-md">
-              <div class="mb-2 flex justify-between text-sm">
-                <span class="text-muted-foreground">Seats</span>
-                <span class="font-medium">
-                  {{ billing.seatsUsed }} /
-                  {{ billing.seatsLimit ?? '∞' }} used
-                </span>
-              </div>
-              <div
-                class="bg-muted h-2 w-full overflow-hidden rounded-full"
-                role="progressbar"
-                [attr.aria-valuenow]="percent"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              >
-                <div
-                  class="bg-primary h-full rounded-full transition-[width]"
-                  [style.width.%]="percent"
-                ></div>
-              </div>
-            </div>
-          }
-          @if (seatsExhausted()) {
+        @if (seatsExhausted()) {
             <div
               class="border-destructive/30 bg-destructive/10 text-destructive mt-4 rounded-md border px-4 py-3 text-sm"
               role="status"
@@ -133,7 +106,6 @@ import { RemoveMemberDialogComponent } from './remove-member-dialog.component';
               >
               to invite more people.
             </div>
-          }
         }
 
         <div hlmTableContainer class="border-input mt-6 rounded-[5px] border">
@@ -248,7 +220,7 @@ import { RemoveMemberDialogComponent } from './remove-member-dialog.component';
         <button
           hlmBtn
           type="button"
-          [disabled]="seatsExhausted()"
+          [disabled]="inviteDisabled()"
           (click)="openInviteDialog()"
         >
           Invite member
@@ -369,8 +341,6 @@ export class OrgSettingsMembersComponent {
   private readonly orgPort = inject(ORG_PORT);
   private readonly billingPort = inject(BILLING_PORT);
 
-  protected readonly seatUsagePercent = billingSeatUsagePercent;
-
   private readonly dataRefresh = signal(0);
 
   protected readonly billingResource = resource({
@@ -412,6 +382,10 @@ export class OrgSettingsMembersComponent {
     const summary = this.billingSummary();
     return summary ? isBillingSeatsExhausted(summary) : false;
   });
+
+  protected readonly inviteDisabled = computed(
+    () => this.billingResource.isLoading() || this.seatsExhausted(),
+  );
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
 
@@ -523,7 +497,7 @@ export class OrgSettingsMembersComponent {
   }
 
   protected openInviteDialog(): void {
-    if (this.seatsExhausted()) {
+    if (this.inviteDisabled()) {
       return;
     }
     this.inviteSubmitAttempted.set(false);

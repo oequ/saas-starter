@@ -4,7 +4,7 @@ import {
   GLOBEX_WORKSPACE,
   resetMockDemoState,
   switchWorkspace,
-  waitForMembersBillingLoaded,
+  waitForMembersPageLoaded,
 } from './workspace.helpers';
 
 test.describe.configure({ mode: 'serial' });
@@ -14,7 +14,7 @@ test.describe('members', () => {
     await resetMockDemoState(page);
     await page.goto('/workspace/settings/members');
     await switchWorkspace(page, GLOBEX_WORKSPACE);
-    await waitForMembersBillingLoaded(page);
+    await waitForMembersPageLoaded(page);
     await expect(page.getByText('2 / 10 used')).toBeVisible();
 
     await page.getByRole('button', { name: 'Invite member' }).click();
@@ -30,7 +30,7 @@ test.describe('members', () => {
   test('removes a non-owner member', async ({ page }) => {
     await resetMockDemoState(page);
     await page.goto('/workspace/settings/members');
-    await waitForMembersBillingLoaded(page);
+    await waitForMembersPageLoaded(page);
 
     await expect(page.getByText('Alex Rivera')).toBeVisible();
 
