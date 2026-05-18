@@ -22,6 +22,7 @@ import {
   MOCK_ORGANIZATIONS,
 } from './data/mock-data';
 import { MockActivationAdapter } from './mock-activation.adapter';
+import { MockApiKeysAdapter } from './mock-api-keys.adapter';
 import { MockAuthAdapter } from './mock-auth.adapter';
 import { MockBillingAdapter } from './mock-billing.adapter';
 
@@ -157,6 +158,7 @@ export class MockOrgAdapter implements OrgPort {
     private readonly authAdapter: MockAuthAdapter,
     private readonly billingAdapter: MockBillingAdapter,
     private readonly activationAdapter: MockActivationAdapter,
+    private readonly apiKeysAdapter: MockApiKeysAdapter,
   ) {}
 
   resetMockState(): void {
@@ -480,6 +482,7 @@ export class MockOrgAdapter implements OrgPort {
     this.membersByOrgId.delete(organizationId);
     this.billingAdapter.removeOrganization(organizationId);
     this.activationAdapter.clearOrganization(organizationId);
+    this.apiKeysAdapter.clearOrganization(organizationId);
 
     const wasActive = this.activeOrganizationSubject.value?.id === organizationId;
     if (!wasActive) {

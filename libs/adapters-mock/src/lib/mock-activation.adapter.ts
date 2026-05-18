@@ -10,6 +10,9 @@ import {
 
 import { MOCK_ORGANIZATIONS } from './data/mock-data';
 
+/** Default demo workspace — activation onboarding not completed until user finishes it. */
+const PARCEL_ORG_ID = MOCK_ORGANIZATIONS[0].id;
+
 const STORAGE_PREFIX = 'oequ:activation:';
 
 function readStatus(organizationId: OrganizationId): ActivationStatus | null {
@@ -42,8 +45,12 @@ function removeStatus(organizationId: OrganizationId): void {
 
 @Injectable()
 export class MockActivationAdapter implements ActivationPort {
-  private readonly defaultCompleteIds = new Set(
+  private readonly mockOrgIds = new Set(
     MOCK_ORGANIZATIONS.map((org) => org.id),
+  );
+
+  private readonly defaultCompleteIds = new Set(
+    [...this.mockOrgIds].filter((id) => id !== PARCEL_ORG_ID),
   );
 
   resetMockState(): void {
@@ -56,7 +63,7 @@ export class MockActivationAdapter implements ActivationPort {
         const key = localStorage.key(i);
         if (key?.startsWith(STORAGE_PREFIX)) {
           const id = key.slice(STORAGE_PREFIX.length);
-          if (!this.defaultCompleteIds.has(id)) {
+          if (!this.mockOrgIds.has(id)) {
             keysToRemove.push(key);
           }
         }

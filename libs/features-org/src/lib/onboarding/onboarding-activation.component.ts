@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowRight,
@@ -16,7 +16,7 @@ import {
   lucideSparkles,
   lucideTestTubeDiagonal,
 } from '@ng-icons/lucide';
-import { ACTIVATION_PORT, ORG_PORT } from '@oequ/ports';
+import { ACTIVATION_PORT, API_KEYS_PORT, ORG_PORT } from '@oequ/ports';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -30,6 +30,7 @@ import { OnboardingCodeBlockComponent } from './onboarding-code-block.component'
 @Component({
   selector: 'oequ-onboarding-activation',
   imports: [
+    RouterLink,
     NgIcon,
     HlmCardImports,
     HlmButtonImports,
@@ -96,23 +97,38 @@ import { OnboardingCodeBlockComponent } from './onboarding-code-block.component'
                     {{ step.description }}
                   </p>
                   <div class="mt-4">
-                    <button
-                      hlmBtn
-                      type="button"
-                      [disabled]="isPrerequisiteDone(step.id)"
-                      (click)="completePrerequisite(step.id)"
-                    >
-                      <ng-icon
-                        name="lucideKeyRound"
-                        class="me-2 size-4"
-                        aria-hidden="true"
-                      />
-                      {{
-                        isPrerequisiteDone(step.id)
-                          ? (step.actionLabel ? step.actionLabel + ' ✓' : 'Done')
-                          : step.actionLabel
-                      }}
-                    </button>
+                    @if (step.id === 'api-key' && !isPrerequisiteDone(step.id)) {
+                      <a
+                        hlmBtn
+                        routerLink="/workspace/api-keys"
+                        [queryParams]="{ create: '1' }"
+                      >
+                        <ng-icon
+                          name="lucideKeyRound"
+                          class="me-2 size-4"
+                          aria-hidden="true"
+                        />
+                        {{ step.actionLabel }}
+                      </a>
+                    } @else {
+                      <button
+                        hlmBtn
+                        type="button"
+                        [disabled]="isPrerequisiteDone(step.id)"
+                        (click)="completePrerequisite(step.id)"
+                      >
+                        <ng-icon
+                          name="lucideKeyRound"
+                          class="me-2 size-4"
+                          aria-hidden="true"
+                        />
+                        {{
+                          isPrerequisiteDone(step.id)
+                            ? (step.actionLabel ? step.actionLabel + ' ✓' : 'Done')
+                            : step.actionLabel
+                        }}
+                      </button>
+                    }
                   </div>
                 </div>
               </section>
@@ -217,6 +233,7 @@ import { OnboardingCodeBlockComponent } from './onboarding-code-block.component'
 export class OnboardingActivationComponent {
   private readonly configToken = inject(ACTIVATION_ONBOARDING_CONFIG);
   private readonly activationPort = inject(ACTIVATION_PORT);
+  private readonly apiKeysPort = inject(API_KEYS_PORT);
   private readonly orgPort = inject(ORG_PORT);
   private readonly router = inject(Router);
 
@@ -233,6 +250,10 @@ export class OnboardingActivationComponent {
   protected readonly completing = signal(false);
 
   protected readonly exploreDemoTooltip = 'Demo only — this action is not wired';
+
+  constructor() {
+    void this.syncApiKeyPrerequisite();
+  }
 
   protected prerequisitesComplete(): boolean {
     const required = this.config().steps.filter((s) => s.kind === 'prerequisite');
@@ -268,6 +289,18 @@ export class OnboardingActivationComponent {
     this.completedPrerequisites.update(
       (current) => new Set([...current, stepId]),
     );
+  }
+
+  private async syncApiKeyPrerequisite(): Promise<void> {
+    const org = this.activeOrganization();
+    if (!org) {
+      return;
+    }
+
+    const result = await this.apiKeysPort.listKeys(org.id);
+    if (result.ok && result.data.length > 0) {
+      this.completePrerequisite('api-key');
+    }
   }
 
   protected onExploreAction(event: Event): void {

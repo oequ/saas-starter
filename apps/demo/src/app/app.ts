@@ -7,7 +7,7 @@ import { HlmToaster } from '@spartan-ng/helm/sonner';
   selector: 'app-root',
   template: `
     <router-outlet />
-    <hlm-toaster position="top-center" richColors />
+    <hlm-toaster position="top-center" />
   `,
 })
 export class App {}

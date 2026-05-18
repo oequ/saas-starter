@@ -25,6 +25,7 @@ import {
   lucideChevronUp,
   lucideCreditCard,
   lucideHome,
+  lucideKeyRound,
   lucideMonitor,
   lucideSettings,
   lucideShield,
@@ -72,6 +73,7 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
   providers: [
     provideIcons({
       lucideHome,
+      lucideKeyRound,
       lucideSettings,
       lucideUser,
       lucideShield,

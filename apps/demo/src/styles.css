@@ -9,6 +9,7 @@
 
 @import '@angular/cdk/overlay-prebuilt.css';
 @import '@spartan-ng/brain/hlm-tailwind-preset.css';
+@import '../../../libs/ui/sonner/src/lib/sonner-theme.css';
 
 :root {
   color-scheme: light;
@@ -45,6 +46,8 @@
   /* Vercel shell: border-gray-100 */
   --sidebar-border: oklch(0.97 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --toast-success: oklch(0.52 0.16 145);
+  --toast-error: oklch(0.577 0.245 27.325);
 }
 
 :root.dark {
@@ -76,6 +79,8 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --toast-success: oklch(0.68 0.17 145);
+  --toast-error: oklch(0.704 0.191 22.216);
 }
 
 @layer base {

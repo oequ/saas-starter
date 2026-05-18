@@ -11,12 +11,21 @@ const WORKSPACE_SLUG_BY_NAME: Record<string, string> = {
   [NOVA_WORKSPACE]: 'nova',
 };
 
+export async function signInAsDemo(page: Page): Promise<void> {
+  await page.goto('/auth/login');
+  await page.getByRole('button', { name: 'Sign in' }).click();
+}
+
 export async function resetMockDemoState(page: Page): Promise<void> {
-  await page.goto('/workspace/settings/general');
+  await signInAsDemo(page);
   await page.evaluate(() => window.__oequResetMock?.());
+  await page.reload();
+  await page.goto('/workspace');
+  await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
 }
 
 export async function setZeroOrganizations(page: Page): Promise<void> {
+  await signInAsDemo(page);
   await page.goto('/account/profile');
   await page.evaluate(() => {
     sessionStorage.setItem('oequ-demo-zero-orgs', '1');
@@ -65,7 +74,12 @@ export async function createWorkspaceViaOnboarding(
 
 /** Mock activation: add API key, send email, land on general settings. */
 export async function completeActivationViaOnboarding(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Add API Key' }).click();
+  await page.getByRole('link', { name: 'Add API Key' }).click();
+  await expect(page).toHaveURL(/\/workspace\/api-keys/);
+  await page.getByLabel('Name').fill('Onboarding Key');
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  await page.getByRole('button', { name: 'Done' }).click();
+  await page.goto('/onboarding');
   await page.getByRole('button', { name: 'Send email' }).click();
   await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
 }

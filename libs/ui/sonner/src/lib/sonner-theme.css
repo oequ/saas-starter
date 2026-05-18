@@ -1,0 +1,57 @@
+/**
+ * Toast appearance: always use app theme tokens (html.dark), not Sonner's
+ * built-in light/dark palettes. Semantic color only on borders + icons.
+ */
+
+[data-sonner-toaster][data-theme='light'],
+[data-sonner-toaster][data-theme='dark'] {
+  --normal-bg: var(--popover);
+  --normal-text: var(--popover-foreground);
+  --normal-border: var(--border);
+  --success-bg: var(--popover);
+  --success-text: var(--popover-foreground);
+  --success-border: var(--toast-success);
+  --error-bg: var(--popover);
+  --error-text: var(--popover-foreground);
+  --error-border: var(--toast-error);
+  --info-bg: var(--popover);
+  --info-text: var(--popover-foreground);
+  --info-border: var(--border);
+  --warning-bg: var(--popover);
+  --warning-text: var(--popover-foreground);
+  --warning-border: var(--border);
+}
+
+[data-sonner-toast][data-styled='true'] {
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+[data-rich-colors='true'] [data-sonner-toast][data-type='success'],
+[data-rich-colors='true'] [data-sonner-toast][data-type='error'] {
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border-width: 1px;
+  box-shadow: 0 4px 12px oklch(0 0 0 / 12%);
+}
+
+[data-rich-colors='true'] [data-sonner-toast][data-type='success'] {
+  border-color: var(--toast-success) !important;
+}
+
+[data-rich-colors='true'] [data-sonner-toast][data-type='error'] {
+  border-color: var(--toast-error) !important;
+}
+
+[data-rich-colors='true'] [data-sonner-toast][data-type='success'] [data-icon] {
+  color: var(--toast-success);
+}
+
+[data-rich-colors='true'] [data-sonner-toast][data-type='error'] [data-icon] {
+  color: var(--toast-error);
+}
+
+[data-sonner-toast] {
+  pointer-events: auto;
+}

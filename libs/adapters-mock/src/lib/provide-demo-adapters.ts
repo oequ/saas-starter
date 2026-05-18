@@ -14,6 +14,10 @@ import {
   MockActivationAdapter,
 } from './mock-activation.adapter';
 import {
+  MOCK_API_KEYS_PROVIDER,
+  MockApiKeysAdapter,
+} from './mock-api-keys.adapter';
+import {
   MOCK_BILLING_PROVIDER,
   MockBillingAdapter,
 } from './mock-billing.adapter';
@@ -37,10 +41,12 @@ export function provideDemoAdapters(): EnvironmentProviders {
     MockOrgAdapter,
     MockBillingAdapter,
     MockActivationAdapter,
+    MockApiKeysAdapter,
     MOCK_AUTH_PROVIDER,
     MOCK_ORG_PROVIDER,
     MOCK_BILLING_PROVIDER,
     MOCK_ACTIVATION_PROVIDER,
+    MOCK_API_KEYS_PROVIDER,
     provideAppInitializer(() => {
       if (typeof window === 'undefined') {
         return;
@@ -48,11 +54,13 @@ export function provideDemoAdapters(): EnvironmentProviders {
       const auth = inject(MockAuthAdapter);
       const billing = inject(MockBillingAdapter);
       const activation = inject(MockActivationAdapter);
+      const apiKeys = inject(MockApiKeysAdapter);
       const org = inject(MockOrgAdapter);
       window.__oequResetMock = () => {
         auth.resetMockState();
         billing.resetMockState();
         activation.resetMockState();
+        apiKeys.resetMockState();
         org.resetMockState();
         void org.selectOrganization('parcel');
       };

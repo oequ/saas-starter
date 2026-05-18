@@ -5,6 +5,7 @@ import {
   createWorkspaceViaOnboarding,
   resetMockDemoState,
   setZeroOrganizations,
+  signInAsDemo,
   waitForMembersPageLoaded,
 } from './workspace.helpers';
 
@@ -49,6 +50,14 @@ test.describe('onboarding', () => {
     await page.goto('/onboarding');
     await createWorkspaceViaOnboarding(page, 'Pending Root Co');
     await page.goto('/workspace');
+    await expect(page).toHaveURL(/\/onboarding$/);
+    await expect(
+      page.getByRole('heading', { name: 'Send your first email' }),
+    ).toBeVisible();
+  });
+
+  test('demo sign-in lands on Parcel activation onboarding', async ({ page }) => {
+    await signInAsDemo(page);
     await expect(page).toHaveURL(/\/onboarding$/);
     await expect(
       page.getByRole('heading', { name: 'Send your first email' }),

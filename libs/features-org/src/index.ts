@@ -9,3 +9,5 @@ export * from './lib/workspace-settings-members-page.component';
 export * from './lib/workspace-settings-billing-page.component';
 export * from './lib/org-settings-members.component';
 export * from './lib/org-settings-billing.component';
+export * from './lib/org-api-keys.component';
+export * from './lib/workspace-api-keys-page.component';
