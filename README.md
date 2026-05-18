@@ -4,7 +4,7 @@ Angular B2B SaaS shell — layout, org settings, auth UI. **You bring the API.**
 
 Standalone UI monorepo (Spartan + Tailwind v4). Implement `@oequ/ports` against your API. For Supabase, RLS, and tenant isolation at the database layer, see the full-stack starter: [oequ/saas-starter](https://github.com/oequ/saas-starter).
 
-**Current UI release:** `v0.3.0-ui` — workspace billing (mock), seat limits, shell trial banner.
+**Current UI release:** `v0.3.0-ui` — workspace activation onboarding, billing (mock), seat limits, shell trial banner.
 
 ## Stack
 
@@ -28,6 +28,12 @@ After enabling **Pages → Source: GitHub Actions** in the repo settings:
 **https://oequ.github.io/angular-saas-starter-ui/**
 
 ## Preview
+
+### Workspace activation (onboarding)
+
+Pluggable activation checklist after workspace creation (demo: send first email). `/workspace` redirects here while activation is pending; settings deep links still work.
+
+![Workspace activation — onboarding](./docs/assets/demo-onboarding.png)
 
 ### Workspace settings (General)
 
@@ -92,6 +98,7 @@ This project follows the open **[Quality Framework](https://github.com/oequ/qual
 | `npx nx serve demo` | Dev server |
 | `npx nx build demo` | Production build |
 | `npm run e2e` | Playwright E2E (billing + shell smoke) |
+| `UPDATE_SCREENSHOTS=1 npm run screenshots` | Regenerate `docs/assets/*.png` for README |
 | `npx nx run-many -t lint --all` | Lint all projects |
 | `npx nx run-many -t test --all` | Unit tests |
 
