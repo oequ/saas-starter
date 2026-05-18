@@ -20,28 +20,28 @@ import {
   MOCK_SESSION_DEVICES,
 } from './data/mock-data';
 
-const DEMO_SIGNED_OUT_STORAGE_KEY = 'oequ-demo-signed-out';
+const DEMO_SIGNED_IN_STORAGE_KEY = 'oequ-demo-signed-in';
 
-function readSignedOutFlag(): boolean {
+function readSignedInFlag(): boolean {
   if (typeof sessionStorage === 'undefined') {
     return false;
   }
-  return sessionStorage.getItem(DEMO_SIGNED_OUT_STORAGE_KEY) === '1';
+  return sessionStorage.getItem(DEMO_SIGNED_IN_STORAGE_KEY) === '1';
 }
 
-function setSignedOutFlag(signedOut: boolean): void {
+function setSignedInFlag(signedIn: boolean): void {
   if (typeof sessionStorage === 'undefined') {
     return;
   }
-  if (signedOut) {
-    sessionStorage.setItem(DEMO_SIGNED_OUT_STORAGE_KEY, '1');
+  if (signedIn) {
+    sessionStorage.setItem(DEMO_SIGNED_IN_STORAGE_KEY, '1');
   } else {
-    sessionStorage.removeItem(DEMO_SIGNED_OUT_STORAGE_KEY);
+    sessionStorage.removeItem(DEMO_SIGNED_IN_STORAGE_KEY);
   }
 }
 
 function initialSession(): AuthSession | null {
-  return readSignedOutFlag() ? null : MOCK_AUTH_SESSION;
+  return readSignedInFlag() ? MOCK_AUTH_SESSION : null;
 }
 
 @Injectable()
@@ -56,7 +56,7 @@ export class MockAuthAdapter implements AuthPort {
     this.sessionSubject.asObservable();
 
   resetMockState(): void {
-    setSignedOutFlag(false);
+    setSignedInFlag(true);
     this.sessions = [...MOCK_SESSION_DEVICES];
     this.sessionSubject.next(MOCK_AUTH_SESSION);
   }
@@ -82,13 +82,13 @@ export class MockAuthAdapter implements AuthPort {
       });
     }
 
-    setSignedOutFlag(false);
+    setSignedInFlag(true);
     this.sessionSubject.next(MOCK_AUTH_SESSION);
     return portOk(MOCK_AUTH_SESSION);
   }
 
   async signOut(): Promise<PortResult<void>> {
-    setSignedOutFlag(true);
+    setSignedInFlag(false);
     this.sessionSubject.next(null);
     return portOk(undefined);
   }
@@ -146,7 +146,7 @@ export class MockAuthAdapter implements AuthPort {
 
   setSession(session: AuthSession | null): void {
     this.sessionSubject.next(session);
-    setSignedOutFlag(session === null);
+    setSignedInFlag(session !== null);
   }
 }
 
