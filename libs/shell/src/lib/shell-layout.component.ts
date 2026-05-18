@@ -21,6 +21,7 @@ import {
 } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
+  lucideBarChart2,
   lucideChevronDown,
   lucideChevronUp,
   lucideCreditCard,
@@ -72,6 +73,7 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     provideIcons({
+      lucideBarChart2,
       lucideHome,
       lucideKeyRound,
       lucideSettings,

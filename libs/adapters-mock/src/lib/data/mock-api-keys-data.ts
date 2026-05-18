@@ -2,7 +2,6 @@ import type { ApiKey } from '@oequ/ports';
 
 import { MOCK_ORGANIZATIONS } from './mock-data';
 
-const PARCEL_ID = MOCK_ORGANIZATIONS[0].id;
 const NOVA_ID = MOCK_ORGANIZATIONS[1].id;
 
 function hoursAgo(hours: number): string {
@@ -13,37 +12,8 @@ function daysAgo(days: number): string {
   return new Date(Date.now() - days * 86_400_000).toISOString();
 }
 
+/** Parcel starts with no keys so onboarding can require creating the first one. */
 export const MOCK_API_KEYS_SEED: readonly ApiKey[] = [
-  {
-    id: 'key_parcel_onboarding',
-    organizationId: PARCEL_ID,
-    name: 'Onboarding',
-    tokenPrefix: 'oeq_6r34e9hM…',
-    permission: 'sending_access',
-    domainScope: 'all_domains',
-    createdAt: hoursAgo(5),
-    lastUsedAt: null,
-  },
-  {
-    id: 'key_parcel_plotpack',
-    organizationId: PARCEL_ID,
-    name: 'plotpack',
-    tokenPrefix: 'oeq_8kLm2pQx…',
-    permission: 'sending_access',
-    domainScope: 'all_domains',
-    createdAt: daysAgo(30),
-    lastUsedAt: hoursAgo(19),
-  },
-  {
-    id: 'key_parcel_admin',
-    organizationId: PARCEL_ID,
-    name: 'CI deploy',
-    tokenPrefix: 'oeq_3nP9wRtY…',
-    permission: 'full_access',
-    domainScope: 'all_domains',
-    createdAt: daysAgo(14),
-    lastUsedAt: hoursAgo(2),
-  },
   {
     id: 'key_nova_main',
     organizationId: NOVA_ID,

@@ -119,6 +119,14 @@ export const appRoutes: Route[] = [
             component: WorkspaceEntryComponent,
           },
           {
+            path: 'metrics',
+            loadComponent: () =>
+              import('@oequ/features-org').then(
+                (m) => m.WorkspaceMetricsPageComponent,
+              ),
+            data: { title: 'Metrics' },
+          },
+          {
             path: 'api-keys',
             loadComponent: () =>
               import('@oequ/features-org').then(

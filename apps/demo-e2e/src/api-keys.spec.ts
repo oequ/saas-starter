@@ -9,12 +9,12 @@ import {
 test.describe.configure({ mode: 'serial' });
 
 test.describe('api keys', () => {
-  test('lists seed keys and creates a new key', async ({ page }) => {
+  test('shows empty state for Parcel and creates a new key', async ({ page }) => {
     await resetMockDemoState(page);
     await page.goto('/workspace/api-keys');
 
     await expect(page.getByRole('heading', { name: 'API keys' })).toBeVisible();
-    await expect(page.getByText('Onboarding')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'No API keys yet' })).toBeVisible();
 
     await page.getByRole('button', { name: '+ Create API key' }).click();
     await expect(page.getByRole('heading', { name: 'Add API Key' })).toBeVisible();

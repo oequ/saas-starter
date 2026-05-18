@@ -22,6 +22,10 @@ import {
   MockBillingAdapter,
 } from './mock-billing.adapter';
 import {
+  MOCK_METRICS_PROVIDER,
+  MockMetricsAdapter,
+} from './mock-metrics.adapter';
+import {
   MOCK_ORG_PROVIDER,
   MockOrgAdapter,
 } from './mock-org.adapter';
@@ -42,11 +46,13 @@ export function provideDemoAdapters(): EnvironmentProviders {
     MockBillingAdapter,
     MockActivationAdapter,
     MockApiKeysAdapter,
+    MockMetricsAdapter,
     MOCK_AUTH_PROVIDER,
     MOCK_ORG_PROVIDER,
     MOCK_BILLING_PROVIDER,
     MOCK_ACTIVATION_PROVIDER,
     MOCK_API_KEYS_PROVIDER,
+    MOCK_METRICS_PROVIDER,
     provideAppInitializer(() => {
       if (typeof window === 'undefined') {
         return;
