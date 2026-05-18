@@ -41,10 +41,7 @@
             [formControl]="profileForm.controls.displayName"
             autocomplete="name"
           />
-          @if (
-            profileForm.controls.displayName.invalid &&
-            profileForm.controls.displayName.touched
-          ) {
+          @if (submitAttempted() && profileForm.controls.displayName.invalid) {
             <p class="text-destructive mt-2 text-sm">
               Please enter between 2 and 64 characters.
             </p>

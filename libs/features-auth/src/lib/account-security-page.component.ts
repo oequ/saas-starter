@@ -49,6 +49,7 @@ export class AccountSecurityPageComponent {
   });
 
   protected readonly statusMessage = signal<string | null>(null);
+  protected readonly submitAttempted = signal(false);
   protected readonly saving = signal(false);
 
   private readonly passwordFormValue = toSignal(
@@ -74,26 +75,22 @@ export class AccountSecurityPageComponent {
     const hasChanges =
       current.length > 0 || next.length > 0 || confirm.length > 0;
 
-    return (
-      hasChanges &&
-      current.length > 0 &&
-      next.length >= 8 &&
-      next === confirm &&
-      this.passwordForm.valid &&
-      !this.saving()
-    );
+    return hasChanges && !this.saving();
   });
 
   protected savePassword(): void {
+    this.submitAttempted.set(true);
     if (!this.canSavePassword()) {
-      this.passwordForm.markAllAsTouched();
+      return;
+    }
+
+    const { newPassword, confirmPassword } = this.passwordForm.getRawValue();
+    if (this.passwordForm.invalid) {
       return;
     }
 
     this.saving.set(true);
     this.statusMessage.set(null);
-
-    const { newPassword, confirmPassword } = this.passwordForm.getRawValue();
 
     if (newPassword !== confirmPassword) {
       this.statusMessage.set('New passwords do not match.');
@@ -105,6 +102,7 @@ export class AccountSecurityPageComponent {
       'Password change will be available in v0.3.',
     );
     this.passwordForm.reset();
+    this.submitAttempted.set(false);
     this.saving.set(false);
   }
 

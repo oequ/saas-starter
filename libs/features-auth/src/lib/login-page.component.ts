@@ -61,6 +61,11 @@ function safeReturnUrl(raw: string | null): string {
                   class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
                   formControlName="email"
                 />
+                @if (submitAttempted() && form.controls.email.invalid) {
+                  <p class="text-destructive mt-1.5 text-sm">
+                    Enter a valid email address.
+                  </p>
+                }
               </div>
               <div>
                 <label
@@ -77,6 +82,11 @@ function safeReturnUrl(raw: string | null): string {
                   class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
                   formControlName="password"
                 />
+                @if (submitAttempted() && form.controls.password.invalid) {
+                  <p class="text-destructive mt-1.5 text-sm">
+                    Password is required.
+                  </p>
+                }
               </div>
               @if (errorMessage(); as message) {
                 <p class="text-destructive text-sm" role="alert">{{ message }}</p>
@@ -85,7 +95,7 @@ function safeReturnUrl(raw: string | null): string {
                 <button
                   hlmBtn
                   type="submit"
-                  [disabled]="form.invalid || signingIn()"
+                  [disabled]="signingIn()"
                 >
                   {{ signingIn() ? 'Signing in…' : 'Sign in' }}
                 </button>
@@ -103,6 +113,7 @@ export class LoginPageComponent {
   private readonly route = inject(ActivatedRoute);
 
   protected readonly signingIn = signal(false);
+  protected readonly submitAttempted = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly form = new FormGroup({
@@ -117,7 +128,7 @@ export class LoginPageComponent {
   });
 
   protected async submit(): Promise<void> {
-    this.form.markAllAsTouched();
+    this.submitAttempted.set(true);
     if (this.form.invalid) {
       return;
     }

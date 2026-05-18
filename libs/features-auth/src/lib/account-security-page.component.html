@@ -40,6 +40,10 @@
     >
       @if (statusMessage(); as message) {
         <p role="status">{{ message }}</p>
+      } @else if (submitAttempted() && passwordForm.invalid) {
+        <p class="text-destructive text-sm" role="alert">
+          Complete all password fields (minimum 8 characters).
+        </p>
       } @else {
         <p class="text-muted-foreground">Minimum 8 characters.</p>
       }

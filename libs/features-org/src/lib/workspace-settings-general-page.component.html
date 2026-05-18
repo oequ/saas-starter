@@ -21,10 +21,7 @@
             [formControl]="generalForm.controls.name"
             autocomplete="organization"
           />
-          @if (
-            generalForm.controls.name.invalid &&
-            generalForm.controls.name.touched
-          ) {
+          @if (submitAttempted() && generalForm.controls.name.invalid) {
             <p class="text-destructive mt-2 text-sm">
               @if (generalForm.controls.name.hasError('maxlength')) {
                 Please use 64 characters at maximum.

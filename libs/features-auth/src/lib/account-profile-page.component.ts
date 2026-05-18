@@ -55,6 +55,7 @@ export class AccountProfilePageComponent {
   });
 
   protected readonly saving = signal(false);
+  protected readonly submitAttempted = signal(false);
   protected readonly statusMessage = signal<string | null>(null);
   protected readonly deleteDialogOpen = signal(false);
   private readonly savedDisplayName = signal<string | null>(null);
@@ -73,10 +74,7 @@ export class AccountProfilePageComponent {
     const saved = this.savedDisplayName();
     const name = this.profileForm.controls.displayName.value.trim();
     return (
-      saved !== null &&
-      name !== saved.trim() &&
-      this.profileForm.controls.displayName.valid &&
-      !this.saving()
+      saved !== null && name !== saved.trim() && !this.saving()
     );
   });
 
@@ -108,13 +106,18 @@ export class AccountProfilePageComponent {
       this.profileForm.patchValue({ displayName }, { emitEvent: false });
       this.profileForm.markAsPristine();
       this.statusMessage.set(null);
+      this.submitAttempted.set(false);
       this.displayNameStateVersion.update((v) => v + 1);
     });
   }
 
   protected async saveProfile(): Promise<void> {
+    this.submitAttempted.set(true);
     if (!this.canSaveProfile()) {
-      this.profileForm.markAllAsTouched();
+      return;
+    }
+
+    if (this.profileForm.invalid) {
       return;
     }
 

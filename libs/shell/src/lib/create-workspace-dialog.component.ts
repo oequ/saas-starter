@@ -61,10 +61,7 @@ import {
                 formControlName="name"
                 autocomplete="organization"
               />
-              @if (
-                form.controls.name.invalid &&
-                form.controls.name.touched
-              ) {
+              @if (submitAttempted() && form.controls.name.invalid) {
                 <p class="text-destructive mt-1.5 text-sm">
                   Enter between 2 and 64 characters.
                 </p>
@@ -82,7 +79,7 @@ import {
               <button
                 hlmBtn
                 type="submit"
-                [disabled]="form.invalid || creating()"
+                [disabled]="creating()"
               >
                 {{ creating() ? 'Creating…' : 'Create workspace' }}
               </button>
@@ -106,6 +103,7 @@ export class CreateWorkspaceDialogComponent {
   );
 
   protected readonly creating = signal(false);
+  protected readonly submitAttempted = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly form = new FormGroup({
@@ -120,7 +118,7 @@ export class CreateWorkspaceDialogComponent {
   });
 
   protected async submit(): Promise<void> {
-    this.form.markAllAsTouched();
+    this.submitAttempted.set(true);
     if (this.form.invalid) {
       return;
     }
@@ -167,6 +165,7 @@ export class CreateWorkspaceDialogComponent {
   }
 
   private resetForm(): void {
+    this.submitAttempted.set(false);
     this.errorMessage.set(null);
     this.form.reset();
   }

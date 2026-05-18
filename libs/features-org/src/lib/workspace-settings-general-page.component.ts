@@ -57,6 +57,7 @@ export class WorkspaceSettingsGeneralPageComponent {
   });
 
   protected readonly saving = signal(false);
+  protected readonly submitAttempted = signal(false);
   protected readonly statusMessage = signal<string | null>(null);
   private readonly savedName = signal<string | null>(null);
   /** Bumps when the name control is patched without emitting valueChanges. */
@@ -67,10 +68,7 @@ export class WorkspaceSettingsGeneralPageComponent {
     const saved = this.savedName();
     const name = this.generalForm.controls.name.value.trim();
     return (
-      saved !== null &&
-      name !== saved.trim() &&
-      this.generalForm.controls.name.valid &&
-      !this.saving()
+      saved !== null && name !== saved.trim() && !this.saving()
     );
   });
 
@@ -102,6 +100,7 @@ export class WorkspaceSettingsGeneralPageComponent {
         this.generalForm.patchValue({ name: org.name }, { emitEvent: false });
         this.generalForm.markAsPristine();
         this.statusMessage.set(null);
+        this.submitAttempted.set(false);
         this.logoPreviewUrl.set(null);
         this.logoStatusMessage.set(null);
         this.nameStateVersion.update((v) => v + 1);
@@ -204,9 +203,13 @@ export class WorkspaceSettingsGeneralPageComponent {
   }
 
   protected async saveGeneral(): Promise<void> {
+    this.submitAttempted.set(true);
     const org = this.activeOrganization();
     if (!org || !this.canSaveGeneral()) {
-      this.generalForm.markAllAsTouched();
+      return;
+    }
+
+    if (this.generalForm.invalid) {
       return;
     }
 
