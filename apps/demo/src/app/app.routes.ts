@@ -17,6 +17,48 @@ export const appRoutes: Route[] = [
       import('@oequ/features-auth').then((m) => m.LoginPageComponent),
   },
   {
+    path: 'auth/forgot-password',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('@oequ/features-auth').then((m) => m.ForgotPasswordPageComponent),
+  },
+  {
+    path: 'auth/status',
+    loadComponent: () =>
+      import('@oequ/features-auth').then((m) => m.SystemStatusPageComponent),
+  },
+  {
+    path: 'auth',
+    loadComponent: () =>
+      import('@oequ/features-auth').then((m) => m.AuthLegalLayoutComponent),
+    children: [
+      {
+        path: 'terms',
+        loadComponent: () =>
+          import('@oequ/features-auth').then((m) => m.LegalDocumentPageComponent),
+        data: { legalDocId: 'terms' },
+      },
+      {
+        path: 'privacy',
+        loadComponent: () =>
+          import('@oequ/features-auth').then((m) => m.LegalDocumentPageComponent),
+        data: { legalDocId: 'privacy' },
+      },
+      {
+        path: 'security',
+        loadComponent: () =>
+          import('@oequ/features-auth').then((m) => m.LegalDocumentPageComponent),
+        data: { legalDocId: 'security' },
+      },
+      {
+        path: 'cookies',
+        loadComponent: () =>
+          import('@oequ/features-auth').then((m) => m.LegalDocumentPageComponent),
+        data: { legalDocId: 'cookies' },
+      },
+    ],
+  },
+  {
     path: '',
     component: ShellLayoutComponent,
     canActivate: [authGuard],

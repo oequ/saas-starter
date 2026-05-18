@@ -4,7 +4,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   FormControl,
   FormGroup,
@@ -17,6 +17,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
 
 const DEMO_LOGIN_EMAIL = 'demo@example.com';
+const DEMO_LOGIN_PASSWORD = 'demo';
 
 function safeReturnUrl(raw: string | null): string {
   if (!raw?.startsWith('/') || raw.startsWith('//')) {
@@ -27,7 +28,13 @@ function safeReturnUrl(raw: string | null): string {
 
 @Component({
   selector: 'oequ-login-page',
-  imports: [ReactiveFormsModule, HlmCardImports, HlmButtonImports, HlmInput],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    HlmCardImports,
+    HlmButtonImports,
+    HlmInput,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -41,9 +48,6 @@ function safeReturnUrl(raw: string | null): string {
           <h1 class="mt-2 text-2xl font-semibold tracking-tight">
             Welcome back
           </h1>
-          <p class="text-muted-foreground mt-2 text-sm leading-6">
-            Demo: demo@example.com / demo
-          </p>
         </div>
 
         <section hlmCard class="gap-0 overflow-hidden py-0">
@@ -68,12 +72,17 @@ function safeReturnUrl(raw: string | null): string {
                 }
               </div>
               <div>
-                <label
-                  for="login-password"
-                  class="mb-1.5 block text-sm font-medium"
-                >
-                  Password
-                </label>
+                <div class="mb-1.5 flex items-center justify-between gap-2">
+                  <label for="login-password" class="text-sm font-medium">
+                    Password
+                  </label>
+                  <a
+                    routerLink="/auth/forgot-password"
+                    class="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
                 <input
                   id="login-password"
                   hlmInput
@@ -103,6 +112,46 @@ function safeReturnUrl(raw: string | null): string {
             </form>
           </div>
         </section>
+
+        <p
+          class="text-muted-foreground mt-6 text-center text-xs leading-relaxed"
+        >
+          By signing in, you agree to our
+          <a
+            routerLink="/auth/terms"
+            class="text-foreground underline-offset-4 hover:underline"
+            >Terms of Service</a
+          >
+          and
+          <a
+            routerLink="/auth/privacy"
+            class="text-foreground underline-offset-4 hover:underline"
+            >Privacy Policy</a
+          >.
+        </p>
+
+        <nav
+          class="text-muted-foreground mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs"
+          aria-label="Help and legal"
+        >
+          <a
+            routerLink="/auth/security"
+            class="hover:text-foreground underline-offset-4 hover:underline"
+            >Security</a
+          >
+          <span aria-hidden="true" class="text-border">·</span>
+          <a
+            routerLink="/auth/status"
+            class="hover:text-foreground underline-offset-4 hover:underline"
+            >System status</a
+          >
+          <span aria-hidden="true" class="text-border">·</span>
+          <a
+            routerLink="/auth/cookies"
+            class="hover:text-foreground underline-offset-4 hover:underline"
+            >Cookies</a
+          >
+        </nav>
       </div>
     </div>
   `,
@@ -121,7 +170,7 @@ export class LoginPageComponent {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
-    password: new FormControl('', {
+    password: new FormControl(DEMO_LOGIN_PASSWORD, {
       nonNullable: true,
       validators: [Validators.required],
     }),
