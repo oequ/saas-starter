@@ -25,4 +25,3 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 | `demo-billing-invoices.png` | Parcel — `/workspace/settings/billing/invoices` |
 | `demo-billing-payment.png` | Parcel — `/workspace/settings/billing/payment` |
 | `demo-billing-trial.png` | Nova — billing overview (trial banner + Starter plan) |
-| `demo-members-seats.png` | Parcel — `/workspace/settings/members` (seat limit banner) |

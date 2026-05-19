@@ -51,11 +51,9 @@ List page with search, permission filter, empty state, and create/revoke dialogs
 
 ### Members
 
-Same list pattern as API keys: search, role filter, seats hint, invite flow. **Nova** has spare seats; **Parcel** is at capacity.
+Same list pattern as API keys: search, role filter, seats hint, invite flow.
 
-![Members — member list (Nova)](./docs/assets/demo-members.png)
-
-![Members — seat limit reached (Parcel)](./docs/assets/demo-members-seats.png)
+![Members — member list](./docs/assets/demo-members.png)
 
 ### Workspace settings (General)
 

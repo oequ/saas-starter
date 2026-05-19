@@ -104,14 +104,5 @@ test.describe('README screenshots', () => {
       path: path.join(assetsDir, 'demo-members.png'),
       fullPage: false,
     });
-
-    await switchWorkspace(page, PARCEL_WORKSPACE);
-    await page.goto('/workspace/settings/members');
-    await waitForMembersPageLoaded(page);
-    await page.getByText(/Seat limit reached/).waitFor();
-    await page.screenshot({
-      path: path.join(assetsDir, 'demo-members-seats.png'),
-      fullPage: false,
-    });
   });
 });
