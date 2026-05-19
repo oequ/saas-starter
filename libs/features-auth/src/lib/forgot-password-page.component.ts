@@ -14,6 +14,17 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
 
+import {
+  AUTH_CARD_CLASS,
+  AUTH_INPUT_CLASS,
+  AUTH_PAGE_CONTENT_CLASS,
+  AUTH_PAGE_FOOTER_CLASS,
+  AUTH_PAGE_FOOTER_TEXT_CLASS,
+  AUTH_PAGE_HEADING_CLASS,
+  AUTH_PAGE_LEAD_CLASS,
+  AUTH_PAGE_SHELL_CLASS,
+} from './auth-form.tokens';
+
 @Component({
   selector: 'oequ-forgot-password-page',
   imports: [
@@ -25,23 +36,14 @@ import { HlmInput } from '@spartan-ng/helm/input';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div
-      class="bg-muted/30 flex min-h-svh flex-col items-center justify-center px-4 py-12"
-    >
-      <div class="w-full max-w-md">
-        <div class="mb-8 text-center">
-          <p class="text-primary text-sm font-medium tracking-wide uppercase">
-            Account
-          </p>
-          <h1 class="mt-2 text-2xl font-semibold tracking-tight">
-            Reset your password
-          </h1>
-          <p class="text-muted-foreground mt-2 text-sm leading-6">
-            Enter your email and we will send a reset link if an account exists.
-          </p>
-        </div>
+    <div class="${AUTH_PAGE_SHELL_CLASS}">
+      <div class="${AUTH_PAGE_CONTENT_CLASS}">
+        <h1 class="${AUTH_PAGE_HEADING_CLASS}">Reset your password</h1>
+        <p class="${AUTH_PAGE_LEAD_CLASS}">
+          Enter your email and we will send a reset link if an account exists.
+        </p>
 
-        <section hlmCard class="gap-0 overflow-hidden py-0">
+        <section hlmCard class="${AUTH_CARD_CLASS}">
           <div hlmCardContent class="!p-6">
             @if (sent()) {
               <p class="text-sm leading-6" role="status">
@@ -49,15 +51,15 @@ import { HlmInput } from '@spartan-ng/helm/input';
                 <span class="font-medium">{{ submittedEmail() }}</span>, you will
                 receive instructions shortly. In this demo, no email is sent.
               </p>
-              <div class="mt-6 flex justify-end">
-                <a hlmBtn routerLink="/auth/login">Back to sign in</a>
-              </div>
-            } @else {
-              <form
-                class="space-y-4"
-                [formGroup]="form"
-                (ngSubmit)="submit()"
+              <a
+                hlmBtn
+                class="mt-6 h-9 w-full shadow-none"
+                routerLink="/auth/login"
               >
+                Back to sign in
+              </a>
+            } @else {
+              <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
                 <div>
                   <label
                     for="reset-email"
@@ -70,7 +72,8 @@ import { HlmInput } from '@spartan-ng/helm/input';
                     hlmInput
                     type="email"
                     autocomplete="email"
-                    class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+                    placeholder="you@example.com"
+                    [class]="inputClass"
                     formControlName="email"
                   />
                   @if (submitAttempted() && form.controls.email.invalid) {
@@ -79,37 +82,39 @@ import { HlmInput } from '@spartan-ng/helm/input';
                     </p>
                   }
                 </div>
-                <div class="flex justify-between gap-3 pt-2">
-                  <a
-                    hlmBtn
-                    variant="secondary"
-                    type="button"
-                    routerLink="/auth/login"
-                  >
-                    Cancel
-                  </a>
-                  <button hlmBtn type="submit" [disabled]="submitting()">
-                    {{ submitting() ? 'Sending…' : 'Send reset link' }}
-                  </button>
-                </div>
+
+                <button
+                  hlmBtn
+                  type="submit"
+                  class="h-9 w-full shadow-none"
+                  [disabled]="submitting()"
+                >
+                  {{ submitting() ? 'Sending…' : 'Send reset link' }}
+                </button>
               </form>
             }
           </div>
         </section>
 
-        <p class="text-muted-foreground mt-6 text-center text-xs leading-relaxed">
-          <a
-            routerLink="/auth/login"
-            class="hover:text-foreground underline-offset-4 hover:underline"
-          >
-            Back to sign in
-          </a>
-        </p>
+        @if (!sent()) {
+          <div class="${AUTH_PAGE_FOOTER_CLASS}">
+            <p class="${AUTH_PAGE_FOOTER_TEXT_CLASS}">
+              <a
+                routerLink="/auth/login"
+                class="text-foreground underline-offset-4 hover:underline"
+              >
+                Back to sign in
+              </a>
+            </p>
+          </div>
+        }
       </div>
     </div>
   `,
 })
 export class ForgotPasswordPageComponent {
+  protected readonly inputClass = AUTH_INPUT_CLASS;
+
   protected readonly form = new FormGroup({
     email: new FormControl('', {
       nonNullable: true,

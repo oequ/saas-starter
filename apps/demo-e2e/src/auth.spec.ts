@@ -21,10 +21,10 @@ test.describe('auth', () => {
 
     await expect(page).toHaveURL(/\/auth\/login$/);
     await expect(
-      page.getByRole('heading', { name: 'Welcome back' }),
+      page.getByRole('heading', { name: 'Sign in', level: 1 }),
     ).toBeVisible();
 
-    await page.getByLabel('Password').fill('demo');
+    await page.locator('#login-password').fill('demo');
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
@@ -39,7 +39,7 @@ test.describe('auth', () => {
     await page.getByRole('menuitem', { name: 'Sign out' }).click();
     await expect(page).toHaveURL(/\/auth\/login$/);
 
-    await page.getByLabel('Password').fill('wrong');
+    await page.locator('#login-password').fill('wrong');
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(page).toHaveURL(/\/auth\/login$/);
@@ -66,7 +66,7 @@ test.describe('register', () => {
 
     await page.goto('/auth/register');
     await expect(
-      page.getByRole('heading', { name: 'Create your account' }),
+      page.getByRole('heading', { name: 'Sign up', level: 1 }),
     ).toBeVisible();
 
     const email = `new-${Date.now()}@example.com`;

@@ -19,6 +19,17 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmInput } from '@spartan-ng/helm/input';
 
+import { AuthPasswordInputComponent } from './auth-password-input.component';
+import {
+  AUTH_CARD_CLASS,
+  AUTH_INPUT_CLASS,
+  AUTH_PAGE_CONTENT_CLASS,
+  AUTH_PAGE_FOOTER_CLASS,
+  AUTH_PAGE_FOOTER_TEXT_CLASS,
+  AUTH_PAGE_HEADING_CLASS,
+  AUTH_PAGE_SHELL_CLASS,
+} from './auth-form.tokens';
+
 function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
   const confirmPassword = group.get('confirmPassword')?.value;
@@ -37,25 +48,17 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
     HlmButtonImports,
     HlmCheckboxImports,
     HlmInput,
+    AuthPasswordInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div
-      class="bg-muted/30 flex min-h-svh flex-col items-center justify-center px-4 py-12"
-    >
-      <div class="w-full max-w-md">
-        <div class="mb-8 text-center">
-          <p class="text-primary text-sm font-medium tracking-wide uppercase">
-            Sign up
-          </p>
-          <h1 class="mt-2 text-2xl font-semibold tracking-tight">
-            Create your account
-          </h1>
-        </div>
+    <div class="${AUTH_PAGE_SHELL_CLASS}">
+      <div class="${AUTH_PAGE_CONTENT_CLASS}">
+        <h1 class="${AUTH_PAGE_HEADING_CLASS}">Sign up</h1>
 
-        <section hlmCard class="gap-0 overflow-hidden py-0">
+        <section hlmCard class="${AUTH_CARD_CLASS}">
           <div hlmCardContent class="!p-6">
-            <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
+            <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
               <div>
                 <label
                   for="register-email"
@@ -68,7 +71,8 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                   hlmInput
                   type="email"
                   autocomplete="email"
-                  class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+                  placeholder="you@example.com"
+                  [class]="inputClass"
                   formControlName="email"
                 />
                 @if (submitAttempted() && form.controls.email.invalid) {
@@ -85,13 +89,10 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                 >
                   Password
                 </label>
-                <input
-                  id="register-password"
-                  hlmInput
-                  type="password"
+                <oequ-auth-password-input
+                  inputId="register-password"
+                  [control]="form.controls.password"
                   autocomplete="new-password"
-                  class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
-                  formControlName="password"
                 />
                 @if (submitAttempted() && form.controls.password.invalid) {
                   <p class="text-destructive mt-1.5 text-sm">
@@ -107,13 +108,10 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                 >
                   Confirm password
                 </label>
-                <input
-                  id="register-confirm-password"
-                  hlmInput
-                  type="password"
+                <oequ-auth-password-input
+                  inputId="register-confirm-password"
+                  [control]="form.controls.confirmPassword"
                   autocomplete="new-password"
-                  class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
-                  formControlName="confirmPassword"
                 />
                 @if (
                   submitAttempted() &&
@@ -126,7 +124,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                 }
               </div>
 
-              <div class="space-y-3 pt-1">
+              <div class="space-y-3">
                 <div class="flex items-start gap-3">
                   <hlm-checkbox
                     id="register-accept-terms"
@@ -180,23 +178,28 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
                 <p class="text-destructive text-sm" role="alert">{{ message }}</p>
               }
 
-              <div class="flex justify-end pt-2">
-                <button hlmBtn type="submit" [disabled]="signingUp()">
-                  {{ signingUp() ? 'Creating account…' : 'Create account' }}
-                </button>
-              </div>
+              <button
+                hlmBtn
+                type="submit"
+                class="h-9 w-full shadow-none"
+                [disabled]="signingUp()"
+              >
+                {{ signingUp() ? 'Creating account…' : 'Create account' }}
+              </button>
             </form>
           </div>
         </section>
 
-        <p class="text-muted-foreground mt-6 text-center text-sm">
-          Already have an account?
-          <a
-            routerLink="/auth/login"
-            class="text-foreground ml-1 underline-offset-4 hover:underline"
-            >Sign in</a
-          >
-        </p>
+        <div class="${AUTH_PAGE_FOOTER_CLASS}">
+          <p class="${AUTH_PAGE_FOOTER_TEXT_CLASS}">
+            Already have an account?
+            <a
+              routerLink="/auth/login"
+              class="text-foreground ms-1 underline-offset-4 hover:underline"
+              >Sign in</a
+            >
+          </p>
+        </div>
       </div>
     </div>
   `,
@@ -205,6 +208,7 @@ export class RegisterPageComponent {
   private readonly authPort = inject(AUTH_PORT);
   private readonly router = inject(Router);
 
+  protected readonly inputClass = AUTH_INPUT_CLASS;
   protected readonly signingUp = signal(false);
   protected readonly submitAttempted = signal(false);
   protected readonly errorMessage = signal<string | null>(null);

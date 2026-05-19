@@ -16,6 +16,18 @@ import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
 
+import { AuthPasswordInputComponent } from './auth-password-input.component';
+import {
+  AUTH_CARD_CLASS,
+  AUTH_INPUT_CLASS,
+  AUTH_PAGE_CONTENT_CLASS,
+  AUTH_PAGE_FOOTER_CLASS,
+  AUTH_PAGE_FOOTER_TEXT_CLASS,
+  AUTH_PAGE_HEADING_CLASS,
+  AUTH_PAGE_LEGAL_CLASS,
+  AUTH_PAGE_SHELL_CLASS,
+} from './auth-form.tokens';
+
 const DEMO_LOGIN_EMAIL = 'demo@example.com';
 const DEMO_LOGIN_PASSWORD = 'demo';
 
@@ -34,25 +46,17 @@ function safeReturnUrl(raw: string | null): string {
     HlmCardImports,
     HlmButtonImports,
     HlmInput,
+    AuthPasswordInputComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div
-      class="bg-muted/30 flex min-h-svh flex-col items-center justify-center px-4 py-12"
-    >
-      <div class="w-full max-w-md">
-        <div class="mb-8 text-center">
-          <p class="text-primary text-sm font-medium tracking-wide uppercase">
-            Sign in
-          </p>
-          <h1 class="mt-2 text-2xl font-semibold tracking-tight">
-            Welcome back
-          </h1>
-        </div>
+    <div class="${AUTH_PAGE_SHELL_CLASS}">
+      <div class="${AUTH_PAGE_CONTENT_CLASS}">
+        <h1 class="${AUTH_PAGE_HEADING_CLASS}">Sign in</h1>
 
-        <section hlmCard class="gap-0 overflow-hidden py-0">
+        <section hlmCard class="${AUTH_CARD_CLASS}">
           <div hlmCardContent class="!p-6">
-            <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
+            <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
               <div>
                 <label for="login-email" class="mb-1.5 block text-sm font-medium">
                   Email
@@ -62,7 +66,8 @@ function safeReturnUrl(raw: string | null): string {
                   hlmInput
                   type="email"
                   autocomplete="email"
-                  class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
+                  placeholder="you@example.com"
+                  [class]="inputClass"
                   formControlName="email"
                 />
                 @if (submitAttempted() && form.controls.email.invalid) {
@@ -71,6 +76,7 @@ function safeReturnUrl(raw: string | null): string {
                   </p>
                 }
               </div>
+
               <div>
                 <div class="mb-1.5 flex items-center justify-between gap-2">
                   <label for="login-password" class="text-sm font-medium">
@@ -78,18 +84,15 @@ function safeReturnUrl(raw: string | null): string {
                   </label>
                   <a
                     routerLink="/auth/forgot-password"
-                    class="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline"
+                    class="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
                   >
                     Forgot password?
                   </a>
                 </div>
-                <input
-                  id="login-password"
-                  hlmInput
-                  type="password"
+                <oequ-auth-password-input
+                  inputId="login-password"
+                  [control]="form.controls.password"
                   autocomplete="current-password"
-                  class="border-input bg-background h-9 w-full rounded-[5px] shadow-none"
-                  formControlName="password"
                 />
                 @if (submitAttempted() && form.controls.password.invalid) {
                   <p class="text-destructive mt-1.5 text-sm">
@@ -97,47 +100,47 @@ function safeReturnUrl(raw: string | null): string {
                   </p>
                 }
               </div>
+
               @if (errorMessage(); as message) {
                 <p class="text-destructive text-sm" role="alert">{{ message }}</p>
               }
-              <div class="flex justify-end pt-2">
-                <button
-                  hlmBtn
-                  type="submit"
-                  [disabled]="signingIn()"
-                >
-                  {{ signingIn() ? 'Signing in…' : 'Sign in' }}
-                </button>
-              </div>
+
+              <button
+                hlmBtn
+                type="submit"
+                class="h-9 w-full shadow-none"
+                [disabled]="signingIn()"
+              >
+                {{ signingIn() ? 'Signing in…' : 'Sign in' }}
+              </button>
             </form>
           </div>
         </section>
 
-        <p class="text-muted-foreground mt-6 text-center text-sm">
-          Don&apos;t have an account?
-          <a
-            routerLink="/auth/register"
-            class="text-foreground ml-1 underline-offset-4 hover:underline"
-            >Create account</a
-          >
-        </p>
-
-        <p
-          class="text-muted-foreground mt-6 text-center text-xs leading-relaxed"
-        >
-          By signing in, you agree to our
-          <a
-            routerLink="/auth/terms"
-            class="text-foreground underline-offset-4 hover:underline"
-            >Terms of Service</a
-          >
-          and
-          <a
-            routerLink="/auth/privacy"
-            class="text-foreground underline-offset-4 hover:underline"
-            >Privacy Policy</a
-          >.
-        </p>
+        <div class="${AUTH_PAGE_FOOTER_CLASS}">
+          <p class="${AUTH_PAGE_FOOTER_TEXT_CLASS}">
+            Don&apos;t have an account?
+            <a
+              routerLink="/auth/register"
+              class="text-foreground ms-1 underline-offset-4 hover:underline"
+              >Sign up</a
+            >
+          </p>
+          <p class="${AUTH_PAGE_LEGAL_CLASS}">
+            By continuing, you agree to our
+            <a
+              routerLink="/auth/terms"
+              class="text-foreground underline-offset-4 hover:underline"
+              >Terms of Service</a
+            >
+            and
+            <a
+              routerLink="/auth/privacy"
+              class="text-foreground underline-offset-4 hover:underline"
+              >Privacy Policy</a
+            >.
+          </p>
+        </div>
       </div>
     </div>
   `,
@@ -147,6 +150,7 @@ export class LoginPageComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
+  protected readonly inputClass = AUTH_INPUT_CLASS;
   protected readonly signingIn = signal(false);
   protected readonly submitAttempted = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
