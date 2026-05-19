@@ -23,6 +23,36 @@ import {
 import { MockOrgAdapter } from './mock-org.adapter';
 
 const DEMO_SIGNED_IN_STORAGE_KEY = 'oequ-demo-signed-in';
+const DEMO_USER_DISPLAY_NAME_KEY = 'oequ-demo-user-display-name';
+
+function readStoredDisplayName(): string | null {
+  if (typeof sessionStorage === 'undefined') {
+    return null;
+  }
+  return sessionStorage.getItem(DEMO_USER_DISPLAY_NAME_KEY);
+}
+
+function writeStoredDisplayName(displayName: string | null): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  if (!displayName) {
+    sessionStorage.removeItem(DEMO_USER_DISPLAY_NAME_KEY);
+    return;
+  }
+  sessionStorage.setItem(DEMO_USER_DISPLAY_NAME_KEY, displayName);
+}
+
+function sessionWithStoredProfile(base: AuthSession): AuthSession {
+  const storedName = readStoredDisplayName();
+  if (!storedName) {
+    return base;
+  }
+  return {
+    ...base,
+    user: { ...base.user, displayName: storedName },
+  };
+}
 
 function readSignedInFlag(): boolean {
   if (typeof sessionStorage === 'undefined') {
@@ -43,7 +73,9 @@ function setSignedInFlag(signedIn: boolean): void {
 }
 
 function initialSession(): AuthSession | null {
-  return readSignedInFlag() ? MOCK_AUTH_SESSION : null;
+  return readSignedInFlag()
+    ? sessionWithStoredProfile(MOCK_AUTH_SESSION)
+    : null;
 }
 
 @Injectable()
@@ -60,6 +92,7 @@ export class MockAuthAdapter implements AuthPort {
 
   resetMockState(): void {
     setSignedInFlag(true);
+    writeStoredDisplayName(null);
     this.sessions = [...MOCK_SESSION_DEVICES];
     this.sessionSubject.next(MOCK_AUTH_SESSION);
   }
@@ -86,8 +119,9 @@ export class MockAuthAdapter implements AuthPort {
     }
 
     setSignedInFlag(true);
-    this.sessionSubject.next(MOCK_AUTH_SESSION);
-    return portOk(MOCK_AUTH_SESSION);
+    const session = sessionWithStoredProfile(MOCK_AUTH_SESSION);
+    this.sessionSubject.next(session);
+    return portOk(session);
   }
 
   async signUpWithPassword(
@@ -162,6 +196,7 @@ export class MockAuthAdapter implements AuthPort {
       displayName: input.displayName.trim(),
     };
 
+    writeStoredDisplayName(user.displayName);
     this.sessionSubject.next({
       user,
       claims: current.claims,

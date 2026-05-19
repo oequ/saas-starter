@@ -16,6 +16,7 @@ import {
 } from '@angular/forms';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
 import { AUTH_PORT } from '@oequ/ports';
+import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -59,6 +60,8 @@ export class AccountProfilePageComponent {
   protected readonly statusMessage = signal<string | null>(null);
   protected readonly deleteDialogOpen = signal(false);
   private readonly savedDisplayName = signal<string | null>(null);
+  /** Last user id synced into the form — avoid reset on profile updates after save. */
+  private readonly syncedUserId = signal<string | null>(null);
   /** Bumps when display name is patched without emitting valueChanges. */
   private readonly displayNameStateVersion = signal(0);
 
@@ -99,19 +102,36 @@ export class AccountProfilePageComponent {
     effect(() => {
       const user = this.session()?.user;
       if (!user) {
+        this.syncedUserId.set(null);
         return;
       }
+
+      const isUserSwitch = this.syncedUserId() !== user.id;
+      this.syncedUserId.set(user.id);
+
       const displayName = user.displayName?.trim() || user.email;
       this.savedDisplayName.set(displayName);
-      this.profileForm.patchValue({ displayName }, { emitEvent: false });
-      this.profileForm.markAsPristine();
-      this.statusMessage.set(null);
-      this.submitAttempted.set(false);
-      this.displayNameStateVersion.update((v) => v + 1);
+
+      if (isUserSwitch) {
+        this.profileForm.patchValue({ displayName }, { emitEvent: false });
+        this.profileForm.markAsPristine();
+        this.statusMessage.set(null);
+        this.submitAttempted.set(false);
+        this.displayNameStateVersion.update((v) => v + 1);
+      }
     });
   }
 
-  protected async saveProfile(): Promise<void> {
+  protected saveProfile(event: Event): void {
+    event.preventDefault();
+    void this.persistProfile();
+  }
+
+  protected onSaveClick(): void {
+    void this.persistProfile();
+  }
+
+  private async persistProfile(): Promise<void> {
     this.submitAttempted.set(true);
     if (!this.canSaveProfile()) {
       return;
@@ -122,7 +142,6 @@ export class AccountProfilePageComponent {
     }
 
     this.saving.set(true);
-    this.statusMessage.set(null);
 
     const displayName = this.profileForm.getRawValue().displayName.trim();
 
@@ -134,12 +153,12 @@ export class AccountProfilePageComponent {
         this.profileForm.patchValue({ displayName }, { emitEvent: false });
         this.profileForm.markAsPristine();
         this.displayNameStateVersion.update((v) => v + 1);
-        this.statusMessage.set('Saved.');
+        toast.success('Profile updated.');
       } else {
-        this.statusMessage.set(result.error.message);
+        toast.error(result.error.message);
       }
     } catch {
-      this.statusMessage.set('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       this.saving.set(false);
     }

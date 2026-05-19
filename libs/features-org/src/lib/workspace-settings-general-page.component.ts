@@ -16,6 +16,7 @@ import {
 } from '@angular/forms';
 import { ORG_PORT } from '@oequ/ports';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
+import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -58,8 +59,9 @@ export class WorkspaceSettingsGeneralPageComponent {
 
   protected readonly saving = signal(false);
   protected readonly submitAttempted = signal(false);
-  protected readonly statusMessage = signal<string | null>(null);
   private readonly savedName = signal<string | null>(null);
+  /** Last org id synced into the form — avoid reset on same-org updates after save. */
+  private readonly syncedOrgId = signal<string | null>(null);
   /** Bumps when the name control is patched without emitting valueChanges. */
   private readonly nameStateVersion = signal(0);
 
@@ -95,11 +97,18 @@ export class WorkspaceSettingsGeneralPageComponent {
 
     effect(() => {
       const org = this.activeOrganization();
-      if (org) {
-        this.savedName.set(org.name);
+      if (!org) {
+        this.syncedOrgId.set(null);
+        return;
+      }
+
+      const isOrgSwitch = this.syncedOrgId() !== org.id;
+      this.syncedOrgId.set(org.id);
+      this.savedName.set(org.name);
+
+      if (isOrgSwitch) {
         this.generalForm.patchValue({ name: org.name }, { emitEvent: false });
         this.generalForm.markAsPristine();
-        this.statusMessage.set(null);
         this.submitAttempted.set(false);
         this.logoPreviewUrl.set(null);
         this.logoStatusMessage.set(null);
@@ -157,14 +166,17 @@ export class WorkspaceSettingsGeneralPageComponent {
 
       if (result.ok) {
         this.logoPreviewUrl.set(null);
-        this.logoStatusMessage.set('Logo updated.');
+        this.logoStatusMessage.set(null);
+        toast.success('Workspace logo updated.');
       } else {
         this.logoPreviewUrl.set(null);
-        this.logoStatusMessage.set(result.error.message);
+        this.logoStatusMessage.set(null);
+        toast.error(result.error.message);
       }
     } catch {
       this.logoPreviewUrl.set(null);
-      this.logoStatusMessage.set('Something went wrong. Please try again.');
+      this.logoStatusMessage.set(null);
+      toast.error('Something went wrong. Please try again.');
     } finally {
       this.logoUploading.set(false);
     }
@@ -190,7 +202,7 @@ export class WorkspaceSettingsGeneralPageComponent {
     this.deleteDialogOpen.set(false);
 
     if (!result.ok) {
-      this.statusMessage.set(result.error.message);
+      toast.error(result.error.message);
       return;
     }
 
@@ -202,7 +214,16 @@ export class WorkspaceSettingsGeneralPageComponent {
     }
   }
 
-  protected async saveGeneral(): Promise<void> {
+  protected saveGeneral(event: Event): void {
+    event.preventDefault();
+    void this.persistGeneral();
+  }
+
+  protected onSaveClick(): void {
+    void this.persistGeneral();
+  }
+
+  private async persistGeneral(): Promise<void> {
     this.submitAttempted.set(true);
     const org = this.activeOrganization();
     if (!org || !this.canSaveGeneral()) {
@@ -214,7 +235,6 @@ export class WorkspaceSettingsGeneralPageComponent {
     }
 
     this.saving.set(true);
-    this.statusMessage.set(null);
 
     const name = this.generalForm.getRawValue().name.trim();
 
@@ -226,12 +246,12 @@ export class WorkspaceSettingsGeneralPageComponent {
         this.generalForm.patchValue({ name }, { emitEvent: false });
         this.generalForm.markAsPristine();
         this.nameStateVersion.update((v) => v + 1);
-        this.statusMessage.set('Saved.');
+        toast.success('Workspace name updated.');
       } else {
-        this.statusMessage.set(result.error.message);
+        toast.error(result.error.message);
       }
     } catch {
-      this.statusMessage.set('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.');
     } finally {
       this.saving.set(false);
     }

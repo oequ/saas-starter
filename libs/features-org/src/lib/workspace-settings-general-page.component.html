@@ -1,7 +1,11 @@
 <div class="space-y-8">
   <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
-      <form id="org-general-form" (ngSubmit)="saveGeneral()">
+      <form
+        id="org-general-form"
+        [formGroup]="generalForm"
+        (ngSubmit)="saveGeneral($event)"
+      >
         <h2
           id="org-name-title"
           class="text-xl leading-8 font-semibold tracking-tight"
@@ -38,16 +42,12 @@
       hlmCardFooter
       class="border-border text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
     >
-      @if (statusMessage(); as message) {
-        <p role="status">{{ message }}</p>
-      } @else {
-        <p class="text-muted-foreground">Please use 64 characters at maximum.</p>
-      }
+      <p class="text-muted-foreground">Please use 64 characters at maximum.</p>
       <button
         hlmBtn
-        type="submit"
-        form="org-general-form"
+        type="button"
         [disabled]="!canSaveGeneral()"
+        (click)="onSaveClick()"
       >
         {{ saving() ? 'Saving…' : 'Save' }}
       </button>

@@ -1,7 +1,11 @@
 <div class="space-y-8">
   <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
-      <form id="account-profile-form" (ngSubmit)="saveProfile()">
+      <form
+        id="account-profile-form"
+        [formGroup]="profileForm"
+        (ngSubmit)="saveProfile($event)"
+      >
         <h2 class="text-xl leading-8 font-semibold tracking-tight">
           Public profile
         </h2>
@@ -60,9 +64,9 @@
       }
       <button
         hlmBtn
-        type="submit"
-        form="account-profile-form"
+        type="button"
         [disabled]="!canSaveProfile()"
+        (click)="onSaveClick()"
       >
         {{ saving() ? 'Saving…' : 'Save changes' }}
       </button>

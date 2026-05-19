@@ -211,6 +211,11 @@ export class MockOrgAdapter implements OrgPort {
     });
   }
 
+  private async sessionUser() {
+    const user = await this.authAdapter.getVerifiedUser();
+    return user.ok && user.data ? user.data : MOCK_AUTH_SESSION.user;
+  }
+
   private async syncPersonalClaims(): Promise<void> {
     const session = await this.authAdapter.getClaims();
     if (!session.ok || !session.data) {
@@ -218,7 +223,7 @@ export class MockOrgAdapter implements OrgPort {
     }
     const active = this.activeOrganizationSubject.value;
     this.authAdapter.setSession({
-      user: MOCK_AUTH_SESSION.user,
+      user: await this.sessionUser(),
       claims: {
         ...session.data,
         org: active
@@ -411,6 +416,7 @@ export class MockOrgAdapter implements OrgPort {
       this.activeOrganizationSubject.next(updated);
     }
 
+    this.persistDemoSession();
     return portOk(updated);
   }
 
@@ -497,7 +503,7 @@ export class MockOrgAdapter implements OrgPort {
     const session = await this.authAdapter.getClaims();
     if (session.ok && session.data) {
       this.authAdapter.setSession({
-        user: MOCK_AUTH_SESSION.user,
+        user: await this.sessionUser(),
         claims: {
           ...session.data,
           org: nextActive
@@ -521,7 +527,7 @@ export class MockOrgAdapter implements OrgPort {
     const session = await this.authAdapter.getClaims();
     if (session.ok && session.data) {
       this.authAdapter.setSession({
-        user: MOCK_AUTH_SESSION.user,
+        user: await this.sessionUser(),
         claims: {
           ...session.data,
           org: { organizationId: result.data.id, role: 'owner' },
@@ -539,7 +545,7 @@ export class MockOrgAdapter implements OrgPort {
     const session = await this.authAdapter.getClaims();
     if (session.ok && session.data) {
       this.authAdapter.setSession({
-        user: MOCK_AUTH_SESSION.user,
+        user: await this.sessionUser(),
         claims: {
           ...session.data,
           org: null,
@@ -547,6 +553,7 @@ export class MockOrgAdapter implements OrgPort {
       });
     }
 
+    this.persistDemoSession();
     return portOk(undefined);
   }
 
