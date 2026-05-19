@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { workspaceRoot } from '@nx/devkit';
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import {
-  PARCEL_WORKSPACE,
   NOVA_WORKSPACE,
+  PARCEL_WORKSPACE,
   resetMockDemoState,
   switchWorkspace,
   waitForBillingLoaded,
@@ -19,13 +19,46 @@ test.describe('README screenshots', () => {
     'Set UPDATE_SCREENSHOTS=1 to regenerate docs/assets/*.png',
   );
 
-  test('capture billing and members previews', async ({ page }) => {
-    test.setTimeout(120_000);
+  test('capture workspace previews', async ({ page }) => {
+    test.setTimeout(180_000);
 
     await page.setViewportSize({ width: 1280, height: 800 });
     fs.mkdirSync(assetsDir, { recursive: true });
     await resetMockDemoState(page);
     await switchWorkspace(page, PARCEL_WORKSPACE);
+
+    await page.goto('/onboarding');
+    await expect(
+      page.getByRole('heading', { name: 'Send your first email' }),
+    ).toBeVisible();
+    await page.screenshot({
+      path: path.join(assetsDir, 'demo-onboarding.png'),
+      fullPage: false,
+    });
+
+    await page.goto('/workspace/metrics');
+    await expect(page.getByRole('heading', { name: 'Metrics' })).toBeVisible();
+    await expect(page.getByText('Emails sent', { exact: true })).toBeVisible();
+    await page.locator('canvas').first().waitFor();
+    await page.screenshot({
+      path: path.join(assetsDir, 'demo-metrics.png'),
+      fullPage: false,
+    });
+
+    await page.goto('/workspace/api-keys');
+    await expect(page.getByRole('heading', { name: 'API keys' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'No API keys yet' }),
+    ).toBeVisible();
+    await page.screenshot({
+      path: path.join(assetsDir, 'demo-api-keys.png'),
+      fullPage: false,
+    });
+
+    await page.goto('/workspace/settings/general');
+    await expect(
+      page.getByRole('heading', { name: 'Workspace name' }),
+    ).toBeVisible();
     await page.screenshot({
       path: path.join(assetsDir, 'demo-settings.png'),
       fullPage: false,
@@ -45,6 +78,15 @@ test.describe('README screenshots', () => {
       fullPage: false,
     });
 
+    await page.goto('/workspace/settings/billing/payment');
+    await expect(
+      page.getByRole('heading', { name: 'Payment method' }),
+    ).toBeVisible();
+    await page.screenshot({
+      path: path.join(assetsDir, 'demo-billing-payment.png'),
+      fullPage: false,
+    });
+
     await switchWorkspace(page, NOVA_WORKSPACE);
     await page.goto('/workspace/settings/billing/overview');
     await waitForBillingLoaded(page);
@@ -56,7 +98,15 @@ test.describe('README screenshots', () => {
     });
 
     await page.goto('/workspace/settings/members');
+    await waitForMembersPageLoaded(page);
+    await expect(page.getByText('2 / 10 used')).toBeVisible();
+    await page.screenshot({
+      path: path.join(assetsDir, 'demo-members.png'),
+      fullPage: false,
+    });
+
     await switchWorkspace(page, PARCEL_WORKSPACE);
+    await page.goto('/workspace/settings/members');
     await waitForMembersPageLoaded(page);
     await page.getByText(/Seat limit reached/).waitFor();
     await page.screenshot({

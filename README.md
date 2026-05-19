@@ -4,13 +4,13 @@ Angular B2B SaaS shell — layout, org settings, auth UI. **You bring the API.**
 
 Standalone UI monorepo (Spartan + Tailwind v4). Implement `@oequ/ports` against your API. For Supabase, RLS, and tenant isolation at the database layer, see the full-stack starter: [oequ/saas-starter](https://github.com/oequ/saas-starter).
 
-**Current UI release:** `v0.3.0-ui` — workspace activation onboarding, billing (mock), seat limits, shell trial banner.
+**Current UI release:** `v0.4.0-ui` — workspace metrics, API keys, list-style members, outline settings cards, activation onboarding.
 
 ## Stack
 
 - Angular 21 · Nx 22
 - [Spartan UI](https://spartan.ng) (`@spartan-ng/brain`, helm in `libs/ui`)
-- Tailwind CSS v4
+- Tailwind CSS v4 · Chart.js (metrics demo)
 
 ## Quick start
 
@@ -29,17 +29,41 @@ After enabling **Pages → Source: GitHub Actions** in the repo settings:
 
 ## Preview
 
+Screenshots live in [`docs/assets/`](./docs/assets/). Regenerate with `UPDATE_SCREENSHOTS=1 npm run screenshots` or drop in your own PNGs (see [docs/assets/README.md](./docs/assets/README.md)).
+
 ### Workspace activation (onboarding)
 
 Pluggable activation checklist after workspace creation (demo: send first email). `/workspace` redirects here while activation is pending; settings deep links still work.
 
 ![Workspace activation — onboarding](./docs/assets/demo-onboarding.png)
 
+### Metrics
+
+Email delivery dashboard: KPI row, period filter, Chart.js charts (mock `MetricsPort`).
+
+![Metrics — delivery dashboard](./docs/assets/demo-metrics.png)
+
+### API keys
+
+List page with search, permission filter, empty state, and create/revoke dialogs (mock `ApiKeysPort`).
+
+![API keys — empty state (Parcel)](./docs/assets/demo-api-keys.png)
+
+### Members
+
+Same list pattern as API keys: search, role filter, seats hint, invite flow. **Nova** has spare seats; **Parcel** is at capacity.
+
+![Members — member list (Nova)](./docs/assets/demo-members.png)
+
+![Members — seat limit reached (Parcel)](./docs/assets/demo-members-seats.png)
+
 ### Workspace settings (General)
+
+Outline card sections (Resend-style border, no fill) for form settings.
 
 ![Workspace settings — General](./docs/assets/demo-settings.png)
 
-### Billing (Overview, invoices, trial)
+### Billing (Overview, invoices, payment, trial)
 
 Collapsible **Billing** in the workspace sidebar: Overview · Invoices · Payment method. Mock orgs:
 
@@ -52,20 +76,18 @@ Collapsible **Billing** in the workspace sidebar: Overview · Invoices · Paymen
 
 ![Billing — invoices](./docs/assets/demo-billing-invoices.png)
 
+![Billing — payment method](./docs/assets/demo-billing-payment.png)
+
 ![Billing — trial workspace (Nova)](./docs/assets/demo-billing-trial.png)
-
-### Members — seat limit (Parcel)
-
-![Members — seat limit reached](./docs/assets/demo-members-seats.png)
 
 ## Monorepo layout
 
 ```text
 apps/demo              # Runnable demo (mock adapters)
-apps/demo-e2e          # Playwright E2E
-libs/ports             # AuthPort, OrgPort, BillingPort — interfaces only
+apps/demo-e2e          # Playwright E2E + README screenshots
+libs/ports             # AuthPort, OrgPort, BillingPort, ApiKeysPort, MetricsPort
 libs/shell             # App layout (sidebar, header, billing banner)
-libs/features-org      # Workspace settings (general, members, billing)
+libs/features-org      # Workspace pages (metrics, api-keys, settings, onboarding)
 libs/ui                # Spartan helm components (@spartan-ng/helm/*)
 libs/adapters-mock     # Mock port implementations for demo
 ```
@@ -97,7 +119,7 @@ This project follows the open **[Quality Framework](https://github.com/oequ/qual
 |---------|-------------|
 | `npx nx serve demo` | Dev server |
 | `npx nx build demo` | Production build |
-| `npm run e2e` | Playwright E2E (billing + shell smoke) |
+| `npm run e2e` | Playwright E2E |
 | `UPDATE_SCREENSHOTS=1 npm run screenshots` | Regenerate `docs/assets/*.png` for README |
 | `npx nx run-many -t lint --all` | Lint all projects |
 | `npx nx run-many -t test --all` | Unit tests |

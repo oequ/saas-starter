@@ -20,7 +20,7 @@ function delay(ms: number): Promise<void> {
 @Injectable()
 export class MockMetricsAdapter implements MetricsPort {
   async getMetrics(
-    _organizationId: OrganizationId,
+    organizationId: OrganizationId,
     filters: MetricsFilters,
     abortSignal?: AbortSignal,
   ): Promise<PortResult<MetricsDashboard>> {
@@ -28,7 +28,7 @@ export class MockMetricsAdapter implements MetricsPort {
     if (abortSignal?.aborted) {
       throw new DOMException('Aborted', 'AbortError');
     }
-    return portOk(buildMockMetricsDashboard(filters));
+    return portOk(buildMockMetricsDashboard(organizationId, filters));
   }
 }
 
