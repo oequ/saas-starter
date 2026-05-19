@@ -78,13 +78,25 @@ Collapsible **Billing** in the workspace sidebar: Overview · Invoices · Paymen
 
 ![Billing — trial workspace (Nova)](./docs/assets/demo-billing-trial.png)
 
+### Paywall (plan picker)
+
+Wide upgrade modal (**Free · Pro · Team**) opened from **Upgrade plan** on Billing overview. Mock checkout simulates payment — no Stripe in the UI repo.
+
+![Paywall — change subscription plan](./docs/assets/demo-paywall.png)
+
+### Help panel
+
+Context-aware help sheet in the shell header (**Need help?** or `?`). Route-specific topics, browse section, system status, and contact support form.
+
+![Help panel — contextual topics](./docs/assets/demo-help-panel.png)
+
 ## Monorepo layout
 
 ```text
 apps/demo              # Runnable demo (mock adapters)
 apps/demo-e2e          # Playwright E2E + README screenshots
 libs/ports             # AuthPort, OrgPort, BillingPort, ApiKeysPort, MetricsPort
-libs/shell             # App layout (sidebar, header, billing banner)
+libs/shell             # App layout (sidebar, header, billing banner, help panel, paywall)
 libs/features-org      # Workspace pages (metrics, api-keys, settings, onboarding)
 libs/ui                # Spartan helm components (@spartan-ng/helm/*)
 libs/adapters-mock     # Mock port implementations for demo

@@ -21,6 +21,9 @@ export const SETTINGS_FORM_FIELD_CLASS = 'max-w-[300px]';
 /** Form / confirm dialogs — slightly narrower than default `sm:max-w-lg`. */
 export const SETTINGS_DIALOG_CONTENT_CLASS = 'sm:!max-w-[380px]';
 
+/** Plan picker paywall — wide enough for three pricing columns. */
+export const PAYWALL_DIALOG_CONTENT_CLASS = 'sm:!max-w-5xl';
+
 /** Full-width fields inside dialogs (overrides {@link SETTINGS_FORM_FIELD_CLASS}). */
 export const SETTINGS_DIALOG_FIELD_CLASS = 'w-full min-w-0';
 

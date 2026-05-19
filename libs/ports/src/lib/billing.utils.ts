@@ -1,5 +1,39 @@
 import type { BillingSummary, SubscriptionStatus } from './models/billing.model';
 
+export type CommercialPlanId = 'free' | 'pro' | 'team';
+
+export const COMMERCIAL_PLAN_IDS: readonly CommercialPlanId[] = [
+  'free',
+  'pro',
+  'team',
+];
+
+const LEGACY_PLAN_ID_MAP: Readonly<Record<string, CommercialPlanId>> = {
+  starter: 'pro',
+  professional: 'team',
+};
+
+export function resolveCurrentPlanId(summary: BillingSummary): CommercialPlanId {
+  if (!summary.planId || summary.planId === 'free') {
+    return 'free';
+  }
+  const mapped = LEGACY_PLAN_ID_MAP[summary.planId];
+  if (mapped) {
+    return mapped;
+  }
+  if (summary.planId === 'pro' || summary.planId === 'team') {
+    return summary.planId;
+  }
+  return 'free';
+}
+
+export function comparePlanTiers(
+  a: CommercialPlanId,
+  b: CommercialPlanId,
+): number {
+  return COMMERCIAL_PLAN_IDS.indexOf(a) - COMMERCIAL_PLAN_IDS.indexOf(b);
+}
+
 export function isBillingSeatsExhausted(summary: BillingSummary): boolean {
   return (
     summary.seatsLimit !== null && summary.seatsUsed >= summary.seatsLimit

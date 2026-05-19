@@ -21,18 +21,26 @@ test.describe('Billing v0.3 (mock demo)', () => {
     await expect(page.getByText('You are on a trial.')).toBeVisible();
     await waitForBillingLoaded(page);
 
-    await expect(page.getByRole('heading', { level: 3, name: 'Starter' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 3, name: 'Pro' })).toBeVisible();
     await expect(page.getByText('Status:').locator('..')).toContainText('Trial');
 
     await page.getByRole('button', { name: 'Upgrade plan' }).click();
-    await expect(page.getByRole('heading', { name: 'Upgrade plan' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Change subscription plan' }),
+    ).toBeVisible();
+    await expect(page.getByRole('heading', { level: 4, name: 'Free' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 4, name: 'Pro' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 4, name: 'Team' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Upgrade to Team' }).click();
+    await expect(page.getByRole('heading', { name: 'Upgrade to Team' })).toBeVisible();
     await page
-      .getByText('Initializing secure checkout…')
-      .waitFor({ state: 'hidden' });
+      .getByRole('button', { name: 'Simulate payment success' })
+      .waitFor({ state: 'visible' });
     await page.getByRole('button', { name: 'Simulate payment success' }).click();
 
     await expect(
-      page.getByRole('heading', { level: 3, name: 'Professional' }),
+      page.getByRole('heading', { level: 3, name: 'Team' }),
     ).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText('Status:')).toContainText('Active');
     await expect(page.getByText('Plan upgraded successfully.')).toBeVisible();

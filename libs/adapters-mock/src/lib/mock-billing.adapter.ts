@@ -141,8 +141,8 @@ export class MockBillingAdapter implements BillingPort {
   seedOrganization(organizationId: OrganizationId): void {
     this.summaries.set(organizationId, {
       organizationId,
-      planId: 'starter',
-      planName: 'Starter',
+      planId: 'pro',
+      planName: 'Pro',
       status: 'trialing',
       currentPeriodEnd: addDaysIso(14),
       cancelAtPeriodEnd: false,

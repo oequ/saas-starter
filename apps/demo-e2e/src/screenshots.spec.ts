@@ -91,7 +91,7 @@ test.describe('README screenshots', () => {
     await page.goto('/workspace/settings/billing/overview');
     await waitForBillingLoaded(page);
     await page.getByText(/You are on a trial/).waitFor({ timeout: 15_000 });
-    await page.getByRole('heading', { level: 3, name: 'Starter' }).waitFor();
+    await page.getByRole('heading', { level: 3, name: 'Pro' }).waitFor();
     await page.screenshot({
       path: path.join(assetsDir, 'demo-billing-trial.png'),
       fullPage: false,
@@ -102,6 +102,30 @@ test.describe('README screenshots', () => {
     await expect(page.getByText('2 / 10 used')).toBeVisible();
     await page.screenshot({
       path: path.join(assetsDir, 'demo-members.png'),
+      fullPage: false,
+    });
+
+    await page.goto('/workspace/metrics');
+    await expect(page.getByRole('heading', { name: 'Metrics' })).toBeVisible();
+    await page.getByRole('button', { name: 'Need help?' }).click();
+    await expect(page.getByText('For this page')).toBeVisible();
+    await expect(page.getByText('Browse topics')).toBeVisible();
+    await page.screenshot({
+      path: path.join(assetsDir, 'demo-help-panel.png'),
+      fullPage: false,
+    });
+    await page.keyboard.press('Escape');
+
+    await switchWorkspace(page, NOVA_WORKSPACE);
+    await page.goto('/workspace/settings/billing/overview');
+    await waitForBillingLoaded(page);
+    await page.getByRole('button', { name: 'Upgrade plan' }).click();
+    await expect(
+      page.getByRole('heading', { name: 'Change subscription plan' }),
+    ).toBeVisible();
+    await expect(page.getByRole('heading', { level: 4, name: 'Team' })).toBeVisible();
+    await page.screenshot({
+      path: path.join(assetsDir, 'demo-paywall.png'),
       fullPage: false,
     });
   });

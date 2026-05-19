@@ -17,11 +17,10 @@ import {
   type InvoiceStatus,
   type SubscriptionStatus,
 } from '@oequ/ports';
-import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
+import { PaywallDialogService } from '@oequ/shell';
 import { HlmBadgeImports, type BadgeVariants } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
-import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
 export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
 
@@ -33,7 +32,6 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
     HlmCardImports,
     HlmButtonImports,
     HlmBadgeImports,
-    HlmDialogImports,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -207,45 +205,6 @@ export type BillingSettingsSection = 'overview' | 'invoices' | 'payment';
         }
       }
     </div>
-
-    <hlm-dialog [state]="upgradeDialogState()" (closed)="closeUpgradeDialog()">
-      <ng-template hlmDialogPortal>
-        <hlm-dialog-content [class]="dialogContentClass">
-          <hlm-dialog-header>
-            <h3 hlmDialogTitle>Upgrade plan</h3>
-            <p hlmDialogDescription>
-              Simulated checkout for the standalone demo. No card is charged.
-            </p>
-          </hlm-dialog-header>
-
-          @if (checkoutLoading()) {
-            <p class="text-muted-foreground py-6 text-center text-sm">
-              Initializing secure checkout…
-            </p>
-          } @else {
-            <div class="space-y-4 py-2">
-              <p class="text-sm leading-6">
-                By upgrading, you agree to the organizational Terms of Service.
-                Billed securely via our payment partner.
-              </p>
-              <button
-                hlmBtn
-                type="button"
-                class="w-full"
-                [disabled]="checkoutConfirming()"
-                (click)="confirmMockCheckout()"
-              >
-                @if (checkoutConfirming()) {
-                  Processing…
-                } @else {
-                  Simulate payment success
-                }
-              </button>
-            </div>
-          }
-        </hlm-dialog-content>
-      </ng-template>
-    </hlm-dialog>
   `,
 })
 export class OrgSettingsBillingComponent {
@@ -253,20 +212,13 @@ export class OrgSettingsBillingComponent {
   readonly section = input<BillingSettingsSection>('overview');
 
   private readonly billingPort = inject(BILLING_PORT);
+  private readonly paywallDialog = inject(PaywallDialogService);
 
-  protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
   protected readonly formatPlanLabel = formatPlanLabel;
   protected readonly formatSubscriptionStatus = formatSubscriptionStatus;
   protected readonly seatUsagePercent = billingSeatUsagePercent;
 
-  protected readonly upgradeDialogOpen = signal(false);
-  protected readonly checkoutLoading = signal(false);
-  protected readonly checkoutConfirming = signal(false);
   protected readonly statusMessage = signal<string | null>(null);
-
-  protected readonly upgradeDialogState = computed(() =>
-    this.upgradeDialogOpen() ? 'open' : 'closed',
-  );
 
   protected readonly billingResource = resource({
     params: () => ({ orgId: this.organizationId() }),
@@ -304,39 +256,11 @@ export class OrgSettingsBillingComponent {
   );
 
   protected async openUpgradeDialog(): Promise<void> {
-    const orgId = this.organizationId();
-    this.upgradeDialogOpen.set(true);
-    this.checkoutLoading.set(true);
-    this.checkoutConfirming.set(false);
-
-    const result = await this.billingPort.createCheckoutSession(
-      orgId,
-      'professional',
-      this.summary()?.seatsLimit ?? 10,
-    );
-    this.checkoutLoading.set(false);
-    if (!result.ok) {
-      this.statusMessage.set(result.error.message);
-      this.upgradeDialogOpen.set(false);
-    }
-  }
-
-  protected closeUpgradeDialog(): void {
-    this.upgradeDialogOpen.set(false);
-    this.checkoutLoading.set(false);
-    this.checkoutConfirming.set(false);
-  }
-
-  protected async confirmMockCheckout(): Promise<void> {
-    this.checkoutConfirming.set(true);
-    const result = await this.billingPort.confirmCheckout(this.organizationId());
-    this.checkoutConfirming.set(false);
-    if (result.ok) {
+    this.statusMessage.set(null);
+    const result = await this.paywallDialog.requestOpen();
+    if (result === 'success') {
       this.billingResource.reload();
-      this.closeUpgradeDialog();
       this.statusMessage.set('Plan upgraded successfully.');
-    } else {
-      this.statusMessage.set(result.error.message);
     }
   }
 

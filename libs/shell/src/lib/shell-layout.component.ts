@@ -53,6 +53,7 @@ import { BillingStatusBannerComponent } from './billing-status-banner.component'
 import { CreateWorkspaceDialogComponent } from './create-workspace-dialog.component';
 import { HelpPanelComponent } from './help/help-panel.component';
 import { HelpPanelService } from './help/help-panel.service';
+import { PaywallDialogComponent } from './paywall/paywall-dialog.component';
 import { UserMenuComponent } from './user-menu.component';
 import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
 
@@ -70,6 +71,7 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
     UserMenuComponent,
     BillingStatusBannerComponent,
     CreateWorkspaceDialogComponent,
+    PaywallDialogComponent,
     HelpPanelComponent,
   ],
   templateUrl: './shell-layout.component.html',
