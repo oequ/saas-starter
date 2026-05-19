@@ -21,7 +21,7 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 | `demo-api-keys.png` | Parcel — `/workspace/api-keys` (empty state) |
 | `demo-members.png` | Nova — `/workspace/settings/members` (member list, seats hint) |
 | `demo-settings.png` | Parcel — `/workspace/settings/general` |
-| `demo-billing.png` | Parcel — `/workspace/settings/billing` (full page: subscription + invoices + payment) |
+| `demo-billing.png` | Parcel — `/workspace/settings/billing` (subscription + invoices + payment methods list) |
 | `demo-usage.png` | Nova — `/workspace/settings/usage` (meters + locked SSO / image transforms with Upgrade) |
 | `demo-paywall.png` | Nova — Billing → **Change subscription plan** → paywall open (Free / Pro / Team cards visible) |
 | `demo-help-panel.png` | Parcel — `/workspace/metrics` → **Need help?** → help sheet open (hub: *For this page* + *Browse topics*) |
@@ -32,7 +32,7 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 2. Open `/workspace/settings/billing`.
 3. Click **Change subscription plan**.
 4. Wait until plan cards are loaded (not skeletons).
-5. Frame the dialog with all three tiers visible.
+5. Frame the main paywall with all three tiers visible (screenshot is the plan picker only, not the stacked upgrade/downgrade dialogs).
 
 ### Help panel capture tips
 
@@ -43,8 +43,9 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 
 ### Billing capture tips
 
-1. **Parcel** — `/workspace/settings/billing`, full-page scroll capture shows all three cards.
-2. **Nova** — same route with trial banner visible at top of viewport.
+1. **Parcel** — `/workspace/settings/billing`, full-page scroll: all three cards; Payment Methods shows seeded **Visa •••• 4242** and **Add payment method** (no Manage billing button).
+2. **Nova** — same route with trial banner at top of viewport.
+3. **Lumen** — optional second shot: empty payment methods + open **Add payment method** dialog (test card hint visible).
 
 ### Usage capture tips
 

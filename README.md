@@ -4,7 +4,7 @@ Angular B2B SaaS shell — layout, org settings, auth UI. **You bring the API.**
 
 Standalone UI monorepo (Spartan + Tailwind v4). Implement `@oequ/ports` against your API. For Supabase, RLS, and tenant isolation at the database layer, see the full-stack starter: [oequ/saas-starter](https://github.com/oequ/saas-starter).
 
-**Current UI release:** `v0.4.0-ui` — workspace metrics, API keys, list-style members, outline settings cards, activation onboarding.
+**Current UI release:** `v0.4.0-ui` — metrics, API keys, list-style members, outline settings, activation onboarding, in-app payment methods, stacked paywall checkout/downgrade dialogs.
 
 ## Stack
 
@@ -27,7 +27,21 @@ After enabling **Pages → Source: GitHub Actions** in the repo settings:
 
 **https://oequ.github.io/angular-saas-starter-ui/**
 
-On Android (Chrome), you can install the demo as an app: open the site over HTTPS, then use the browser menu (**Install app** / **Add to Home screen**). PWA icons use the [Lucide](https://lucide.dev/icons/layers) **layers** glyph (ISC); regenerate with `node apps/demo/scripts/generate-pwa-icons.mjs` (devDependency `@resvg/resvg-js`).
+### PWA (demo app)
+
+The **demo** ships as an installable PWA for GitHub Pages and production builds — not enabled during `nx serve` (dev mode).
+
+| Piece | Location |
+|-------|----------|
+| Web app manifest | `apps/demo/public/manifest.webmanifest` |
+| Service worker | `@angular/service-worker` — `apps/demo/ngsw-config.json`, registered in `app.config.ts` when `!isDevMode()` |
+| Icons | `apps/demo/public/icons/` — [Lucide](https://lucide.dev/icons/layers) **layers** (ISC) |
+
+**Install (Android Chrome):** open the HTTPS demo URL → browser menu → **Install app** / **Add to Home screen**.
+
+**Build with SW:** `npx nx build demo` or `npm run build:pages` (GitHub Pages base href). Serve `dist/apps/demo/browser` over HTTPS to test install locally.
+
+**Regenerate icons:** `node apps/demo/scripts/generate-pwa-icons.mjs` (devDependency `@resvg/resvg-js`). Your product fork should replace manifest name, theme colors, and icons.
 
 ## Preview
 
@@ -59,19 +73,21 @@ Same list pattern as API keys: search, role filter, seats hint, invite flow.
 
 ### Workspace settings (General)
 
-Outline card sections (Resend-style border, no fill) for form settings.
+Outline card sections (Resend-style border, no fill): rename workspace, upload/remove workspace icon, danger zone. Saves use Sonner toasts (no full-page reload).
 
 ![Workspace settings — General](./docs/assets/demo-settings.png)
 
 ### Billing
 
-Single scroll page: **Subscription Plan** · **Past Invoices** · **Payment Methods** (outline cards, same pattern as General settings). Mock orgs:
+Single scroll page: **Subscription Plan** · **Past Invoices** · **Payment Methods** (outline cards, same pattern as General settings).
+
+**Payment methods (mock):** list saved cards, **Add payment method** dialog, **Make default** / **Remove**. Demo accepts Stripe test numbers `4242 4242 4242 4242` or `5555 5555 5555 4444`. Production path: `BillingPort.addPaymentMethod` → Stripe Setup Intent + Elements (portal optional for tax/address).
 
 | Workspace | Billing state | Demo purpose |
 |-----------|---------------|--------------|
-| **Parcel** | Active Team, 4/50 seats | Full usage on Usage page; room to invite |
-| **Lumen** | Free, 4/3 seats | Seat limit exhausted on Members (upgrade CTA) |
-| **Nova** | Trialing Pro | Shell trial banner + mock upgrade funnel |
+| **Parcel** | Active Team, 4/50 seats; Visa •••• 4242 on file | Invoices + payment methods seeded |
+| **Lumen** | Free, 4/3 seats; no cards | Add-card flow; seat limit on Members |
+| **Nova** | Trialing Pro; Mastercard •••• 4444 on file | Trial banner + upgrade funnel |
 
 ![Billing — subscription, invoices, and payment](./docs/assets/demo-billing.png)
 
@@ -83,7 +99,7 @@ Supabase-style quota page: billing cycle, plan limits, circular progress rings, 
 
 ### Paywall (plan picker)
 
-Wide plan picker (**Free · Pro · Team**) from **Change subscription plan** on Billing. Mock **upgrade** uses checkout; **downgrade** applies immediately with seat-limit checks — no Stripe in the UI repo.
+Wide plan picker (**Free · Pro · Team**) from **Change subscription plan** on Billing. **Upgrade** opens a stacked checkout dialog; **downgrade** opens a stacked confirm dialog (paywall stays full width underneath). Mock upgrade uses simulated checkout; downgrade applies immediately with seat-limit checks — no Stripe in the UI repo.
 
 ![Paywall — change subscription plan](./docs/assets/demo-paywall.png)
 
@@ -131,7 +147,8 @@ This project follows the open **[Quality Framework](https://github.com/oequ/qual
 | Command | Description |
 |---------|-------------|
 | `npx nx serve demo` | Dev server |
-| `npx nx build demo` | Production build |
+| `npx nx build demo` | Production build (includes service worker) |
+| `npm run build:pages` | GitHub Pages build (`baseHref` + PWA) |
 | `npm run e2e` | Playwright E2E |
 | `UPDATE_SCREENSHOTS=1 npm run screenshots` | Regenerate `docs/assets/*.png` for README |
 | `npx nx run-many -t lint --all` | Lint all projects |
