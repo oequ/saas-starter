@@ -7,6 +7,7 @@ import type {
   AuthSessionDevice,
   AuthUser,
   EmailPasswordCredentials,
+  RegisterCredentials,
 } from './models/auth.model';
 import type { PortResult } from './models/common.model';
 
@@ -31,6 +32,10 @@ export interface AuthPort {
 
   signInWithPassword(
     credentials: EmailPasswordCredentials,
+  ): Promise<PortResult<AuthSession>>;
+
+  signUpWithPassword(
+    credentials: RegisterCredentials,
   ): Promise<PortResult<AuthSession>>;
 
   signOut(): Promise<PortResult<void>>;

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import {
   AUTH_PORT,
   type AuthClaims,
@@ -7,6 +7,7 @@ import {
   type AuthSessionDevice,
   type AuthUser,
   type EmailPasswordCredentials,
+  type RegisterCredentials,
   portErr,
   portOk,
   type PortResult,
@@ -19,6 +20,7 @@ import {
   MOCK_DEMO_PASSWORD,
   MOCK_SESSION_DEVICES,
 } from './data/mock-data';
+import { MockOrgAdapter } from './mock-org.adapter';
 
 const DEMO_SIGNED_IN_STORAGE_KEY = 'oequ-demo-signed-in';
 
@@ -46,6 +48,7 @@ function initialSession(): AuthSession | null {
 
 @Injectable()
 export class MockAuthAdapter implements AuthPort {
+  private readonly injector = inject(Injector);
   private sessions = [...MOCK_SESSION_DEVICES];
 
   private readonly sessionSubject = new BehaviorSubject<AuthSession | null>(
@@ -85,6 +88,55 @@ export class MockAuthAdapter implements AuthPort {
     setSignedInFlag(true);
     this.sessionSubject.next(MOCK_AUTH_SESSION);
     return portOk(MOCK_AUTH_SESSION);
+  }
+
+  async signUpWithPassword(
+    credentials: RegisterCredentials,
+  ): Promise<PortResult<AuthSession>> {
+    const email = credentials.email.trim().toLowerCase();
+    const password = credentials.password;
+
+    if (!credentials.acceptTerms || !credentials.acceptPrivacy) {
+      return portErr({
+        code: 'VALIDATION',
+        message: 'You must accept the Terms of Service and Privacy Policy.',
+      });
+    }
+
+    if (password.length < 8) {
+      return portErr({
+        code: 'VALIDATION',
+        message: 'Password must be at least 8 characters.',
+      });
+    }
+
+    if (email === MOCK_DEMO_EMAIL) {
+      return portErr({
+        code: 'VALIDATION',
+        message: 'An account with this email already exists.',
+      });
+    }
+
+    const userId = crypto.randomUUID();
+    const session: AuthSession = {
+      user: {
+        id: userId,
+        email,
+        displayName: null,
+      },
+      claims: {
+        sub: userId,
+        email,
+        org: null,
+      },
+    };
+
+    setSignedInFlag(true);
+    this.sessions = [...MOCK_SESSION_DEVICES];
+    this.sessionSubject.next(session);
+    this.injector.get(MockOrgAdapter).setZeroOrganizations();
+
+    return portOk(session);
   }
 
   async signOut(): Promise<PortResult<void>> {

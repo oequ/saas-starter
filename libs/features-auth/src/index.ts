@@ -1,4 +1,5 @@
 export * from './lib/login-page.component';
+export * from './lib/register-page.component';
 export * from './lib/forgot-password-page.component';
 export * from './lib/system-status-page.component';
 export * from './lib/legal/auth-legal-layout.component';

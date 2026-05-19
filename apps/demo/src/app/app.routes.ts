@@ -17,6 +17,12 @@ export const appRoutes: Route[] = [
       import('@oequ/features-auth').then((m) => m.LoginPageComponent),
   },
   {
+    path: 'auth/register',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('@oequ/features-auth').then((m) => m.RegisterPageComponent),
+  },
+  {
     path: 'auth/forgot-password',
     canActivate: [guestGuard],
     loadComponent: () =>

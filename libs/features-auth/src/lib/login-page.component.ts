@@ -113,6 +113,15 @@ function safeReturnUrl(raw: string | null): string {
           </div>
         </section>
 
+        <p class="text-muted-foreground mt-6 text-center text-sm">
+          Don&apos;t have an account?
+          <a
+            routerLink="/auth/register"
+            class="text-foreground ml-1 underline-offset-4 hover:underline"
+            >Create account</a
+          >
+        </p>
+
         <p
           class="text-muted-foreground mt-6 text-center text-xs leading-relaxed"
         >
@@ -129,29 +138,6 @@ function safeReturnUrl(raw: string | null): string {
             >Privacy Policy</a
           >.
         </p>
-
-        <nav
-          class="text-muted-foreground mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs"
-          aria-label="Help and legal"
-        >
-          <a
-            routerLink="/auth/security"
-            class="hover:text-foreground underline-offset-4 hover:underline"
-            >Security</a
-          >
-          <span aria-hidden="true" class="text-border">·</span>
-          <a
-            routerLink="/auth/status"
-            class="hover:text-foreground underline-offset-4 hover:underline"
-            >System status</a
-          >
-          <span aria-hidden="true" class="text-border">·</span>
-          <a
-            routerLink="/auth/cookies"
-            class="hover:text-foreground underline-offset-4 hover:underline"
-            >Cookies</a
-          >
-        </nav>
       </div>
     </div>
   `,

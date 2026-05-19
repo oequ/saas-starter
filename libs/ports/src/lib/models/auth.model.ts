@@ -30,6 +30,13 @@ export interface EmailPasswordCredentials {
   readonly password: string;
 }
 
+export interface RegisterCredentials {
+  readonly email: string;
+  readonly password: string;
+  readonly acceptTerms: boolean;
+  readonly acceptPrivacy: boolean;
+}
+
 /** Active sign-in session / device (account sessions screen). */
 export interface AuthSessionDevice {
   readonly id: string;
