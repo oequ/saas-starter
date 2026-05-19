@@ -26,7 +26,10 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
 
-import { PAYWALL_DIALOG_CONTENT_CLASS } from '../settings-layout.tokens';
+import {
+  PAYWALL_DIALOG_BODY_CLASS,
+  PAYWALL_DIALOG_CONTENT_CLASS,
+} from '../settings-layout.tokens';
 import { PaywallDialogService } from './paywall-dialog.service';
 
 type PaywallView = 'plans' | 'checkout';
@@ -49,7 +52,7 @@ type PaywallView = 'plans' | 'checkout';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           @if (view() === 'checkout') {
-            <hlm-dialog-header>
+            <hlm-dialog-header class="shrink-0">
               <button
                 type="button"
                 class="text-muted-foreground hover:text-foreground mb-3 inline-flex items-center gap-1.5 text-sm"
@@ -64,6 +67,7 @@ type PaywallView = 'plans' | 'checkout';
               </p>
             </hlm-dialog-header>
 
+            <div [class]="paywallBodyClass">
             @if (checkoutLoading()) {
               <div class="space-y-4 py-2" aria-busy="true" aria-label="Initializing checkout">
                 <hlm-skeleton class="h-4 w-full" />
@@ -94,8 +98,9 @@ type PaywallView = 'plans' | 'checkout';
                 </button>
               </div>
             }
+            </div>
           } @else {
-            <hlm-dialog-header class="space-y-1 text-start">
+            <hlm-dialog-header class="shrink-0 space-y-1 text-start">
               <h3 hlmDialogTitle class="text-xl">Change subscription plan</h3>
               <p hlmDialogDescription>
                 Compare tiers and upgrade when you need more seats or enterprise
@@ -103,6 +108,7 @@ type PaywallView = 'plans' | 'checkout';
               </p>
             </hlm-dialog-header>
 
+            <div [class]="paywallBodyClass">
             @if (loading()) {
               <div
                 class="grid gap-4 py-2 md:grid-cols-3"
@@ -241,6 +247,7 @@ type PaywallView = 'plans' | 'checkout';
                 }
               </div>
             }
+            </div>
           }
         </hlm-dialog-content>
       </ng-template>
@@ -256,6 +263,7 @@ export class PaywallDialogComponent {
   protected readonly featureSkeletonSlots = [0, 1, 2, 3, 4] as const;
 
   protected readonly dialogContentClass = PAYWALL_DIALOG_CONTENT_CLASS;
+  protected readonly paywallBodyClass = PAYWALL_DIALOG_BODY_CLASS;
 
   protected readonly dialogState = computed(() =>
     this.dialogService.open() ? 'open' : 'closed',

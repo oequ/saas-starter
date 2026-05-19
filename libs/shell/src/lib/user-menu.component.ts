@@ -12,10 +12,10 @@ import { filter, map, startWith } from 'rxjs';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideChevronsUpDown,
+  lucideCircleHelp,
   lucideLogOut,
-  lucideMonitor,
   lucideMoon,
-  lucideShield,
+  lucideRocket,
   lucideSun,
   lucideUser,
 } from '@ng-icons/lucide';
@@ -24,8 +24,8 @@ import {
   HlmDropdownMenuImports,
   provideHlmDropdownMenuConfig,
 } from '@spartan-ng/helm/dropdown-menu';
+import { HelpPanelService } from './help/help-panel.service';
 import { SHELL_SIDEBAR_SELECT_TRIGGER_CLASS } from './settings-layout.tokens';
-
 import { ThemeService } from './theme.service';
 
 @Component({
@@ -36,8 +36,8 @@ import { ThemeService } from './theme.service';
     provideIcons({
       lucideChevronsUpDown,
       lucideUser,
-      lucideShield,
-      lucideMonitor,
+      lucideRocket,
+      lucideCircleHelp,
       lucideMoon,
       lucideSun,
       lucideLogOut,
@@ -98,21 +98,24 @@ import { ThemeService } from './theme.service';
           type="button"
           hlmDropdownMenuItem
           class="gap-2"
-          [class.bg-accent]="isAccountPath('/account/security')"
-          (triggered)="navigateToAccount('/account/security')"
+          [class.bg-accent]="isOnboardingRoute()"
+          (triggered)="navigateToOnboarding()"
         >
-          <ng-icon name="lucideShield" class="size-4 shrink-0" aria-hidden="true" />
-          <span>Security</span>
+          <ng-icon name="lucideRocket" class="size-4 shrink-0" aria-hidden="true" />
+          <span>Onboarding</span>
         </button>
         <button
           type="button"
           hlmDropdownMenuItem
           class="gap-2"
-          [class.bg-accent]="isAccountPath('/account/sessions')"
-          (triggered)="navigateToAccount('/account/sessions')"
+          (triggered)="openHelp()"
         >
-          <ng-icon name="lucideMonitor" class="size-4 shrink-0" aria-hidden="true" />
-          <span>Sessions</span>
+          <ng-icon
+            name="lucideCircleHelp"
+            class="size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span>Help</span>
         </button>
         <button
           type="button"
@@ -152,6 +155,7 @@ export class UserMenuComponent {
   private readonly authPort = inject(AUTH_PORT);
   private readonly orgPort = inject(ORG_PORT);
   private readonly router = inject(Router);
+  private readonly helpPanel = inject(HelpPanelService);
   protected readonly themeService = inject(ThemeService);
 
   private readonly currentUrl = toSignal(
@@ -190,6 +194,10 @@ export class UserMenuComponent {
     return (this.currentUrl() ?? '').startsWith(path);
   }
 
+  protected isOnboardingRoute(): boolean {
+    return (this.currentUrl() ?? '').startsWith('/onboarding');
+  }
+
   protected syncMenuWidth(): void {
     const width = this.menuTrigger()?.nativeElement.offsetWidth;
     if (width) {
@@ -211,5 +219,13 @@ export class UserMenuComponent {
   protected async navigateToAccount(path: string): Promise<void> {
     await this.orgPort.selectPersonal();
     await this.router.navigateByUrl(path);
+  }
+
+  protected async navigateToOnboarding(): Promise<void> {
+    await this.router.navigateByUrl('/onboarding');
+  }
+
+  protected openHelp(): void {
+    this.helpPanel.open();
   }
 }

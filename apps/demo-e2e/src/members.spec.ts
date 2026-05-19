@@ -15,7 +15,6 @@ test.describe('members', () => {
     await page.goto('/workspace/settings/members');
     await switchWorkspace(page, NOVA_WORKSPACE);
     await waitForMembersPageLoaded(page);
-    await expect(page.getByText('2 / 10 used')).toBeVisible();
 
     await page.getByRole('button', { name: '+ Invite member' }).click();
     await page.getByLabel('Email address').fill('new.teammate@example.com');

@@ -27,6 +27,7 @@ import {
   lucideHome,
   lucideKeyRound,
   lucideMonitor,
+  lucidePlug2,
   lucideSettings,
   lucideShield,
   lucideUser,
@@ -35,7 +36,7 @@ import {
 import { ORG_PORT, type Organization } from '@oequ/ports';
 import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmIcon } from '@spartan-ng/helm/icon';
-import { HlmSidebarImports } from '@spartan-ng/helm/sidebar';
+import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';
 import { filter, map, startWith } from 'rxjs';
 
 import {
@@ -79,6 +80,7 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
       lucideBarChart2,
       lucideHome,
       lucideKeyRound,
+      lucidePlug2,
       lucideSettings,
       lucideUser,
       lucideShield,
@@ -97,6 +99,7 @@ export class ShellLayoutComponent {
   private readonly orgPort = inject(ORG_PORT);
   private readonly themeService = inject(ThemeService);
   private readonly helpPanel = inject(HelpPanelService);
+  private readonly sidebarService = inject(HlmSidebarService);
 
   protected readonly workspaceNav = WORKSPACE_SHELL_NAV;
   protected readonly personalNav = PERSONAL_SHELL_NAV;
@@ -138,6 +141,9 @@ export class ShellLayoutComponent {
       this.currentUrl();
       untracked(() => {
         queueMicrotask(() => this.resetMainScroll());
+        if (this.sidebarService.openMobile()) {
+          this.sidebarService.setOpenMobile(false);
+        }
       });
     });
 

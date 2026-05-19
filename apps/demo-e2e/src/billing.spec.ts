@@ -52,19 +52,22 @@ test.describe('Billing v0.3 (mock demo)', () => {
     await expect(page.getByText('You are on a trial.')).toHaveCount(0);
   });
 
-  test('seats: Parcel at limit blocks invite and links to billing', async ({
+  test('seats: Parcel at limit shows error only when inviting', async ({
     page,
   }) => {
     await page.goto('/workspace/settings/members');
     await switchWorkspace(page, PARCEL_WORKSPACE);
     await waitForMembersPageLoaded(page);
-    await expect(page.getByText(/Seat limit reached/)).toBeVisible();
-    await expect(
-      page.getByRole('link', { name: 'upgrade your plan' }),
-    ).toHaveAttribute('href', /\/workspace\/settings\/billing$/);
+    await expect(page.getByText(/Seat limit reached/)).toHaveCount(0);
+    await expect(page.getByText(/\d+ \/ \d+ used/)).toHaveCount(0);
 
-    const inviteButton = page.getByRole('button', { name: '+ Invite member' });
-    await expect(inviteButton).toBeDisabled();
+    await page.getByRole('button', { name: '+ Invite member' }).click();
+    await page.getByLabel('Email address').fill('over.limit@example.com');
+    await page.getByRole('button', { name: 'Send invite' }).click();
+
+    await expect(
+      page.getByText('No seats available. Upgrade your plan.'),
+    ).toBeVisible();
   });
 
   test('billing page shows subscription, invoices, and payment sections', async ({

@@ -21,8 +21,13 @@ export const SETTINGS_FORM_FIELD_CLASS = 'max-w-[300px]';
 /** Form / confirm dialogs — slightly narrower than default `sm:max-w-lg`. */
 export const SETTINGS_DIALOG_CONTENT_CLASS = 'sm:!max-w-[380px]';
 
-/** Plan picker paywall — wide enough for three pricing columns. */
-export const PAYWALL_DIALOG_CONTENT_CLASS = 'sm:!max-w-5xl';
+/** Plan picker paywall — wide layout; scrollable body on short viewports (mobile). */
+export const PAYWALL_DIALOG_CONTENT_CLASS =
+  '!flex max-h-[min(90dvh,calc(100vh-2rem))] !flex-col gap-4 overflow-hidden sm:!max-w-5xl';
+
+/** Scrollable plan/checkout body inside the paywall dialog. */
+export const PAYWALL_DIALOG_BODY_CLASS =
+  'min-h-0 flex-1 overflow-y-auto overscroll-contain';
 
 /** Full-width fields inside dialogs (overrides {@link SETTINGS_FORM_FIELD_CLASS}). */
 export const SETTINGS_DIALOG_FIELD_CLASS = 'w-full min-w-0';

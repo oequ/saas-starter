@@ -8,13 +8,10 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideEllipsis, lucideSearch, lucideUsers } from '@ng-icons/lucide';
 import {
-  BILLING_PORT,
-  isBillingSeatsExhausted,
   ORG_PORT,
   type OrganizationMember,
   type OrgRole,
@@ -46,7 +43,6 @@ type MemberRoleFilter = 'all' | OrgRole;
   selector: 'oequ-org-settings-members',
   imports: [
     ReactiveFormsModule,
-    RouterLink,
     NgIcon,
     HlmButtonImports,
     HlmInput,
@@ -100,36 +96,12 @@ type MemberRoleFilter = 'all' | OrgRole;
           </hlm-select-content>
         </hlm-select>
 
-        @if (seatsLabel(); as seats) {
-          <p class="text-muted-foreground text-sm tabular-nums">{{ seats }}</p>
-        }
-
         <div class="flex shrink-0 items-center gap-2 sm:ms-auto">
-          <button
-            hlmBtn
-            type="button"
-            [disabled]="inviteDisabled()"
-            (click)="openInviteDialog()"
-          >
+          <button hlmBtn type="button" (click)="openInviteDialog()">
             + Invite member
           </button>
         </div>
       </div>
-
-      @if (seatsExhausted()) {
-        <div
-          class="border-destructive/30 bg-destructive/10 text-destructive rounded-md border px-4 py-3 text-sm"
-          role="status"
-        >
-          Seat limit reached. Remove a member or
-          <a
-            routerLink="/workspace/settings/billing"
-            class="font-medium underline underline-offset-2"
-            >upgrade your plan</a
-          >
-          to invite more people.
-        </div>
-      }
 
       @if (membersLoading() && members().length === 0) {
         <div
@@ -150,12 +122,7 @@ type MemberRoleFilter = 'all' | OrgRole;
             </p>
           </hlm-empty-header>
           <hlm-empty-content>
-            <button
-              hlmBtn
-              type="button"
-              [disabled]="inviteDisabled()"
-              (click)="openInviteDialog()"
-            >
+            <button hlmBtn type="button" (click)="openInviteDialog()">
               + Invite member
             </button>
           </hlm-empty-content>
@@ -307,26 +274,8 @@ export class OrgSettingsMembersComponent {
   readonly organizationId = input.required<string>();
 
   private readonly orgPort = inject(ORG_PORT);
-  private readonly billingPort = inject(BILLING_PORT);
 
   private readonly dataRefresh = signal(0);
-
-  protected readonly billingResource = resource({
-    params: () => ({
-      orgId: this.organizationId(),
-      refresh: this.dataRefresh(),
-    }),
-    loader: async ({ params, abortSignal }) => {
-      const result = await this.billingPort.getSummary(
-        params.orgId,
-        abortSignal,
-      );
-      if (!result.ok) {
-        throw new Error(result.error.message);
-      }
-      return result.data;
-    },
-  });
 
   protected readonly membersResource = resource({
     params: () => ({
@@ -341,28 +290,6 @@ export class OrgSettingsMembersComponent {
       return result.data;
     },
   });
-
-  protected readonly billingSummary = computed(() =>
-    this.billingResource.value(),
-  );
-
-  protected readonly seatsLabel = computed(() => {
-    const billing = this.billingSummary();
-    if (!billing) {
-      return null;
-    }
-    const limit = billing.seatsLimit ?? '∞';
-    return `${billing.seatsUsed} / ${limit} used`;
-  });
-
-  protected readonly seatsExhausted = computed(() => {
-    const summary = this.billingSummary();
-    return summary ? isBillingSeatsExhausted(summary) : false;
-  });
-
-  protected readonly inviteDisabled = computed(
-    () => this.billingResource.isLoading() || this.seatsExhausted(),
-  );
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
   protected readonly roleFilter = signal<MemberRoleFilter>('all');
@@ -486,9 +413,6 @@ export class OrgSettingsMembersComponent {
   }
 
   protected openInviteDialog(): void {
-    if (this.inviteDisabled()) {
-      return;
-    }
     this.inviteDialogOpen.set(true);
   }
 
