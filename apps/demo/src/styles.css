@@ -37,14 +37,13 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: color-mix(in oklab, var(--muted) 30%, var(--background));
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent: color-mix(in oklab, var(--muted) 55%, var(--background));
   --sidebar-accent-foreground: oklch(0.205 0 0);
-  /* Vercel shell: border-gray-100 */
-  --sidebar-border: oklch(0.97 0 0);
+  --sidebar-border: var(--border);
   --sidebar-ring: oklch(0.708 0 0);
   --toast-success: oklch(0.52 0.16 145);
   --toast-error: oklch(0.577 0.245 27.325);
@@ -71,13 +70,13 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: color-mix(in oklab, var(--muted) 30%, var(--background));
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.985 0 0);
   --sidebar-primary-foreground: oklch(0.205 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: color-mix(in oklab, var(--muted) 55%, var(--background));
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-border: var(--border);
   --sidebar-ring: oklch(0.556 0 0);
   --toast-success: oklch(0.68 0.17 145);
   --toast-error: oklch(0.704 0.191 22.216);
