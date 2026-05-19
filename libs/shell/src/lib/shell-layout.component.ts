@@ -51,6 +51,8 @@ import {
 import { ThemeService } from './theme.service';
 import { BillingStatusBannerComponent } from './billing-status-banner.component';
 import { CreateWorkspaceDialogComponent } from './create-workspace-dialog.component';
+import { HelpPanelComponent } from './help/help-panel.component';
+import { HelpPanelService } from './help/help-panel.service';
 import { UserMenuComponent } from './user-menu.component';
 import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
 
@@ -68,6 +70,7 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
     UserMenuComponent,
     BillingStatusBannerComponent,
     CreateWorkspaceDialogComponent,
+    HelpPanelComponent,
   ],
   templateUrl: './shell-layout.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -94,6 +97,7 @@ export class ShellLayoutComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly orgPort = inject(ORG_PORT);
   private readonly themeService = inject(ThemeService);
+  private readonly helpPanel = inject(HelpPanelService);
 
   protected readonly workspaceNav = WORKSPACE_SHELL_NAV;
   protected readonly personalNav = PERSONAL_SHELL_NAV;
@@ -160,24 +164,40 @@ export class ShellLayoutComponent {
 
   @HostListener('document:keydown', ['$event'])
   protected onDocumentKeydown(event: KeyboardEvent): void {
-    if (event.key.toLowerCase() !== 'm' || event.metaKey || event.ctrlKey || event.altKey) {
+    if (this.isTypingTarget(event.target)) {
       return;
     }
 
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) {
-      return;
-    }
-
+    const opensHelp =
+      event.key === '?' || (event.key === '/' && event.shiftKey);
     if (
-      target.isContentEditable ||
-      ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+      opensHelp &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey
     ) {
+      event.preventDefault();
+      this.helpPanel.open();
+      return;
+    }
+
+    if (event.key.toLowerCase() !== 'm' || event.metaKey || event.ctrlKey || event.altKey) {
       return;
     }
 
     event.preventDefault();
     this.themeService.toggle();
+  }
+
+  private isTypingTarget(target: EventTarget | null): boolean {
+    if (!(target instanceof HTMLElement)) {
+      return false;
+    }
+
+    return (
+      target.isContentEditable ||
+      ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+    );
   }
 
   private readonly settingsContext = toSignal(

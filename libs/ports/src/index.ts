@@ -1,4 +1,6 @@
 export * from './lib/auth.port';
+export * from './lib/help-panel.port';
+export * from './lib/support.port';
 export * from './lib/activation.port';
 export * from './lib/api-keys.port';
 export * from './lib/api-keys.utils';
@@ -13,6 +15,7 @@ export * from './lib/activation-onboarding.config';
 export * from './lib/models/api-keys.model';
 export * from './lib/models/metrics.model';
 export * from './lib/models/auth.model';
+export * from './lib/models/support.model';
 export * from './lib/models/billing.model';
 export * from './lib/models/common.model';
 export * from './lib/models/org.model';

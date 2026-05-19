@@ -47,6 +47,9 @@
       "@spartan-ng/helm/input": [
         "./libs/ui/input/src/index.ts"
       ],
+      "@spartan-ng/helm/textarea": [
+        "./libs/ui/textarea/src/index.ts"
+      ],
       "@spartan-ng/helm/select": [
         "./libs/ui/select/select/src/index.ts"
       ],

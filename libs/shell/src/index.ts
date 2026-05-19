@@ -8,3 +8,5 @@ export * from './lib/theme.service';
 export * from './lib/create-workspace-dialog.service';
 export * from './lib/create-workspace-dialog.component';
 export * from './lib/billing-status-banner.component';
+export * from './lib/help/help-panel.component';
+export * from './lib/help/help-panel.service';

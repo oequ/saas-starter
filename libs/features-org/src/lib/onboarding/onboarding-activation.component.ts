@@ -50,30 +50,13 @@ import { OnboardingCodeBlockComponent } from './onboarding-code-block.component'
   ],
   template: `
     <div class="mx-auto w-full max-w-3xl">
-      <div
-        class="mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
-      >
-        <div>
-          <h1 class="text-2xl font-semibold tracking-tight">
-            {{ config().title }}
-          </h1>
-          <p class="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
-            {{ config().subtitle }}
-          </p>
-        </div>
-        <div class="flex shrink-0 gap-2 text-sm">
-          <a
-            href="#"
-            class="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
-            >Docs</a
-          >
-          <span class="text-muted-foreground" aria-hidden="true">·</span>
-          <a
-            href="#"
-            class="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
-            >Need help?</a
-          >
-        </div>
+      <div class="mb-10">
+        <h1 class="text-2xl font-semibold tracking-tight">
+          {{ config().title }}
+        </h1>
+        <p class="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
+          {{ config().subtitle }}
+        </p>
       </div>
 
       <ol class="border-border ms-1.5 space-y-8 border-s ps-7">

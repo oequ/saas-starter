@@ -26,6 +26,10 @@ import {
   MockMetricsAdapter,
 } from './mock-metrics.adapter';
 import {
+  MOCK_SUPPORT_PROVIDER,
+  MockSupportAdapter,
+} from './mock-support.adapter';
+import {
   MOCK_ORG_PROVIDER,
   MockOrgAdapter,
 } from './mock-org.adapter';
@@ -47,12 +51,14 @@ export function provideDemoAdapters(): EnvironmentProviders {
     MockActivationAdapter,
     MockApiKeysAdapter,
     MockMetricsAdapter,
+    MockSupportAdapter,
     MOCK_AUTH_PROVIDER,
     MOCK_ORG_PROVIDER,
     MOCK_BILLING_PROVIDER,
     MOCK_ACTIVATION_PROVIDER,
     MOCK_API_KEYS_PROVIDER,
     MOCK_METRICS_PROVIDER,
+    MOCK_SUPPORT_PROVIDER,
     provideAppInitializer(() => {
       if (typeof window === 'undefined') {
         return;
