@@ -22,8 +22,6 @@ import {
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
   lucideBarChart2,
-  lucideChevronDown,
-  lucideChevronUp,
   lucideCreditCard,
   lucideHome,
   lucideKeyRound,
@@ -46,7 +44,6 @@ import {
 import {
   PERSONAL_SHELL_NAV,
   WORKSPACE_SHELL_NAV,
-  type ShellNavGroup,
 } from './shell-nav.model';
 import { ThemeService } from './theme.service';
 import { BillingStatusBannerComponent } from './billing-status-banner.component';
@@ -87,8 +84,6 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
       lucideMonitor,
       lucideCreditCard,
       lucideUsers,
-      lucideChevronDown,
-      lucideChevronUp,
     }),
   ],
 })
@@ -103,8 +98,6 @@ export class ShellLayoutComponent {
 
   protected readonly workspaceNav = WORKSPACE_SHELL_NAV;
   protected readonly personalNav = PERSONAL_SHELL_NAV;
-
-  protected readonly billingNavExpanded = signal(false);
 
   private readonly organizations = toSignal(this.orgPort.organizations$, {
     initialValue: [] as readonly Organization[],
@@ -144,13 +137,6 @@ export class ShellLayoutComponent {
       untracked(() => {
         queueMicrotask(() => this.resetMainScroll());
       });
-    });
-
-    effect(() => {
-      const url = this.currentUrl() ?? '';
-      if (url.startsWith('/workspace/settings/billing')) {
-        untracked(() => this.billingNavExpanded.set(true));
-      }
     });
 
     // Guards do not re-run on in-app mock changes (E2E); redirect when org list becomes empty.
@@ -235,16 +221,8 @@ export class ShellLayoutComponent {
     this.settingsContext() === 'account' ? 'Account' : 'Workspace',
   );
 
-  protected isBillingGroupActive(group: ShellNavGroup): boolean {
-    return (this.currentUrl() ?? '').startsWith(group.basePath);
-  }
-
   private resetMainScroll(): void {
     this.mainScroll()?.nativeElement.scrollTo({ top: 0, left: 0 });
-  }
-
-  protected toggleBillingNav(): void {
-    this.billingNavExpanded.update((open) => !open);
   }
 
   private resolveTitle(): string {

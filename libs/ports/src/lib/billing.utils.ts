@@ -61,7 +61,7 @@ export interface BillingStatusBanner {
   readonly ctaPath: string;
 }
 
-const BILLING_SETTINGS_PATH = '/workspace/settings/billing/overview';
+const BILLING_SETTINGS_PATH = '/workspace/settings/billing';
 
 export function billingStatusBanner(
   summary: BillingSummary | null | undefined,

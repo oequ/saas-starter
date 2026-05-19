@@ -123,7 +123,7 @@ type MemberRoleFilter = 'all' | OrgRole;
         >
           Seat limit reached. Remove a member or
           <a
-            routerLink="/workspace/settings/billing/overview"
+            routerLink="/workspace/settings/billing"
             class="font-medium underline underline-offset-2"
             >upgrade your plan</a
           >

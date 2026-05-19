@@ -276,14 +276,14 @@ export class WorkspaceHomePageComponent {
       id: 'billing',
       title: 'Billing',
       icon: 'lucideCreditCard',
-      seeMorePath: '/workspace/settings/billing/overview',
+      seeMorePath: '/workspace/settings/billing',
       seeMoreLabel: 'See billing',
       steps: [
         {
           id: 'billing',
           title: 'Review your plan',
           description: 'Check plan, invoices, and payment method.',
-          path: '/workspace/settings/billing/overview',
+          path: '/workspace/settings/billing',
         },
       ],
     },

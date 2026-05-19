@@ -22,7 +22,7 @@ export interface ShellNavGroup {
 
 export type ShellNavEntry = ShellNavLink | ShellNavGroup;
 
-export const WORKSPACE_SHELL_NAV: readonly ShellNavEntry[] = [
+export const WORKSPACE_SHELL_NAV: readonly ShellNavLink[] = [
   {
     kind: 'link',
     label: 'Metrics',
@@ -52,27 +52,11 @@ export const WORKSPACE_SHELL_NAV: readonly ShellNavEntry[] = [
     exact: true,
   },
   {
-    kind: 'group',
+    kind: 'link',
     label: 'Billing',
+    path: '/workspace/settings/billing',
     icon: 'lucideCreditCard',
-    basePath: '/workspace/settings/billing',
-    children: [
-      {
-        label: 'Overview',
-        path: '/workspace/settings/billing/overview',
-        exact: true,
-      },
-      {
-        label: 'Invoices',
-        path: '/workspace/settings/billing/invoices',
-        exact: true,
-      },
-      {
-        label: 'Payment method',
-        path: '/workspace/settings/billing/payment',
-        exact: true,
-      },
-    ],
+    exact: true,
   },
 ];
 

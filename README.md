@@ -61,26 +61,20 @@ Outline card sections (Resend-style border, no fill) for form settings.
 
 ![Workspace settings — General](./docs/assets/demo-settings.png)
 
-### Billing (Overview, invoices, payment, trial)
+### Billing
 
-Collapsible **Billing** in the workspace sidebar: Overview · Invoices · Payment method. Mock orgs:
+Single scroll page: **Subscription Plan** · **Past Invoices** · **Payment Methods** (outline cards, same pattern as General settings). Mock orgs:
 
 | Workspace | Billing state | Demo purpose |
 |-----------|---------------|--------------|
-| **Parcel** | Active, 5/5 seats | Seat meter + invite blocked on Members |
-| **Nova** | Trialing | Shell trial banner + mock upgrade funnel |
+| **Parcel** | Active Team, 5/5 seats | Seat meter + invite blocked on Members |
+| **Nova** | Trialing Pro | Shell trial banner + mock upgrade funnel |
 
-![Billing — plan summary and seats](./docs/assets/demo-billing-overview.png)
-
-![Billing — invoices](./docs/assets/demo-billing-invoices.png)
-
-![Billing — payment method](./docs/assets/demo-billing-payment.png)
-
-![Billing — trial workspace (Nova)](./docs/assets/demo-billing-trial.png)
+![Billing — subscription, invoices, and payment](./docs/assets/demo-billing.png)
 
 ### Paywall (plan picker)
 
-Wide upgrade modal (**Free · Pro · Team**) opened from **Upgrade plan** on Billing overview. Mock checkout simulates payment — no Stripe in the UI repo.
+Wide upgrade modal (**Free · Pro · Team**) opened from **Change subscription plan** on the Billing page. Mock checkout simulates payment — no Stripe in the UI repo.
 
 ![Paywall — change subscription plan](./docs/assets/demo-paywall.png)
 

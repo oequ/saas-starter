@@ -49,7 +49,8 @@ export async function switchWorkspace(
 }
 
 export async function waitForBillingLoaded(page: Page): Promise<void> {
-  await page.getByText('Loading billing…').waitFor({ state: 'hidden' });
+  await expect(page.getByRole('heading', { name: 'Billing', level: 1 })).toBeVisible();
+  await page.getByText('Loading subscription…').waitFor({ state: 'hidden' });
 }
 
 export async function waitForMembersPageLoaded(page: Page): Promise<void> {

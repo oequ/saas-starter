@@ -15,16 +15,18 @@ test.describe('Billing v0.3 (mock demo)', () => {
   test('upgrade funnel: trialing workspace → mock checkout → active plan', async ({
     page,
   }) => {
-    await page.goto('/workspace/settings/billing/overview');
+    await page.goto('/workspace/settings/billing');
     await switchWorkspace(page, NOVA_WORKSPACE);
 
     await expect(page.getByText('You are on a trial.')).toBeVisible();
     await waitForBillingLoaded(page);
 
-    await expect(page.getByRole('heading', { level: 3, name: 'Pro' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Subscription Plan' }).locator('..').getByText('Pro Plan'),
+    ).toBeVisible();
     await expect(page.getByText('Status:').locator('..')).toContainText('Trial');
 
-    await page.getByRole('button', { name: 'Upgrade plan' }).click();
+    await page.getByRole('button', { name: 'Change subscription plan' }).click();
     await expect(
       page.getByRole('heading', { name: 'Change subscription plan' }),
     ).toBeVisible();
@@ -40,9 +42,9 @@ test.describe('Billing v0.3 (mock demo)', () => {
     await page.getByRole('button', { name: 'Simulate payment success' }).click();
 
     await expect(
-      page.getByRole('heading', { level: 3, name: 'Team' }),
+      page.getByRole('heading', { name: 'Subscription Plan' }).locator('..').getByText('Team Plan'),
     ).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('Status:')).toContainText('Active');
+    await expect(page.getByText('Status:').locator('..')).toContainText('Active');
     await expect(page.getByText('Plan upgraded successfully.')).toBeVisible();
 
     await page.reload();
@@ -59,32 +61,33 @@ test.describe('Billing v0.3 (mock demo)', () => {
     await expect(page.getByText(/Seat limit reached/)).toBeVisible();
     await expect(
       page.getByRole('link', { name: 'upgrade your plan' }),
-    ).toHaveAttribute('href', /\/workspace\/settings\/billing\/overview/);
+    ).toHaveAttribute('href', /\/workspace\/settings\/billing$/);
 
     const inviteButton = page.getByRole('button', { name: '+ Invite member' });
     await expect(inviteButton).toBeDisabled();
   });
 
-  test('billing sidebar navigates overview, invoices, and payment', async ({
+  test('billing page shows subscription, invoices, and payment sections', async ({
     page,
   }) => {
-    await page.goto('/workspace/settings/general');
+    await page.goto('/workspace/settings/billing');
     await switchWorkspace(page, PARCEL_WORKSPACE);
-
-    await page.getByRole('button', { name: 'Billing' }).click();
-    await page.getByRole('link', { name: 'Overview' }).click();
-    await expect(page).toHaveURL(/\/workspace\/settings\/billing\/overview/);
     await waitForBillingLoaded(page);
-    await expect(page.getByRole('button', { name: 'Upgrade plan' })).toBeVisible();
 
-    await page.getByRole('link', { name: 'Invoices' }).click();
-    await expect(page).toHaveURL(/\/workspace\/settings\/billing\/invoices/);
-    await expect(page.getByRole('columnheader', { name: 'Date' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Subscription Plan' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Past Invoices' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Payment Methods' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Invoice number' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Change subscription plan' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Add new card' })).toBeVisible();
+  });
 
-    await page.getByRole('link', { name: 'Payment method' }).click();
-    await expect(page).toHaveURL(/\/workspace\/settings\/billing\/payment/);
-    await expect(
-      page.getByRole('button', { name: 'Manage in portal' }),
-    ).toBeVisible();
+  test('legacy billing sub-routes redirect to unified billing page', async ({
+    page,
+  }) => {
+    await page.goto('/workspace/settings/billing/invoices');
+    await expect(page).toHaveURL(/\/workspace\/settings\/billing$/);
+    await waitForBillingLoaded(page);
+    await expect(page.getByRole('heading', { name: 'Past Invoices' })).toBeVisible();
   });
 });

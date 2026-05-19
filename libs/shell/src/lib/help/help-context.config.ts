@@ -121,7 +121,7 @@ const BILLING_TOPICS: readonly HelpTopic[] = [
     summary: 'Find past charges and download PDFs.',
     category: 'billing',
     paragraphs: [
-      'The Invoices tab lists date, amount, and status for each billing period.',
+      'The Past Invoices section lists date, amount, invoice number, and status for each billing period.',
       'Paid invoices include a download action for your records.',
       'Billing email on the overview receives invoice notifications.',
     ],
