@@ -4,6 +4,12 @@ export const DEMO_EMAIL_ACTIVATION_CONFIG: ActivationOnboardingConfig = {
   title: 'Send your first email',
   subtitle:
     'Follow the steps below to complete workspace activation. Replace this flow in your app via ActivationPort and ACTIVATION_ONBOARDING_CONFIG.',
+  retrospective: {
+    title: 'Preview delivery metrics',
+    description:
+      'Backfill simulated sends over a time window and watch volume update live on the Metrics dashboard (about 2 seconds). Plan limits apply.',
+    actionLabel: 'Simulate send history',
+  },
   steps: [
     {
       id: 'api-key',

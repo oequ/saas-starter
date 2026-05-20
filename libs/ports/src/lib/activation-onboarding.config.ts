@@ -22,10 +22,18 @@ export interface ActivationExploreCardConfig {
   readonly badge?: string;
 }
 
+export interface ActivationRetrospectiveBlockConfig {
+  readonly title: string;
+  readonly description: string;
+  readonly actionLabel: string;
+}
+
 export interface ActivationOnboardingConfig {
   readonly title: string;
   readonly subtitle: string;
   readonly steps: readonly ActivationStepConfig[];
+  /** Optional first-block CTA: simulate historical sends and open Metrics. */
+  readonly retrospective?: ActivationRetrospectiveBlockConfig;
   readonly exploreTitle?: string;
   readonly exploreSubtitle?: string;
   readonly exploreCards?: readonly ActivationExploreCardConfig[];

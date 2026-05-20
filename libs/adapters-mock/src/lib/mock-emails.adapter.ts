@@ -10,6 +10,7 @@ import {
   portOk,
   type PortResult,
   resolveCurrentPlanId,
+  type SimulateOutboundEmailRecord,
   type SimulateOutboundEmailsInput,
   type SimulateOutboundEmailsResult,
 } from '@oequ/ports';
@@ -158,13 +159,12 @@ export class MockEmailsAdapter implements EmailsPort {
     organizationId: OrganizationId,
     input?: SimulateOutboundEmailsInput,
   ): Promise<PortResult<SimulateOutboundEmailsResult>> {
-    await delay(500);
+    await delay(input?.records?.length ? 80 : 500);
     const session = await this.authAdapter.getClaims();
     if (!session.ok || !session.data) {
       return portErr({ code: 'UNAUTHENTICATED', message: 'Not signed in' });
     }
 
-    const count = Math.min(Math.max(input?.count ?? 8, 1), 50);
     const billing = await this.billingAdapter.getSummary(organizationId);
     if (!billing.ok) {
       return portErr(billing.error);
@@ -179,37 +179,53 @@ export class MockEmailsAdapter implements EmailsPort {
     const monthlyLimit = meter?.limit ?? quota.monthlyLimit;
     const dailyLimit = meter?.dailyLimit ?? quota.dailyLimit;
 
-    if (monthlyLimit !== null && monthlyCount + count > monthlyLimit) {
-      return portErr({
-        code: 'RATE_LIMITED',
-        message: `Monthly email quota exceeded (${monthlyCount} / ${monthlyLimit}). Upgrade on Usage or Billing.`,
-      });
-    }
-
-    if (dailyLimit !== null && todayCount + count > dailyLimit) {
-      return portErr({
-        code: 'RATE_LIMITED',
-        message: `Daily email limit exceeded (${todayCount} / ${dailyLimit} today). Free plan allows 100 emails per day.`,
-      });
-    }
-
     const keys = await this.apiKeysAdapter.listKeys(organizationId);
     const apiKey = keys.ok && keys.data.length > 0 ? keys.data[0] : null;
 
-    const subject =
+    const defaultSubject =
       input?.subject?.trim() || 'Welcome — your account is ready';
-    const to = input?.to?.trim() || 'customer@example.com';
+    const defaultTo = input?.to?.trim() || 'customer@example.com';
+
+    const requestedRecords = input?.records;
+    const requestedCount = requestedRecords?.length
+      ? requestedRecords.length
+      : Math.min(Math.max(input?.count ?? 8, 1), 50);
+
+    const { allowedRecords, capped } = this.capRecordsToQuota(
+      requestedRecords ??
+        this.buildInstantRecords(requestedCount, {
+          defaultSubject,
+          defaultTo,
+        }),
+      monthlyCount,
+      todayCount,
+      monthlyLimit,
+      dailyLimit,
+    );
+
+    if (allowedRecords.length === 0) {
+      return portErr({
+        code: 'RATE_LIMITED',
+        message: this.quotaExceededMessage(
+          monthlyCount,
+          todayCount,
+          monthlyLimit,
+          dailyLimit,
+        ),
+      });
+    }
 
     const created: OutboundEmail[] = [];
-    const now = Date.now();
-    for (let i = 0; i < count; i++) {
+    const stamp = Date.now();
+    for (let i = 0; i < allowedRecords.length; i++) {
+      const row = allowedRecords[i];
       created.push({
-        id: `em_${organizationId}_${now}_${i}`,
+        id: `em_${organizationId}_${stamp}_${i}`,
         organizationId,
-        to,
-        subject,
-        status: 'delivered',
-        sentAt: new Date(now - i * 45_000).toISOString(),
+        to: row.to?.trim() || defaultTo,
+        subject: row.subject?.trim() || defaultSubject,
+        status: row.status ?? 'delivered',
+        sentAt: row.sentAt,
         apiKeyId: apiKey?.id ?? null,
         apiKeyLabel: apiKey?.name ?? 'Simulated',
       });
@@ -224,7 +240,85 @@ export class MockEmailsAdapter implements EmailsPort {
       created,
       totalSent: next.length,
       quotaLimit: monthlyLimit,
+      requestedCount,
+      capped: capped || allowedRecords.length < requestedCount,
     });
+  }
+
+  private buildInstantRecords(
+    count: number,
+    ctx: { defaultSubject: string; defaultTo: string },
+  ): readonly SimulateOutboundEmailRecord[] {
+    const now = Date.now();
+    return Array.from({ length: count }, (_, i) => ({
+      sentAt: new Date(now - i * 45_000).toISOString(),
+      status: 'delivered' as const,
+      subject: ctx.defaultSubject,
+      to: ctx.defaultTo,
+    }));
+  }
+
+  private capRecordsToQuota(
+    records: readonly SimulateOutboundEmailRecord[],
+    monthlyCount: number,
+    todayCount: number,
+    monthlyLimit: number | null,
+    dailyLimit: number | null,
+  ): {
+    readonly allowedRecords: readonly SimulateOutboundEmailRecord[];
+    readonly capped: boolean;
+  } {
+    const allowed: SimulateOutboundEmailRecord[] = [];
+    let monthly = monthlyCount;
+    let today = todayCount;
+
+    for (const record of records) {
+      const billable = record.status !== 'queued';
+      if (
+        billable &&
+        monthlyLimit !== null &&
+        monthly + 1 > monthlyLimit
+      ) {
+        break;
+      }
+      if (billable && dailyLimit !== null) {
+        const isToday =
+          record.sentAt.slice(0, 10) === new Date().toISOString().slice(0, 10);
+        if (isToday && today + 1 > dailyLimit) {
+          break;
+        }
+      }
+
+      allowed.push(record);
+      if (billable) {
+        monthly += 1;
+        const isToday =
+          record.sentAt.slice(0, 10) === new Date().toISOString().slice(0, 10);
+        if (isToday) {
+          today += 1;
+        }
+      }
+    }
+
+    return {
+      allowedRecords: allowed,
+      capped: allowed.length < records.length,
+    };
+  }
+
+  private quotaExceededMessage(
+    monthlyCount: number,
+    todayCount: number,
+    monthlyLimit: number | null,
+    dailyLimit: number | null,
+  ): string {
+    if (monthlyLimit !== null && monthlyCount >= monthlyLimit) {
+      return `Monthly email quota exceeded (${monthlyCount} / ${monthlyLimit}). Upgrade on Usage or Billing.`;
+    }
+    if (dailyLimit !== null && todayCount >= dailyLimit) {
+      return `Daily email limit exceeded (${todayCount} / ${dailyLimit} today).`;
+    }
+    return 'Email quota exceeded for your plan.';
   }
 
   private getEmails(organizationId: OrganizationId): OutboundEmail[] {

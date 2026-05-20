@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   resource,
@@ -22,6 +23,7 @@ import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { MetricsEmailsCardComponent } from './metrics/metrics-emails-card.component';
 import { MetricsKpiRowComponent } from './metrics/metrics-kpi-row.component';
 import { MetricsPageSkeletonComponent } from './metrics/metrics-page-skeleton.component';
+import { MetricsRetrospectiveSimulationService } from './onboarding/metrics-retrospective-simulation.service';
 import { MetricsPeriodSegmentComponent } from './metrics/metrics-period-segment.component';
 import {
   MetricsStatCardComponent,
@@ -95,7 +97,24 @@ import {
         </div>
       } @else if (metrics(); as data) {
         <div class="relative flex flex-col gap-5">
-          @if (metricsLoading()) {
+          @if (retrospectiveSimulation.running()) {
+            <div
+              class="bg-background/70 absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 rounded-xl backdrop-blur-sm"
+              role="status"
+              aria-live="polite"
+            >
+              <span class="text-sm font-medium">Simulating send history…</span>
+              <span class="text-muted-foreground text-xs tabular-nums">
+                {{ simulationProgressPercent() }}%
+              </span>
+              <div class="bg-muted mt-1 h-1.5 w-48 overflow-hidden rounded-full">
+                <div
+                  class="bg-primary h-full rounded-full transition-[width] duration-200"
+                  [style.width.%]="simulationProgressPercent()"
+                ></div>
+              </div>
+            </div>
+          } @else if (metricsLoading()) {
             <div
               class="bg-background/60 absolute inset-0 z-10 flex items-center justify-center rounded-xl backdrop-blur-[1px]"
               aria-hidden="true"
@@ -143,10 +162,53 @@ export class OrgMetricsComponent {
   readonly organizationId = input.required<string>();
 
   private readonly metricsPort = inject(METRICS_PORT);
+  protected readonly retrospectiveSimulation = inject(
+    MetricsRetrospectiveSimulationService,
+  );
+
+  private simulationKickoffStarted = false;
 
   protected readonly domainFilter = signal<MetricsDomainId>('all');
   protected readonly periodFilter = signal<MetricsPeriod>('15d');
   protected readonly eventFilter = signal<MetricsEventFilter>('all_events');
+
+  constructor() {
+    const pendingPeriod =
+      this.retrospectiveSimulation.metricsPeriodForPending();
+    if (pendingPeriod) {
+      this.periodFilter.set(pendingPeriod);
+    }
+
+    effect(() => {
+      const orgId = this.organizationId();
+      const data = this.metrics();
+      const loading = this.metricsLoading();
+      const simRunning = this.retrospectiveSimulation.running();
+
+      if (
+        this.simulationKickoffStarted ||
+        simRunning ||
+        loading ||
+        !data
+      ) {
+        return;
+      }
+
+      const pending = this.retrospectiveSimulation.consumePending(orgId);
+      if (!pending) {
+        return;
+      }
+
+      this.simulationKickoffStarted = true;
+      void this.retrospectiveSimulation.runAnimated(pending, async () => {
+        await this.metricsResource.reload();
+      });
+    });
+  }
+
+  protected readonly simulationProgressPercent = computed(() =>
+    Math.round(this.retrospectiveSimulation.progress() * 100),
+  );
 
   private readonly filters = computed<MetricsFilters>(() => ({
     domainId: this.domainFilter(),

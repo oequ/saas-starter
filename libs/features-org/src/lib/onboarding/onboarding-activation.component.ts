@@ -12,6 +12,7 @@ import {
   lucideArrowRight,
   lucideGlobe,
   lucideKeyRound,
+  lucideLineChart,
   lucideSend,
   lucideSparkles,
   lucideTestTubeDiagonal,
@@ -31,6 +32,11 @@ import {
   ACTIVATION_ONBOARDING_CONFIG,
 } from './activation-ui.model';
 import { OnboardingCodeBlockComponent } from './onboarding-code-block.component';
+import {
+  OnboardingRetrospectiveDialogComponent,
+  type OnboardingRetrospectiveConfirm,
+} from './onboarding-retrospective-dialog.component';
+import { MetricsRetrospectiveSimulationService } from './metrics-retrospective-simulation.service';
 
 @Component({
   selector: 'oequ-onboarding-activation',
@@ -41,6 +47,7 @@ import { OnboardingCodeBlockComponent } from './onboarding-code-block.component'
     HlmButtonImports,
     HlmTooltipImports,
     OnboardingCodeBlockComponent,
+    OnboardingRetrospectiveDialogComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -51,6 +58,7 @@ import { OnboardingCodeBlockComponent } from './onboarding-code-block.component'
       lucideTestTubeDiagonal,
       lucideSend,
       lucideArrowRight,
+      lucideLineChart,
     }),
   ],
   template: `
@@ -63,6 +71,35 @@ import { OnboardingCodeBlockComponent } from './onboarding-code-block.component'
           {{ config().subtitle }}
         </p>
       </div>
+
+      @if (config().retrospective; as retro) {
+        <section
+          hlmCard
+          class="border-primary/25 bg-primary/5 mb-10 gap-0 overflow-hidden py-0"
+        >
+          <div hlmCardContent class="!p-6">
+            <h2 class="text-base font-semibold leading-6">{{ retro.title }}</h2>
+            <p class="text-muted-foreground mt-1 text-sm leading-6">
+              {{ retro.description }}
+            </p>
+            <div class="mt-4">
+              <button
+                hlmBtn
+                type="button"
+                [disabled]="retrospectiveSubmitting()"
+                (click)="openRetrospectiveDialog()"
+              >
+                <ng-icon
+                  name="lucideLineChart"
+                  class="me-2 size-4"
+                  aria-hidden="true"
+                />
+                {{ retro.actionLabel }}
+              </button>
+            </div>
+          </div>
+        </section>
+      }
 
       <ol class="border-border ms-1.5 space-y-8 border-s ps-7">
         @for (step of config().steps; track step.id; let index = $index) {
@@ -215,6 +252,13 @@ import { OnboardingCodeBlockComponent } from './onboarding-code-block.component'
           </div>
         </section>
       }
+
+      <oequ-onboarding-retrospective-dialog
+        [open]="retrospectiveDialogOpen()"
+        [submitting]="retrospectiveSubmitting()"
+        (confirmed)="onRetrospectiveConfirmed($event)"
+        (cancelled)="closeRetrospectiveDialog()"
+      />
     </div>
   `,
 })
@@ -225,6 +269,9 @@ export class OnboardingActivationComponent {
   private readonly emailsPort = inject(EMAILS_PORT);
   private readonly orgPort = inject(ORG_PORT);
   private readonly router = inject(Router);
+  private readonly retrospectiveSimulation = inject(
+    MetricsRetrospectiveSimulationService,
+  );
 
   protected readonly config = computed(() => this.configToken);
 
@@ -237,6 +284,8 @@ export class OnboardingActivationComponent {
     new Set(),
   );
   protected readonly completing = signal(false);
+  protected readonly retrospectiveDialogOpen = signal(false);
+  protected readonly retrospectiveSubmitting = signal(false);
 
   protected readonly exploreDemoTooltip = 'Demo only — this action is not wired';
 
@@ -295,6 +344,35 @@ export class OnboardingActivationComponent {
   protected onExploreAction(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  protected openRetrospectiveDialog(): void {
+    this.retrospectiveDialogOpen.set(true);
+  }
+
+  protected closeRetrospectiveDialog(): void {
+    this.retrospectiveDialogOpen.set(false);
+    this.retrospectiveSubmitting.set(false);
+  }
+
+  protected async onRetrospectiveConfirmed(
+    input: OnboardingRetrospectiveConfirm,
+  ): Promise<void> {
+    const org = this.activeOrganization();
+    if (!org) {
+      toast.error('No active workspace. Select a workspace and try again.');
+      return;
+    }
+
+    this.retrospectiveSubmitting.set(true);
+    this.retrospectiveSimulation.schedule({
+      organizationId: org.id,
+      count: input.count,
+      period: input.period,
+    });
+    this.retrospectiveDialogOpen.set(false);
+    await this.router.navigate(['/workspace/metrics']);
+    this.retrospectiveSubmitting.set(false);
   }
 
   protected async completeActivation(): Promise<void> {

@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   resource,
@@ -12,6 +13,8 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
+  lucideChevronLeft,
+  lucideChevronRight,
   lucideDownload,
   lucideEllipsis,
   lucideMail,
@@ -25,6 +28,7 @@ import {
   type OutboundEmail,
   emailListPeriodLabel,
   emailStatusBadgeClass,
+  formatEmailListPaginationRange,
   formatEmailSentRelative,
   formatOutboundEmailStatus,
 } from '@oequ/ports';
@@ -35,6 +39,10 @@ import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { map, startWith } from 'rxjs';
+
+import { EmailsTableSkeletonComponent } from './emails-table-skeleton.component';
+
+const EMAILS_PAGE_SIZE = 50;
 
 @Component({
   selector: 'oequ-org-emails',
@@ -48,6 +56,7 @@ import { map, startWith } from 'rxjs';
     HlmTableImports,
     HlmBadgeImports,
     HlmEmptyImports,
+    EmailsTableSkeletonComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -56,6 +65,8 @@ import { map, startWith } from 'rxjs';
       lucideSearch,
       lucideDownload,
       lucideEllipsis,
+      lucideChevronLeft,
+      lucideChevronRight,
     }),
   ],
   template: `
@@ -134,11 +145,11 @@ import { map, startWith } from 'rxjs';
           </button>
         </div>
 
-        @if (emailsResource.isLoading()) {
-          <p class="text-muted-foreground text-sm">Loading emails…</p>
+        @if (emailsLoading()) {
+          <oequ-emails-table-skeleton />
         } @else if (emailsResource.error(); as err) {
           <p class="text-destructive text-sm" role="alert">{{ err.message }}</p>
-        } @else if (filteredEmails().length === 0) {
+        } @else if (totalEmails() === 0 && filtersAreDefault()) {
           <div hlmEmpty class="border-border rounded-[5px] border py-16">
             <div hlmEmptyHeader>
               <div hlmEmptyMedia variant="icon">
@@ -155,63 +166,125 @@ import { map, startWith } from 'rxjs';
             </div>
           </div>
         } @else {
-          <div class="border-input overflow-hidden rounded-[5px] border">
-            <table hlmTable class="w-full text-left text-sm">
-              <thead
-                class="text-muted-foreground border-b text-xs font-medium"
-              >
-                <tr hlmTr>
-                  <th hlmTh class="w-10 px-4 py-2.5"></th>
-                  <th hlmTh class="px-4 py-2.5 font-medium">To</th>
-                  <th hlmTh class="px-4 py-2.5 font-medium">Status</th>
-                  <th hlmTh class="px-4 py-2.5 font-medium">Subject</th>
-                  <th hlmTh class="px-4 py-2.5 font-medium">Sent</th>
-                  <th hlmTh class="w-12 px-4 py-2.5"></th>
-                </tr>
-              </thead>
-              <tbody class="divide-border divide-y">
-                @for (email of filteredEmails(); track email.id) {
-                  <tr hlmTr class="hover:bg-muted/30">
-                    <td hlmTd class="px-4 py-3">
-                      <span
-                        class="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 inline-flex size-8 items-center justify-center rounded-[5px]"
-                        aria-hidden="true"
-                      >
-                        <ng-icon name="lucideMail" class="size-4" />
-                      </span>
-                    </td>
-                    <td hlmTd class="px-4 py-3 font-medium">{{ email.to }}</td>
-                    <td hlmTd class="px-4 py-3">
-                      <span
-                        hlmBadge
-                        variant="outline"
-                        [class]="statusBadgeClass(email.status)"
-                      >
-                        {{ formatStatus(email.status) }}
-                      </span>
-                    </td>
-                    <td hlmTd class="text-muted-foreground max-w-md truncate px-4 py-3">
-                      {{ email.subject }}
-                    </td>
-                    <td hlmTd class="text-muted-foreground px-4 py-3 whitespace-nowrap">
-                      {{ formatSent(email.sentAt) }}
-                    </td>
-                    <td hlmTd class="px-4 py-3 text-right">
-                      <button
-                        hlmBtn
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        class="text-muted-foreground size-8"
-                        aria-label="Row actions"
-                      >
-                        <ng-icon name="lucideEllipsis" class="size-4" />
-                      </button>
-                    </td>
+          <div class="flex flex-col gap-3">
+            <div hlmTableContainer class="border-input rounded-[5px] border">
+              <table hlmTable class="w-full text-left text-sm">
+                <thead hlmTHead>
+                  <tr
+                    hlmTr
+                    class="text-muted-foreground border-b text-xs font-medium"
+                  >
+                    <th hlmTh class="w-10 px-4 py-2.5"></th>
+                    <th hlmTh class="px-4 py-2.5 font-medium">To</th>
+                    <th hlmTh class="px-4 py-2.5 font-medium">Status</th>
+                    <th hlmTh class="px-4 py-2.5 font-medium">Subject</th>
+                    <th hlmTh class="px-4 py-2.5 font-medium">Sent</th>
+                    <th hlmTh class="w-12 px-4 py-2.5"></th>
                   </tr>
-                }
-              </tbody>
-            </table>
+                </thead>
+                <tbody hlmTBody class="divide-border divide-y">
+                  @if (paginatedEmails().length === 0) {
+                    <tr hlmTr>
+                      <td
+                        hlmTd
+                        colspan="6"
+                        class="text-muted-foreground px-4 py-10 text-center whitespace-normal"
+                      >
+                        No emails match your filters.
+                      </td>
+                    </tr>
+                  } @else {
+                    @for (email of paginatedEmails(); track email.id) {
+                      <tr hlmTr class="hover:bg-muted/30">
+                        <td hlmTd class="px-4 py-3">
+                          <span
+                            class="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 inline-flex size-8 items-center justify-center rounded-[5px]"
+                            aria-hidden="true"
+                          >
+                            <ng-icon name="lucideMail" class="size-4" />
+                          </span>
+                        </td>
+                        <td hlmTd class="px-4 py-3 font-medium">
+                          {{ email.to }}
+                        </td>
+                        <td hlmTd class="px-4 py-3">
+                          <span
+                            hlmBadge
+                            variant="outline"
+                            [class]="statusBadgeClass(email.status)"
+                          >
+                            {{ formatStatus(email.status) }}
+                          </span>
+                        </td>
+                        <td
+                          hlmTd
+                          class="text-muted-foreground max-w-md truncate px-4 py-3"
+                        >
+                          {{ email.subject }}
+                        </td>
+                        <td
+                          hlmTd
+                          class="text-muted-foreground px-4 py-3 whitespace-nowrap"
+                        >
+                          {{ formatSent(email.sentAt) }}
+                        </td>
+                        <td hlmTd class="px-4 py-3 text-right">
+                          <button
+                            hlmBtn
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            class="text-muted-foreground size-8"
+                            aria-label="Row actions"
+                          >
+                            <ng-icon name="lucideEllipsis" class="size-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            @if (showPaginationFooter()) {
+              <div
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <p class="text-muted-foreground text-sm tabular-nums">
+                  {{ paginationRangeLabel() }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <button
+                    hlmBtn
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    class="gap-1"
+                    [disabled]="!canGoPreviousPage()"
+                    (click)="goToPreviousPage()"
+                  >
+                    <ng-icon name="lucideChevronLeft" class="size-4" />
+                    Previous
+                  </button>
+                  <span class="text-muted-foreground px-1 text-sm tabular-nums">
+                    Page {{ currentPageNumber() }} of {{ totalPages() }}
+                  </span>
+                  <button
+                    hlmBtn
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    class="gap-1"
+                    [disabled]="!canGoNextPage()"
+                    (click)="goToNextPage()"
+                  >
+                    Next
+                    <ng-icon name="lucideChevronRight" class="size-4" />
+                  </button>
+                </div>
+              </div>
+            }
           </div>
         }
     </div>
@@ -281,6 +354,68 @@ export class OrgEmailsComponent {
     (): readonly OutboundEmail[] => this.emailsResource.value() ?? [],
   );
 
+  protected readonly emailsLoading = computed(
+    () =>
+      this.emailsResource.isLoading() && this.emailsResource.value() === undefined,
+  );
+
+  protected readonly pageIndex = signal(0);
+
+  protected readonly totalEmails = computed(() => this.filteredEmails().length);
+
+  protected readonly filtersAreDefault = computed(
+    () =>
+      !this.searchTerm() &&
+      this.periodFilter() === '15d' &&
+      this.statusFilter() === 'all' &&
+      this.apiKeyFilter() === 'all',
+  );
+
+  protected readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.totalEmails() / EMAILS_PAGE_SIZE)),
+  );
+
+  protected readonly safePageIndex = computed(() =>
+    Math.min(this.pageIndex(), Math.max(0, this.totalPages() - 1)),
+  );
+
+  protected readonly paginatedEmails = computed(() => {
+    const start = this.safePageIndex() * EMAILS_PAGE_SIZE;
+    return this.filteredEmails().slice(start, start + EMAILS_PAGE_SIZE);
+  });
+
+  protected readonly showPaginationFooter = computed(
+    () => this.totalEmails() > EMAILS_PAGE_SIZE,
+  );
+
+  protected readonly currentPageNumber = computed(
+    () => this.safePageIndex() + 1,
+  );
+
+  protected readonly paginationRangeLabel = computed(() =>
+    formatEmailListPaginationRange(
+      this.safePageIndex(),
+      EMAILS_PAGE_SIZE,
+      this.totalEmails(),
+    ),
+  );
+
+  protected readonly canGoPreviousPage = computed(() => this.safePageIndex() > 0);
+
+  protected readonly canGoNextPage = computed(
+    () => this.safePageIndex() < this.totalPages() - 1,
+  );
+
+  constructor() {
+    effect(() => {
+      this.searchTerm();
+      this.periodFilter();
+      this.statusFilter();
+      this.apiKeyFilter();
+      this.pageIndex.set(0);
+    });
+  }
+
   protected readonly periodLabel = computed(() =>
     emailListPeriodLabel(this.periodFilter()),
   );
@@ -322,6 +457,18 @@ export class OrgEmailsComponent {
   protected onApiKeyChange(value: string | string[] | null | undefined): void {
     if (typeof value === 'string') {
       this.apiKeyFilter.set(value);
+    }
+  }
+
+  protected goToPreviousPage(): void {
+    if (this.canGoPreviousPage()) {
+      this.pageIndex.update((page) => page - 1);
+    }
+  }
+
+  protected goToNextPage(): void {
+    if (this.canGoNextPage()) {
+      this.pageIndex.update((page) => page + 1);
     }
   }
 }

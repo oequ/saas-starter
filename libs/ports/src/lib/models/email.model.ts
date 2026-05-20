@@ -28,14 +28,28 @@ export interface EmailListQuery {
   readonly apiKeyId?: string | 'all';
 }
 
+/** Demo: spread simulated sends across a retrospective window. */
+export type RetrospectiveSendPeriod = 'today' | '7d' | '30d';
+
+export interface SimulateOutboundEmailRecord {
+  readonly sentAt: string;
+  readonly status?: OutboundEmailStatus;
+  readonly subject?: string;
+  readonly to?: string;
+}
+
 export interface SimulateOutboundEmailsInput {
   readonly count?: number;
   readonly subject?: string;
   readonly to?: string;
+  /** When set, append these rows instead of generating `count` at "now". */
+  readonly records?: readonly SimulateOutboundEmailRecord[];
 }
 
 export interface SimulateOutboundEmailsResult {
   readonly created: readonly OutboundEmail[];
   readonly totalSent: number;
   readonly quotaLimit: number | null;
+  readonly requestedCount?: number;
+  readonly capped?: boolean;
 }

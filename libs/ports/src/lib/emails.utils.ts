@@ -1,4 +1,10 @@
-import type { EmailListPeriod, OutboundEmailStatus } from './models/email.model';
+import type {
+  EmailListPeriod,
+  OutboundEmailStatus,
+  RetrospectiveSendPeriod,
+  SimulateOutboundEmailRecord,
+} from './models/email.model';
+import type { MetricsPeriod } from './models/metrics.model';
 
 const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
 
@@ -66,4 +72,96 @@ export function emailPeriodCutoffIso(period: EmailListPeriod): string {
   const date = new Date();
   date.setDate(date.getDate() - days);
   return date.toISOString();
+}
+
+export function retrospectiveSendPeriodLabel(
+  period: RetrospectiveSendPeriod,
+): string {
+  switch (period) {
+    case 'today':
+      return 'Today';
+    case '7d':
+      return 'Last 7 days';
+    case '30d':
+      return 'Last 30 days';
+  }
+}
+
+export function retrospectivePeriodToMetricsPeriod(
+  period: RetrospectiveSendPeriod,
+): MetricsPeriod {
+  return period === '30d' ? '30d' : '15d';
+}
+
+function retrospectiveWindowMs(
+  period: RetrospectiveSendPeriod,
+  now: Date = new Date(),
+): { readonly startMs: number; readonly endMs: number } {
+  const endMs = now.getTime();
+  if (period === 'today') {
+    const start = new Date(now);
+    start.setUTCHours(0, 0, 0, 0);
+    return { startMs: start.getTime(), endMs };
+  }
+  const days = period === '30d' ? 30 : 7;
+  return { startMs: endMs - days * 86_400_000, endMs };
+}
+
+function retrospectiveStatusForIndex(
+  index: number,
+  total: number,
+): OutboundEmailStatus {
+  if (total <= 0) {
+    return 'delivered';
+  }
+  const bouncedCutoff = Math.floor(total * 0.03);
+  const failedCutoff = bouncedCutoff + Math.floor(total * 0.01);
+  if (index < bouncedCutoff) {
+    return 'bounced';
+  }
+  if (index < failedCutoff) {
+    return 'failed';
+  }
+  return 'delivered';
+}
+
+/** Spread sends across a retrospective window (demo metrics animation). */
+export function formatEmailListPaginationRange(
+  pageIndex: number,
+  pageSize: number,
+  total: number,
+): string {
+  if (total <= 0) {
+    return '0 emails';
+  }
+  const start = pageIndex * pageSize + 1;
+  const end = Math.min((pageIndex + 1) * pageSize, total);
+  return `${start}–${end} of ${total.toLocaleString()} emails`;
+}
+
+export function buildRetrospectiveEmailRecords(
+  count: number,
+  period: RetrospectiveSendPeriod,
+  now: Date = new Date(),
+): readonly SimulateOutboundEmailRecord[] {
+  const safeCount = Math.max(0, Math.floor(count));
+  if (safeCount === 0) {
+    return [];
+  }
+
+  const { startMs, endMs } = retrospectiveWindowMs(period, now);
+  const span = Math.max(endMs - startMs, 1);
+
+  return Array.from({ length: safeCount }, (_, index) => {
+    const t =
+      safeCount === 1
+        ? endMs
+        : startMs + (span * index) / (safeCount - 1);
+    return {
+      sentAt: new Date(t).toISOString(),
+      status: retrospectiveStatusForIndex(index, safeCount),
+      subject: 'Simulated campaign',
+      to: `user${(index % 97) + 1}@example.com`,
+    };
+  });
 }
