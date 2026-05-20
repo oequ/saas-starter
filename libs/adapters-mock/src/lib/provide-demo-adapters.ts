@@ -18,6 +18,10 @@ import {
   MockApiKeysAdapter,
 } from './mock-api-keys.adapter';
 import {
+  MOCK_EMAILS_PROVIDER,
+  MockEmailsAdapter,
+} from './mock-emails.adapter';
+import {
   MOCK_INTEGRATIONS_PROVIDER,
   MockIntegrationsAdapter,
 } from './mock-integrations.adapter';
@@ -54,6 +58,7 @@ export function provideDemoAdapters(): EnvironmentProviders {
     MockBillingAdapter,
     MockActivationAdapter,
     MockApiKeysAdapter,
+    MockEmailsAdapter,
     MockIntegrationsAdapter,
     MockMetricsAdapter,
     MockSupportAdapter,
@@ -62,6 +67,7 @@ export function provideDemoAdapters(): EnvironmentProviders {
     MOCK_BILLING_PROVIDER,
     MOCK_ACTIVATION_PROVIDER,
     MOCK_API_KEYS_PROVIDER,
+    MOCK_EMAILS_PROVIDER,
     MOCK_INTEGRATIONS_PROVIDER,
     MOCK_METRICS_PROVIDER,
     MOCK_SUPPORT_PROVIDER,
@@ -73,6 +79,7 @@ export function provideDemoAdapters(): EnvironmentProviders {
       const billing = inject(MockBillingAdapter);
       const activation = inject(MockActivationAdapter);
       const apiKeys = inject(MockApiKeysAdapter);
+      const emails = inject(MockEmailsAdapter);
       const integrations = inject(MockIntegrationsAdapter);
       const org = inject(MockOrgAdapter);
       window.__oequResetMock = () => {
@@ -80,6 +87,7 @@ export function provideDemoAdapters(): EnvironmentProviders {
         billing.resetMockState();
         activation.resetMockState();
         apiKeys.resetMockState();
+        emails.resetMockState();
         integrations.resetMockState();
         org.resetMockState();
         void org.selectOrganization('parcel');

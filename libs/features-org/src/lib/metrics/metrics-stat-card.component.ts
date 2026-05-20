@@ -62,7 +62,7 @@ export interface MetricsLegendItem {
         <oequ-metrics-line-chart
           [labels]="seriesLabels()"
           [values]="seriesValues()"
-          [yMax]="yMax()"
+          [yMax]="chartYMax()"
           tickFormat="percent"
           [lineColor]="lineColor()"
           [riskThresholdPercent]="riskThresholdPercent()"
@@ -94,7 +94,6 @@ export class MetricsStatCardComponent {
   readonly rateDecimals = input(0);
   readonly tooltip = input('');
   readonly series = input.required<MetricsTimeSeries>();
-  readonly yMax = input.required<number>();
   readonly lineColor = input('oklch(0.577 0.245 27.325)');
   readonly riskThresholdPercent = input.required<number>();
   readonly legendItems = input.required<readonly MetricsLegendItem[]>();
@@ -108,6 +107,16 @@ export class MetricsStatCardComponent {
   protected readonly seriesValues = computed(() =>
     this.series().points.map((point) => point.value),
   );
+
+  /** Headroom above peak series value, period rate, and risk line. */
+  protected readonly chartYMax = computed(() => {
+    const risk = this.riskThresholdPercent();
+    const peak = Math.max(...this.seriesValues(), this.rate(), risk, 0);
+    if (peak <= 0) {
+      return Math.max(risk * 2, 0.1);
+    }
+    return Math.ceil(peak * 1.2 * 100) / 100;
+  });
 
   protected readonly healthLabel = computed(() => {
     const rate = this.rate();

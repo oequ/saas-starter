@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { DEMO_AUTH_EMAIL, DEMO_AUTH_PASSWORD } from '@oequ/ports';
 
 import { resetMockDemoState } from './workspace.helpers';
 
@@ -24,7 +25,7 @@ test.describe('auth', () => {
       page.getByRole('heading', { name: 'Sign in', level: 1 }),
     ).toBeVisible();
 
-    await page.locator('#login-password').fill('demo');
+    await page.locator('#login-password').fill(DEMO_AUTH_PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
@@ -107,7 +108,7 @@ test.describe('register', () => {
     await signOutViaMenu(page);
 
     await page.goto('/auth/register');
-    await page.getByLabel('Email').fill('demo@example.com');
+    await page.getByLabel('Email').fill(DEMO_AUTH_EMAIL);
     await page.getByLabel('Password', { exact: true }).fill('password123');
     await page.getByLabel('Confirm password').fill('password123');
     await page.locator('#register-accept-terms').click();

@@ -98,5 +98,5 @@ export async function completeActivationViaOnboarding(page: Page): Promise<void>
   await page.getByRole('button', { name: 'Done' }).click();
   await page.goto('/onboarding');
   await page.getByRole('button', { name: 'Send email' }).click();
-  await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
+  await expect(page).toHaveURL(/\/workspace\/emails$/);
 }

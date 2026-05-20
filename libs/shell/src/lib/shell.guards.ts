@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { ACTIVATION_PORT, AUTH_PORT, ORG_PORT } from '@oequ/ports';
+import { AUTH_PORT, ORG_PORT } from '@oequ/ports';
 import { firstValueFrom } from 'rxjs';
 
 /** Requires a signed-in session; redirects to login with optional returnUrl. */
@@ -32,34 +32,24 @@ export const guestGuard: CanActivateFn = async () => {
 };
 
 /**
- * `/onboarding` — create workspace (0 orgs) or activation checklist (pending).
- * Redirect away when activation is already complete.
+ * `/onboarding` — create workspace (0 orgs) or activation checklist.
+ * Always allowed (sidebar link stays available after activation completes).
  */
 export const onboardingRouteGuard: CanActivateFn = async () => {
-  const router = inject(Router);
   const orgPort = inject(ORG_PORT);
-  const activationPort = inject(ACTIVATION_PORT);
 
   const orgs = await firstValueFrom(orgPort.organizations$);
   if (orgs.length === 0) {
     return true;
   }
 
-  let active = await firstValueFrom(orgPort.activeOrganization$);
-  if (!active) {
-    const selectResult = await orgPort.selectOrganization(orgs[0].slug);
-    if (!selectResult.ok) {
-      return true;
-    }
-    active = selectResult.data;
+  const active = await firstValueFrom(orgPort.activeOrganization$);
+  if (active) {
+    return true;
   }
 
-  const result = await activationPort.getStatus(active.id);
-  if (result.ok && result.data === 'complete') {
-    return router.createUrlTree(['/workspace/settings/general']);
-  }
-
-  return true;
+  const selectResult = await orgPort.selectOrganization(orgs[0].slug);
+  return selectResult.ok;
 };
 
 /** @deprecated Use onboardingRouteGuard */

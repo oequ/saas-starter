@@ -1,10 +1,12 @@
-import type {
-  BillingPlan,
-  BillingSummary,
-  Invoice,
-  InvoiceListPage,
-  PaymentMethod,
-  UsageMeter,
+import {
+  resolveCurrentPlanId,
+  type BillingPlan,
+  type BillingSummary,
+  type CommercialPlanId,
+  type Invoice,
+  type InvoiceListPage,
+  type PaymentMethod,
+  type UsageMeter,
 } from '@oequ/ports';
 
 import { MOCK_ORGANIZATIONS } from './mock-data';
@@ -13,104 +15,197 @@ const PARCEL_ID = MOCK_ORGANIZATIONS[0].id;
 const NOVA_ID = MOCK_ORGANIZATIONS[1].id;
 const LUMEN_ID = MOCK_ORGANIZATIONS[2].id;
 
-const PARCEL_METERS: readonly UsageMeter[] = [
-  {
-    metricId: 'emails_sent',
-    name: 'Emails sent',
-    consumed: 12_400,
-    limit: 50_000,
-    available: true,
-    unit: 'emails',
-  },
-  {
-    metricId: 'api_requests',
-    name: 'API requests',
-    consumed: 89_000,
-    limit: 500_000,
-    available: true,
-  },
-  {
-    metricId: 'webhook_deliveries',
-    name: 'Webhook deliveries',
-    consumed: 1_200,
-    limit: 10_000,
-    available: true,
-  },
-  {
-    metricId: 'storage_size',
-    name: 'Storage size',
-    consumed: 0.45,
-    limit: 5,
-    available: true,
-    unit: 'GB',
-  },
-];
+/**
+ * Usage caps aligned with Resend transactional tiers (May 2026):
+ * Free 3k/mo (100/day), Pro 50k/mo, Scale/Team 100k+.
+ * API & webhook limits are demo extras (not on Resend pricing page).
+ */
+const PLAN_METER_TEMPLATES: Readonly<
+  Record<CommercialPlanId, readonly UsageMeter[]>
+> = {
+  free: [
+    {
+      metricId: 'emails_sent',
+      name: 'Emails sent',
+      consumed: 0,
+      limit: 3_000,
+      dailyLimit: 100,
+      dailyConsumed: 0,
+      available: true,
+      unit: 'emails',
+    },
+    {
+      metricId: 'api_requests',
+      name: 'API requests',
+      consumed: 0,
+      limit: 15_000,
+      available: true,
+    },
+    {
+      metricId: 'webhook_deliveries',
+      name: 'Webhook deliveries',
+      consumed: 0,
+      limit: 1_000,
+      available: true,
+    },
+    {
+      metricId: 'storage_size',
+      name: 'Storage size',
+      consumed: 0,
+      limit: 0.5,
+      available: true,
+      unit: 'GB',
+    },
+  ],
+  pro: [
+    {
+      metricId: 'emails_sent',
+      name: 'Emails sent',
+      consumed: 0,
+      limit: 50_000,
+      available: true,
+      unit: 'emails',
+    },
+    {
+      metricId: 'api_requests',
+      name: 'API requests',
+      consumed: 0,
+      limit: 250_000,
+      available: true,
+    },
+    {
+      metricId: 'webhook_deliveries',
+      name: 'Webhook deliveries',
+      consumed: 0,
+      limit: 10_000,
+      available: true,
+    },
+    {
+      metricId: 'storage_size',
+      name: 'Storage size',
+      consumed: 0,
+      limit: 2,
+      available: true,
+      unit: 'GB',
+    },
+  ],
+  team: [
+    {
+      metricId: 'emails_sent',
+      name: 'Emails sent',
+      consumed: 0,
+      limit: 100_000,
+      available: true,
+      unit: 'emails',
+    },
+    {
+      metricId: 'api_requests',
+      name: 'API requests',
+      consumed: 0,
+      limit: 1_000_000,
+      available: true,
+    },
+    {
+      metricId: 'webhook_deliveries',
+      name: 'Webhook deliveries',
+      consumed: 0,
+      limit: 50_000,
+      available: true,
+    },
+    {
+      metricId: 'storage_size',
+      name: 'Storage size',
+      consumed: 0,
+      limit: 10,
+      available: true,
+      unit: 'GB',
+    },
+  ],
+};
 
-const NOVA_METERS: readonly UsageMeter[] = [
-  {
-    metricId: 'emails_sent',
-    name: 'Emails sent',
-    consumed: 890,
-    limit: 10_000,
-    available: true,
-    unit: 'emails',
+/** Seed consumed values per workspace (plan caps applied separately). */
+const SEED_METER_CONSUMED: Readonly<
+  Record<string, Readonly<Record<string, number>>>
+> = {
+  [PARCEL_ID]: {
+    emails_sent: 8,
+    api_requests: 89_000,
+    webhook_deliveries: 1_200,
+    storage_size: 0.45,
   },
-  {
-    metricId: 'api_requests',
-    name: 'API requests',
-    consumed: 12_000,
-    limit: 100_000,
-    available: true,
+  [NOVA_ID]: {
+    emails_sent: 1,
+    api_requests: 12_000,
+    webhook_deliveries: 45,
+    storage_size: 0.08,
   },
-  {
-    metricId: 'webhook_deliveries',
-    name: 'Webhook deliveries',
-    consumed: 45,
-    limit: 2_000,
-    available: true,
+  [LUMEN_ID]: {
+    emails_sent: 0,
+    api_requests: 42,
+    webhook_deliveries: 12,
+    storage_size: 0.02,
   },
-  {
-    metricId: 'storage_size',
-    name: 'Storage size',
-    consumed: 0.08,
-    limit: 1,
-    available: true,
-    unit: 'GB',
-  },
-];
+};
 
-const FREE_METERS: readonly UsageMeter[] = [
-  {
-    metricId: 'emails_sent',
-    name: 'Emails sent',
-    consumed: 52,
-    limit: 3_000,
-    available: true,
-    unit: 'emails',
-  },
-  {
-    metricId: 'api_requests',
-    name: 'API requests',
-    consumed: 11,
-    limit: 100,
-    available: true,
-  },
-  {
-    metricId: 'webhook_deliveries',
-    name: 'Webhook deliveries',
-    consumed: 0,
-    limit: 100,
-    available: true,
-  },
-  {
-    metricId: 'storage_size',
-    name: 'Storage size',
-    consumed: 0,
-    limit: 0.5,
-    available: true,
-    unit: 'GB',
-  },
-];
+function capConsumed(consumed: number, limit: number | null): number {
+  if (limit === null) {
+    return Math.max(0, consumed);
+  }
+  return Math.min(Math.max(0, consumed), limit);
+}
+
+/** Apply plan caps; preserve consumed from current meters or org seed. */
+export function mergeMetersForPlan(
+  planId: CommercialPlanId,
+  currentMeters: readonly UsageMeter[],
+  organizationId?: string,
+): UsageMeter[] {
+  const templates = PLAN_METER_TEMPLATES[planId];
+  const seed = organizationId ? SEED_METER_CONSUMED[organizationId] : undefined;
+
+  const useSeed = currentMeters.length === 0;
+
+  return templates.map((template) => {
+    const current = currentMeters.find((m) => m.metricId === template.metricId);
+    const raw = current
+      ? current.consumed
+      : useSeed
+        ? (seed?.[template.metricId] ?? template.consumed)
+        : template.consumed;
+    return {
+      ...template,
+      consumed: capConsumed(raw, template.limit),
+      dailyConsumed:
+        template.dailyLimit != null
+          ? capConsumed(
+              current?.dailyConsumed ?? template.dailyConsumed ?? 0,
+              template.dailyLimit,
+            )
+          : template.dailyConsumed,
+    };
+  });
+}
+
+export function metersForOrganization(
+  organizationId: string,
+  planId: CommercialPlanId,
+): readonly UsageMeter[] {
+  return mergeMetersForPlan(planId, [], organizationId);
+}
+
+export function alignBillingSummaryMeters(
+  summary: BillingSummary,
+): BillingSummary {
+  const planId = resolveCurrentPlanId(summary);
+  return {
+    ...summary,
+    meters: mergeMetersForPlan(
+      planId,
+      summary.meters,
+      summary.organizationId,
+    ),
+  };
+}
 
 export function addDaysIso(days: number): string {
   const date = new Date();
@@ -128,7 +223,7 @@ export const MOCK_BILLING_SUMMARIES: Readonly<Record<string, BillingSummary>> = 
     cancelAtPeriodEnd: false,
     seatsUsed: 4,
     seatsLimit: 50,
-    meters: PARCEL_METERS,
+    meters: metersForOrganization(PARCEL_ID, 'team'),
     trialEnd: null,
   },
   [NOVA_ID]: {
@@ -140,7 +235,7 @@ export const MOCK_BILLING_SUMMARIES: Readonly<Record<string, BillingSummary>> = 
     cancelAtPeriodEnd: false,
     seatsUsed: 2,
     seatsLimit: 10,
-    meters: NOVA_METERS,
+    meters: metersForOrganization(NOVA_ID, 'pro'),
     trialEnd: addDaysIso(5),
   },
   [LUMEN_ID]: {
@@ -150,9 +245,9 @@ export const MOCK_BILLING_SUMMARIES: Readonly<Record<string, BillingSummary>> = 
     status: 'none',
     currentPeriodEnd: addDaysIso(30),
     cancelAtPeriodEnd: false,
-    seatsUsed: 4,
+    seatsUsed: 3,
     seatsLimit: 3,
-    meters: FREE_METERS,
+    meters: metersForOrganization(LUMEN_ID, 'free'),
     trialEnd: null,
   },
 };
@@ -167,6 +262,12 @@ export const MOCK_BILLING_PLANS: readonly BillingPlan[] = [
     interval: 'month',
     features: [
       { id: 'seats', name: 'Up to 3 seats', included: true, limit: 3 },
+      {
+        id: 'emails',
+        name: '3,000 emails / month (100 / day)',
+        included: true,
+        limit: 3_000,
+      },
       { id: 'metrics', name: 'Basic metrics', included: true },
       { id: 'api_keys', name: 'Sending-only API keys', included: true },
     ],
@@ -182,6 +283,12 @@ export const MOCK_BILLING_PLANS: readonly BillingPlan[] = [
     interval: 'month',
     features: [
       { id: 'seats', name: 'Up to 10 seats', included: true, limit: 10 },
+      {
+        id: 'emails',
+        name: '50,000 emails / month',
+        included: true,
+        limit: 50_000,
+      },
       { id: 'metrics', name: 'Advanced metrics & filters', included: true },
       { id: 'api_keys', name: 'Full-access API keys', included: true },
       { id: 'support', name: 'Email support', included: true },
@@ -198,6 +305,12 @@ export const MOCK_BILLING_PLANS: readonly BillingPlan[] = [
     interval: 'month',
     features: [
       { id: 'seats', name: 'Up to 50 seats', included: true, limit: 50 },
+      {
+        id: 'emails',
+        name: '100,000 emails / month',
+        included: true,
+        limit: 100_000,
+      },
       { id: 'sso', name: 'Single Sign-On (SSO)', included: true },
       { id: 'api_keys', name: 'Full-access API keys', included: true },
       { id: 'support', name: 'Priority support', included: true },
@@ -261,7 +374,7 @@ export function mockBillingSummaryForOrg(
       cancelAtPeriodEnd: false,
       seatsUsed: 1,
       seatsLimit: 3,
-      meters: FREE_METERS,
+      meters: metersForOrganization(organizationId, 'free'),
       trialEnd: null,
     }
   );

@@ -22,12 +22,28 @@ export interface ShellNavGroup {
 
 export type ShellNavEntry = ShellNavLink | ShellNavGroup;
 
+/** Always first in the shell; route stays reachable after activation completes. */
+export const ONBOARDING_SHELL_NAV_LINK: ShellNavLink = {
+  kind: 'link',
+  label: 'Onboarding',
+  path: '/onboarding',
+  icon: 'lucideRocket',
+  exact: true,
+};
+
 export const WORKSPACE_SHELL_NAV: readonly ShellNavLink[] = [
   {
     kind: 'link',
     label: 'Metrics',
     path: '/workspace/metrics',
     icon: 'lucideBarChart2',
+    exact: true,
+  },
+  {
+    kind: 'link',
+    label: 'Emails',
+    path: '/workspace/emails',
+    icon: 'lucideMail',
     exact: true,
   },
   {

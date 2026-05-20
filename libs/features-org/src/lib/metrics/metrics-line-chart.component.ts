@@ -119,15 +119,24 @@ export class MetricsLineChartComponent implements AfterViewInit {
   });
 
   private readonly resolvedYMax = computed(() => {
+    const threshold = this.riskThresholdPercent() ?? 0;
+    const maxValue = Math.max(...this.values(), threshold, 0);
     const explicit = this.yMax();
-    if (explicit !== null && explicit > 0) {
-      return explicit;
-    }
-    const maxValue = Math.max(...this.values(), 0);
+
     if (this.tickFormat() === 'percent') {
-      return maxValue > 0 ? Math.max(maxValue * 1.25, 0.1) : 0.1;
+      const fromData =
+        maxValue > 0 ? Math.ceil(maxValue * 1.2 * 100) / 100 : Math.max(threshold * 2, 0.1);
+      if (explicit !== null && explicit > 0) {
+        return Math.max(explicit, fromData);
+      }
+      return fromData;
     }
-    return maxValue > 0 ? Math.max(maxValue * 1.2, 4) : 4;
+
+    const fromData = maxValue > 0 ? Math.max(maxValue * 1.2, 4) : 4;
+    if (explicit !== null && explicit > 0) {
+      return Math.max(explicit, fromData);
+    }
+    return fromData;
   });
 
   constructor() {

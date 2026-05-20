@@ -38,6 +38,9 @@ export interface UsageMeter {
   readonly limit: number | null;
   readonly available: boolean;
   readonly unit?: string;
+  /** Optional daily cap (e.g. Resend Free: 100 emails / day). */
+  readonly dailyLimit?: number | null;
+  readonly dailyConsumed?: number;
 }
 
 export interface BillingSummary {

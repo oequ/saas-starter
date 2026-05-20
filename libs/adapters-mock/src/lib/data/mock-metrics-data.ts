@@ -3,98 +3,23 @@ import type {
   MetricsFilters,
   MetricsTimeSeries,
   OrganizationId,
+  OutboundEmail,
   TimeSeriesPoint,
 } from '@oequ/ports';
 
-import { MOCK_ORGANIZATIONS } from './mock-data';
-
-const PARCEL_ID = MOCK_ORGANIZATIONS[0].id;
-
-function daysAgoIso(days: number): string {
-  const date = new Date();
-  date.setHours(12, 0, 0, 0);
-  date.setDate(date.getDate() - days);
-  return date.toISOString();
-}
-
-function buildDateLabels(periodDays: number): string[] {
-  const labels: string[] = [];
-  for (let i = periodDays - 1; i >= 0; i--) {
-    labels.push(daysAgoIso(i));
-  }
-  return labels;
-}
-
-function buildEmailSeries(periodDays: number): MetricsTimeSeries {
-  const labels = buildDateLabels(periodDays);
-  const points: TimeSeriesPoint[] = labels.map((date, index) => {
-    const progress = index / Math.max(labels.length - 1, 1);
-    let value = 0;
-    if (progress > 0.55) {
-      value = Math.round((progress - 0.55) * 80);
-    }
-    if (index === labels.length - 1) {
-      value = 12;
-    }
-    if (index === labels.length - 2) {
-      value = 9;
-    }
-    return { date, value };
-  });
-  return { points };
-}
-
-function buildPercentSeries(
-  periodDays: number,
-  values: readonly number[],
-): MetricsTimeSeries {
-  const labels = buildDateLabels(periodDays);
-  return {
-    points: labels.map((date, index) => ({
-      date,
-      value: values[index] ?? values[values.length - 1] ?? 0,
-    })),
-  };
-}
-
-/** Low bounce trend for Parcel — healthy, below 4% risk. */
-function buildParcelBounceSeries(periodDays: number): MetricsTimeSeries {
-  const pattern15 = [
-    0.85, 0.92, 1.05, 0.98, 1.12, 1.08, 1.15, 1.22, 1.18, 1.25, 1.1, 1.05,
-    1.12, 1.08, 1.14,
-  ];
-  const values =
-    periodDays === 15
-      ? pattern15
-      : Array.from({ length: periodDays }, (_, index) => {
-          const t = index / Math.max(periodDays - 1, 1);
-          return 0.75 + Math.sin(t * Math.PI * 1.4) * 0.35 + t * 0.45;
-        }).map((v) => Math.round(v * 100) / 100);
-  return buildPercentSeries(periodDays, values);
-}
-
-/** Low complain trend for Parcel — below 0.08% risk. */
-function buildParcelComplainSeries(periodDays: number): MetricsTimeSeries {
-  const pattern15 = [
-    0.01, 0.02, 0.01, 0.03, 0.02, 0.04, 0.03, 0.02, 0.05, 0.03, 0.02, 0.04,
-    0.03, 0.02, 0.03,
-  ];
-  const values =
-    periodDays === 15
-      ? pattern15
-      : Array.from({ length: periodDays }, (_, index) => {
-          const t = index / Math.max(periodDays - 1, 1);
-          return 0.01 + Math.sin(t * Math.PI * 2) * 0.015 + t * 0.02;
-        }).map((v) => Math.round(v * 1000) / 1000);
-  return buildPercentSeries(periodDays, values);
-}
-
-function buildZeroPercentSeries(periodDays: number): MetricsTimeSeries {
-  const labels = buildDateLabels(periodDays);
-  return {
-    points: labels.map((date) => ({ date, value: 0 })),
-  };
-}
+import {
+  buildMetricsDateLabels,
+  countEmailsOnDay,
+  deliverabilityPercent,
+  emailsInPreviousMetricsPeriod,
+  emailsForMetricsPeriod,
+  filterEmailsForMetrics,
+  isBillableOutboundEmail,
+  outboundEmailDomain,
+  percentChange,
+  statusRatePercent,
+  uniqueOutboundDomains,
+} from '../email-usage-stats';
 
 function periodDays(period: MetricsFilters['period']): number {
   switch (period) {
@@ -108,69 +33,113 @@ function periodDays(period: MetricsFilters['period']): number {
   }
 }
 
-function isParcelOrg(organizationId: OrganizationId): boolean {
-  return organizationId === PARCEL_ID;
+function buildCountSeries(
+  emails: readonly OutboundEmail[],
+  labels: readonly string[],
+): MetricsTimeSeries {
+  const points: TimeSeriesPoint[] = labels.map((date) => ({
+    date,
+    value: countEmailsOnDay(emails, date),
+  }));
+  return { points };
+}
+
+function buildDailyRateSeries(
+  emails: readonly OutboundEmail[],
+  labels: readonly string[],
+  status: OutboundEmail['status'],
+): MetricsTimeSeries {
+  const points: TimeSeriesPoint[] = labels.map((date) => {
+    const { start, end } = (() => {
+      const s = new Date(date);
+      s.setHours(0, 0, 0, 0);
+      const e = new Date(s);
+      e.setDate(e.getDate() + 1);
+      return { start: s.getTime(), end: e.getTime() };
+    })();
+    const dayEmails = emails.filter((email) => {
+      const t = new Date(email.sentAt).getTime();
+      return t >= start && t < end;
+    });
+    return {
+      date,
+      value: statusRatePercent(dayEmails, status),
+    };
+  });
+  return { points };
 }
 
 export function buildMockMetricsDashboard(
-  organizationId: OrganizationId,
+  _organizationId: OrganizationId,
   filters: MetricsFilters,
+  outboundEmails: readonly OutboundEmail[],
 ): MetricsDashboard {
   const days = periodDays(filters.period);
-  const emailsSeries = buildEmailSeries(days);
-  const emailsSent = emailsSeries.points.reduce((sum, p) => sum + p.value, 0);
-  const domainMultiplier = filters.domainId === 'all' ? 1 : 0.85;
-  const parcel = isParcelOrg(organizationId);
+  const labels = buildMetricsDateLabels(days);
+  const inPeriod = filterEmailsForMetrics(outboundEmails, filters);
+  const previousPeriod = emailsInPreviousMetricsPeriod(
+    outboundEmails,
+    filters.period,
+  );
 
-  const bounceSeries = parcel
-    ? buildParcelBounceSeries(days)
-    : buildZeroPercentSeries(days);
-  const complainSeries = parcel
-    ? buildParcelComplainSeries(days)
-    : buildZeroPercentSeries(days);
+  const emailsSent = inPeriod.length;
+  const prevSent = previousPeriod.length;
+  const bounced = inPeriod.filter((e) => e.status === 'bounced').length;
+  const failed = inPeriod.filter((e) => e.status === 'failed').length;
 
-  const bounceRate = parcel ? 1.14 : 0;
-  const complainRate = parcel ? 0.03 : 0;
-  const transientBounces = parcel ? 1 : 0;
-  const permanentBounces = parcel ? 0 : 0;
-  const complainedCount = parcel ? 1 : 0;
+  const deliverabilityRate = deliverabilityPercent(inPeriod);
+  const bounceRate = statusRatePercent(inPeriod, 'bounced');
+  const complainRate = statusRatePercent(inPeriod, 'failed');
+
+  const prevDeliverability = deliverabilityPercent(previousPeriod);
+  const prevBounce = statusRatePercent(previousPeriod, 'bounced');
+  const prevComplain = statusRatePercent(previousPeriod, 'failed');
+
+  const domains = uniqueOutboundDomains(
+    emailsForMetricsPeriod(outboundEmails, filters.period),
+  );
+
+  const domainBreakdown = domains.map((domain) => {
+    const domainEmails = inPeriod.filter(
+      (email) => outboundEmailDomain(email) === domain,
+    );
+    return {
+      domain,
+      count: domainEmails.length,
+      deliverabilityRate: deliverabilityPercent(domainEmails),
+    };
+  });
 
   return {
     domains: [
       { id: 'all', label: 'All domains' },
-      { id: 'parcel.io', label: 'parcel.io' },
+      ...domains.map((domain) => ({ id: domain, label: domain })),
     ],
     summary: {
-      emailsSent: Math.round(emailsSent * domainMultiplier),
-      deliverabilityRate: emailsSent > 0 ? 100 : 0,
+      emailsSent,
+      deliverabilityRate,
     },
     comparison: {
-      emailsSentPercent:
-        filters.period === '90d' ? 8 : filters.period === '30d' ? 14 : 22,
-      deliverabilityRatePoints: 0,
-      bounceRatePoints: parcel ? -0.3 : 0,
-      complainRatePoints: parcel ? 0.01 : 0,
+      emailsSentPercent: percentChange(emailsSent, prevSent),
+      deliverabilityRatePoints:
+        Math.round((deliverabilityRate - prevDeliverability) * 10) / 10,
+      bounceRatePoints: Math.round((bounceRate - prevBounce) * 10) / 10,
+      complainRatePoints: Math.round((complainRate - prevComplain) * 10) / 10,
     },
-    emailsSeries,
-    domainBreakdown: [
-      {
-        domain: 'parcel.io',
-        count: Math.round(emailsSent * domainMultiplier),
-        deliverabilityRate: emailsSent > 0 ? 100 : 0,
-      },
-    ],
+    emailsSeries: buildCountSeries(inPeriod, labels),
+    domainBreakdown,
     bounce: {
       rate: bounceRate,
-      series: bounceSeries,
+      series: buildDailyRateSeries(inPeriod, labels, 'bounced'),
       breakdown: [
         {
           kind: 'transient',
-          count: transientBounces,
-          rate: parcel ? 1.14 : 0,
+          count: bounced,
+          rate: bounceRate,
         },
         {
           kind: 'permanent',
-          count: permanentBounces,
+          count: 0,
           rate: 0,
         },
         {
@@ -183,8 +152,8 @@ export function buildMockMetricsDashboard(
     },
     complain: {
       rate: complainRate,
-      series: complainSeries,
-      complainedCount,
+      series: buildDailyRateSeries(inPeriod, labels, 'failed'),
+      complainedCount: failed,
       riskThresholdPercent: 0.08,
     },
     lastUpdatedAt: new Date().toISOString(),

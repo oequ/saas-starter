@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import {
   alignBillingSummarySeats,
   BILLING_PORT,
@@ -27,6 +27,8 @@ import { BehaviorSubject, type Observable } from 'rxjs';
 
 import {
   addDaysIso,
+  alignBillingSummaryMeters,
+  mergeMetersForPlan,
   MOCK_BILLING_LATENCY_MS,
   MOCK_BILLING_PLANS,
   mockBillingSummaryForOrg,
@@ -34,6 +36,11 @@ import {
   mockPaymentMethodsForOrg,
 } from './data/mock-billing-data';
 import { MOCK_ORGANIZATIONS } from './data/mock-data';
+import {
+  billableOutboundCount,
+  countBillableEmailsToday,
+} from './email-usage-stats';
+import { MockEmailsAdapter } from './mock-emails.adapter';
 
 function delay(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -55,6 +62,8 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 
 @Injectable()
 export class MockBillingAdapter implements BillingPort {
+  private readonly injector = inject(Injector);
+
   private pendingCheckout: { organizationId: string; planId: string } | null =
     null;
 
@@ -88,10 +97,39 @@ export class MockBillingAdapter implements BillingPort {
   ): Promise<PortResult<BillingSummary>> {
     await delay(MOCK_BILLING_LATENCY_MS, abortSignal);
     const summary = this.persistSummary(
-      this.getOrCreateSummary(organizationId),
+      this.applyEmailUsageFromStore(
+        this.getOrCreateSummary(organizationId),
+        organizationId,
+      ),
     );
     this.summarySubject.next(summary);
     return portOk(summary);
+  }
+
+  private applyEmailUsageFromStore(
+    summary: BillingSummary,
+    organizationId: OrganizationId,
+  ): BillingSummary {
+    const emailsAdapter = this.injector.get(MockEmailsAdapter, null);
+    if (!emailsAdapter) {
+      return summary;
+    }
+    const snapshot = emailsAdapter.outboundSnapshot(organizationId);
+    const consumed = billableOutboundCount(snapshot);
+    const dailyConsumed = countBillableEmailsToday(snapshot);
+    return {
+      ...summary,
+      meters: summary.meters.map((meter) =>
+        meter.metricId === 'emails_sent'
+          ? {
+              ...meter,
+              consumed,
+              dailyConsumed:
+                meter.dailyLimit != null ? dailyConsumed : meter.dailyConsumed,
+            }
+          : meter,
+      ),
+    };
   }
 
   async listInvoices(
@@ -309,6 +347,27 @@ export class MockBillingAdapter implements BillingPort {
     this.persistSummary({ ...current, seatsUsed });
   }
 
+  syncMeterConsumed(
+    organizationId: OrganizationId,
+    metricId: string,
+    consumed: number,
+    dailyConsumed?: number,
+  ): void {
+    const current = this.getOrCreateSummary(organizationId);
+    const meters = current.meters.map((meter) =>
+      meter.metricId === metricId
+        ? {
+            ...meter,
+            consumed: Math.max(0, consumed),
+            ...(dailyConsumed !== undefined && meter.dailyLimit != null
+              ? { dailyConsumed: Math.max(0, dailyConsumed) }
+              : {}),
+          }
+        : meter,
+    );
+    this.persistSummary({ ...current, meters });
+  }
+
   /** Restores fixture billing data (E2E / screenshot runs). */
   resetMockState(): void {
     this.pendingCheckout = null;
@@ -359,6 +418,11 @@ export class MockBillingAdapter implements BillingPort {
       status: isDowngrade && current.status === 'trialing' ? 'active' : current.status,
       cancelAtPeriodEnd: false,
       trialEnd: isDowngrade ? null : current.trialEnd,
+      meters: mergeMetersForPlan(
+        targetTier,
+        current.meters,
+        organizationId,
+      ),
     };
   }
 
@@ -375,7 +439,9 @@ export class MockBillingAdapter implements BillingPort {
   }
 
   private normalizeSummary(summary: BillingSummary): BillingSummary {
-    return alignBillingSummarySeats(summary, MOCK_BILLING_PLANS);
+    return alignBillingSummaryMeters(
+      alignBillingSummarySeats(summary, MOCK_BILLING_PLANS),
+    );
   }
 
   private persistSummary(summary: BillingSummary): BillingSummary {

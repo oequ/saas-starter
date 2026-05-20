@@ -133,6 +133,14 @@ export const appRoutes: Route[] = [
             data: { title: 'Metrics' },
           },
           {
+            path: 'emails',
+            loadComponent: () =>
+              import('@oequ/features-org').then(
+                (m) => m.WorkspaceEmailsPageComponent,
+              ),
+            data: { title: 'Emails' },
+          },
+          {
             path: 'api-keys',
             loadComponent: () =>
               import('@oequ/features-org').then(

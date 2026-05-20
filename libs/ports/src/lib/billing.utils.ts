@@ -150,10 +150,33 @@ export function isBillingSeatUsageCritical(summary: BillingSummary): boolean {
 }
 
 export function billingMeterUsagePercent(meter: UsageMeter): number | null {
-  if (!meter.available || meter.limit === null || meter.limit <= 0) {
+  if (!meter.available) {
     return null;
   }
-  return Math.min(100, Math.round((meter.consumed / meter.limit) * 100));
+
+  const monthlyPercent =
+    meter.limit !== null && meter.limit > 0
+      ? Math.min(100, Math.round((meter.consumed / meter.limit) * 100))
+      : null;
+
+  const dailyPercent =
+    meter.dailyLimit != null && meter.dailyLimit > 0
+      ? Math.min(
+          100,
+          Math.round(((meter.dailyConsumed ?? 0) / meter.dailyLimit) * 100),
+        )
+      : null;
+
+  if (monthlyPercent === null && dailyPercent === null) {
+    return null;
+  }
+  if (monthlyPercent === null) {
+    return dailyPercent;
+  }
+  if (dailyPercent === null) {
+    return monthlyPercent;
+  }
+  return Math.max(monthlyPercent, dailyPercent);
 }
 
 export function formatUsageNumber(value: number): string {
@@ -168,10 +191,18 @@ export function formatUsageMeterValue(meter: UsageMeter): string {
   }
   const consumed = formatUsageNumber(meter.consumed);
   if (meter.limit === null) {
-    return `${consumed} / Unlimited${meter.unit ? ` ${meter.unit}` : ''}`;
+    const base = `${consumed} / Unlimited${meter.unit ? ` ${meter.unit}` : ''}`;
+    if (meter.dailyLimit != null) {
+      return `${base} · ${formatUsageNumber(meter.dailyConsumed ?? 0)} / ${formatUsageNumber(meter.dailyLimit)} today`;
+    }
+    return base;
   }
   const limit = formatUsageNumber(meter.limit);
-  return `${consumed} / ${limit}${meter.unit ? ` ${meter.unit}` : ''}`;
+  const base = `${consumed} / ${limit}${meter.unit ? ` ${meter.unit}` : ''}`;
+  if (meter.dailyLimit != null) {
+    return `${base} · ${formatUsageNumber(meter.dailyConsumed ?? 0)} / ${formatUsageNumber(meter.dailyLimit)} today`;
+  }
+  return base;
 }
 
 export function billingPeriodLabel(summary: BillingSummary): string {
@@ -230,6 +261,9 @@ export function usageDetailTooltip(
     case 'seats':
       return `Your ${planName} plan includes up to ${formatIncludedLimit(summary.seatsLimit)} seats. Active and invited members count toward this limit.`;
     case 'emails_sent':
+      if (resolveCurrentPlanId(summary) === 'free') {
+        return `${planName} includes 3,000 emails per billing cycle and up to 100 emails per day (UTC) for transactional sends.`;
+      }
       return `${planName} includes ${formatIncludedLimit(options.limit, options.unit ?? 'emails')} per billing cycle for transactional and marketing sends.`;
     case 'api_requests':
       return `${planName} includes ${formatIncludedLimit(options.limit, 'API requests')} per billing cycle across sending and management endpoints.`;

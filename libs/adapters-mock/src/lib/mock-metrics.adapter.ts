@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   METRICS_PORT,
   type MetricsDashboard,
@@ -10,6 +10,7 @@ import {
 } from '@oequ/ports';
 
 import { buildMockMetricsDashboard } from './data/mock-metrics-data';
+import { MockEmailsAdapter } from './mock-emails.adapter';
 
 const MOCK_LATENCY_MS = 200;
 
@@ -19,6 +20,8 @@ function delay(ms: number): Promise<void> {
 
 @Injectable()
 export class MockMetricsAdapter implements MetricsPort {
+  private readonly emailsAdapter = inject(MockEmailsAdapter);
+
   async getMetrics(
     organizationId: OrganizationId,
     filters: MetricsFilters,
@@ -28,7 +31,14 @@ export class MockMetricsAdapter implements MetricsPort {
     if (abortSignal?.aborted) {
       throw new DOMException('Aborted', 'AbortError');
     }
-    return portOk(buildMockMetricsDashboard(organizationId, filters));
+
+    return portOk(
+      buildMockMetricsDashboard(
+        organizationId,
+        filters,
+        this.emailsAdapter.outboundSnapshot(organizationId),
+      ),
+    );
   }
 }
 

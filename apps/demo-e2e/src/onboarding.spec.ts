@@ -33,14 +33,12 @@ test.describe('onboarding', () => {
     ).toBeVisible();
   });
 
-  test('completing activation navigates to general settings', async ({
-    page,
-  }) => {
+  test('completing activation navigates to emails', async ({ page }) => {
     await setZeroOrganizations(page);
     await page.goto('/onboarding');
     await createWorkspaceViaOnboarding(page, 'Activation Complete Co');
     await completeActivationViaOnboarding(page);
-    await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
+    await expect(page).toHaveURL(/\/workspace\/emails$/);
   });
 
   test('workspace root redirects to onboarding while activation pending', async ({
@@ -64,12 +62,16 @@ test.describe('onboarding', () => {
     ).toBeVisible();
   });
 
-  test('pre-activated workspace redirects away from onboarding', async ({
+  test('pre-activated workspace can open onboarding from sidebar', async ({
     page,
   }) => {
     await resetMockDemoState(page);
-    await page.goto('/onboarding');
-    await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
+    await page.goto('/workspace/metrics');
+    await page.getByRole('link', { name: 'Onboarding' }).click();
+    await expect(page).toHaveURL(/\/onboarding$/);
+    await expect(
+      page.getByRole('heading', { name: 'Send your first email' }),
+    ).toBeVisible();
   });
 
   test('deep link to settings while activation pending is allowed', async ({

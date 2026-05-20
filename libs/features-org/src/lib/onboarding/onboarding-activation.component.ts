@@ -16,7 +16,12 @@ import {
   lucideSparkles,
   lucideTestTubeDiagonal,
 } from '@ng-icons/lucide';
-import { ACTIVATION_PORT, API_KEYS_PORT, ORG_PORT } from '@oequ/ports';
+import {
+  ACTIVATION_PORT,
+  API_KEYS_PORT,
+  EMAILS_PORT,
+  ORG_PORT,
+} from '@oequ/ports';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -217,6 +222,7 @@ export class OnboardingActivationComponent {
   private readonly configToken = inject(ACTIVATION_ONBOARDING_CONFIG);
   private readonly activationPort = inject(ACTIVATION_PORT);
   private readonly apiKeysPort = inject(API_KEYS_PORT);
+  private readonly emailsPort = inject(EMAILS_PORT);
   private readonly orgPort = inject(ORG_PORT);
   private readonly router = inject(Router);
 
@@ -303,6 +309,16 @@ export class OnboardingActivationComponent {
     }
 
     this.completing.set(true);
+
+    const sendResult = await this.emailsPort.simulateOutbound(org.id, {
+      count: 8,
+    });
+    if (!sendResult.ok) {
+      toast.error(sendResult.error.message);
+      this.completing.set(false);
+      return;
+    }
+
     const result = await this.activationPort.markComplete(org.id);
     if (!result.ok) {
       toast.error(result.error.message);
@@ -310,7 +326,10 @@ export class OnboardingActivationComponent {
       return;
     }
 
-    await this.router.navigate(['/workspace/settings/general']);
+    toast.success(
+      `Sent ${sendResult.data.created.length} emails — open Emails to review usage.`,
+    );
+    await this.router.navigate(['/workspace/emails']);
     this.completing.set(false);
   }
 }

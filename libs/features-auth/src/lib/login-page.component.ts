@@ -11,7 +11,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { AUTH_PORT } from '@oequ/ports';
+import { AUTH_PORT, DEMO_AUTH_EMAIL, DEMO_AUTH_PASSWORD } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -27,9 +27,6 @@ import {
   AUTH_PAGE_LEGAL_CLASS,
   AUTH_PAGE_SHELL_CLASS,
 } from './auth-form.tokens';
-
-const DEMO_LOGIN_EMAIL = 'demo@example.com';
-const DEMO_LOGIN_PASSWORD = 'demo';
 
 function safeReturnUrl(raw: string | null): string {
   if (!raw?.startsWith('/') || raw.startsWith('//')) {
@@ -156,11 +153,11 @@ export class LoginPageComponent {
   protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly form = new FormGroup({
-    email: new FormControl(DEMO_LOGIN_EMAIL, {
+    email: new FormControl(DEMO_AUTH_EMAIL, {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
-    password: new FormControl(DEMO_LOGIN_PASSWORD, {
+    password: new FormControl(DEMO_AUTH_PASSWORD, {
       nonNullable: true,
       validators: [Validators.required],
     }),

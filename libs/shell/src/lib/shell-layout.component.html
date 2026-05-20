@@ -8,6 +8,28 @@
       <div hlmSidebarGroup class="p-0">
         <div hlmSidebarGroupContent class="px-2">
           <ul hlmSidebarMenu class="!gap-px">
+            <li hlmSidebarMenuItem>
+              <a
+                hlmSidebarMenuButton
+                [class]="shellSidebarNavButtonClass"
+                [routerLink]="onboardingNavLink.path"
+                routerLinkActive
+                #onboardingLink="routerLinkActive"
+                [isActive]="onboardingLink.isActive"
+                [routerLinkActiveOptions]="{ exact: onboardingNavLink.exact }"
+              >
+                <div class="grid size-9 shrink-0 place-content-center">
+                  <ng-icon
+                    hlm
+                    class="!size-4 text-current"
+                    [name]="onboardingNavLink.icon"
+                  />
+                </div>
+                <span class="min-w-0 flex-1 truncate text-sm font-normal">{{
+                  onboardingNavLink.label
+                }}</span>
+              </a>
+            </li>
             @if (shellContext() === 'workspace') {
               @for (item of workspaceNav; track item.path) {
                 <li hlmSidebarMenuItem>

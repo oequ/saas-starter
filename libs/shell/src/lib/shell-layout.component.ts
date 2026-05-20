@@ -26,8 +26,10 @@ import {
   lucideGauge,
   lucideHome,
   lucideKeyRound,
+  lucideMail,
   lucideMonitor,
   lucidePuzzle,
+  lucideRocket,
   lucideSettings,
   lucideShield,
   lucideUser,
@@ -44,6 +46,7 @@ import {
   SHELL_SIDEBAR_NAV_BUTTON_CLASS,
 } from './settings-layout.tokens';
 import {
+  ONBOARDING_SHELL_NAV_LINK,
   PERSONAL_SHELL_NAV,
   WORKSPACE_SHELL_NAV,
 } from './shell-nav.model';
@@ -80,7 +83,9 @@ import { WorkspaceSwitcherComponent } from './workspace-switcher.component';
       lucideBarChart2,
       lucideHome,
       lucideKeyRound,
+      lucideMail,
       lucidePuzzle,
+      lucideRocket,
       lucideSettings,
       lucideUser,
       lucideShield,
@@ -101,6 +106,7 @@ export class ShellLayoutComponent {
   private readonly helpPanel = inject(HelpPanelService);
   private readonly sidebarService = inject(HlmSidebarService);
 
+  protected readonly onboardingNavLink = ONBOARDING_SHELL_NAV_LINK;
   protected readonly workspaceNav = WORKSPACE_SHELL_NAV;
   protected readonly personalNav = PERSONAL_SHELL_NAV;
 

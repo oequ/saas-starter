@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   countMembersTowardSeats,
   isValidOrganizationSlug,
@@ -22,9 +22,9 @@ import {
   MOCK_MEMBERS_BY_ORG_ID,
   MOCK_ORGANIZATIONS,
 } from './data/mock-data';
+import { MockAuthAdapter } from './mock-auth.adapter';
 import { MockActivationAdapter } from './mock-activation.adapter';
 import { MockApiKeysAdapter } from './mock-api-keys.adapter';
-import { MockAuthAdapter } from './mock-auth.adapter';
 import { MockBillingAdapter } from './mock-billing.adapter';
 
 function delay(ms: number): Promise<void> {
@@ -155,8 +155,9 @@ export class MockOrgAdapter implements OrgPort {
   readonly activeOrganization$: Observable<Organization | null> =
     this.activeOrganizationSubject.asObservable();
 
+  private readonly authAdapter = inject(MockAuthAdapter);
+
   constructor(
-    private readonly authAdapter: MockAuthAdapter,
     private readonly billingAdapter: MockBillingAdapter,
     private readonly activationAdapter: MockActivationAdapter,
     private readonly apiKeysAdapter: MockApiKeysAdapter,

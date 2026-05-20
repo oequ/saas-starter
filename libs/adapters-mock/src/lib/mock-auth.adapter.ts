@@ -239,5 +239,5 @@ export class MockAuthAdapter implements AuthPort {
 
 export const MOCK_AUTH_PROVIDER = {
   provide: AUTH_PORT,
-  useClass: MockAuthAdapter,
+  useExisting: MockAuthAdapter,
 };

@@ -21,6 +21,8 @@ npx nx serve demo
 
 Open http://localhost:4200
 
+**Demo sign-in (mock adapters only):** `demo@example.com` / `OequDemo2026!` — pre-filled on the login form; constants in `@oequ/ports` (`DEMO_AUTH_EMAIL`, `DEMO_AUTH_PASSWORD`).
+
 ## Live demo (GitHub Pages)
 
 After enabling **Pages → Source: GitHub Actions** in the repo settings:

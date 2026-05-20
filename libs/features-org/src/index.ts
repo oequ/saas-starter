@@ -16,3 +16,5 @@ export * from './lib/workspace-api-keys-page.component';
 export * from './lib/org-integrations.component';
 export * from './lib/workspace-integrations-page.component';
 export * from './lib/workspace-metrics-page.component';
+export * from './lib/workspace-emails-page.component';
+export * from './lib/org-emails.component';
