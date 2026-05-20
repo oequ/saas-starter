@@ -9,6 +9,11 @@ export type HelpTopicCategory =
   | 'account'
   | 'general';
 
+export interface HelpTopicRef {
+  readonly id: string;
+  readonly category: HelpTopicCategory;
+}
+
 export interface HelpTopic {
   readonly id: string;
   readonly title: string;
@@ -17,243 +22,65 @@ export interface HelpTopic {
   readonly category: HelpTopicCategory;
 }
 
-export interface HelpSystemComponent {
-  readonly name: string;
-  readonly status: 'operational';
-  readonly detail: string;
+export interface HelpSystemComponentRef {
+  readonly id: string;
 }
 
-export const HELP_SYSTEM_COMPONENTS: readonly HelpSystemComponent[] = [
-  { name: 'Web app', status: 'operational', detail: 'Dashboard and settings' },
-  { name: 'API', status: 'operational', detail: 'REST endpoints' },
-  { name: 'Email delivery', status: 'operational', detail: 'Outbound sending pipeline' },
-  { name: 'Authentication', status: 'operational', detail: 'Sign-in and sessions' },
+const METRICS_TOPICS: readonly HelpTopicRef[] = [
+  { id: 'metrics-deliverability', category: 'metrics' },
+  { id: 'metrics-bounce', category: 'metrics' },
 ];
 
-const METRICS_TOPICS: readonly HelpTopic[] = [
-  {
-    id: 'metrics-deliverability',
-    title: 'Understanding deliverability rate',
-    summary: 'What the headline percentage means for your workspace.',
-    category: 'metrics',
-    paragraphs: [
-      'Deliverability rate shows the share of sent emails that reached recipients without a hard bounce during the selected period.',
-      'Use the period filter to compare trends over 15, 30, or 90 days. Domain filter narrows metrics to a single sending domain.',
-      'A sudden drop often correlates with list quality or DNS authentication — check bounce breakdown before changing volume.',
-    ],
-  },
-  {
-    id: 'metrics-bounce',
-    title: 'Bounce rate and risk threshold',
-    summary: 'Transient vs permanent bounces and the risk line.',
-    category: 'metrics',
-    paragraphs: [
-      'Bounce rate combines transient (temporary mailbox issues), permanent (invalid addresses), and undetermined bounces.',
-      'The dashed risk line marks the threshold where sending reputation may be affected. Stay below it for healthy delivery.',
-      'Review the breakdown legend to see which bounce type drives your rate.',
-    ],
-  },
+const API_KEYS_TOPICS: readonly HelpTopicRef[] = [
+  { id: 'api-keys-create', category: 'api-keys' },
+  { id: 'api-keys-revoke', category: 'api-keys' },
 ];
 
-const API_KEYS_TOPICS: readonly HelpTopic[] = [
-  {
-    id: 'api-keys-create',
-    title: 'Creating an API key',
-    summary: 'Generate a key with the right permission scope.',
-    category: 'api-keys',
-    paragraphs: [
-      'Open API keys and choose Create API key. Pick a descriptive name your team will recognize in audit logs.',
-      'Select the minimum permission needed — sending-only keys cannot manage billing or members.',
-      'Copy the secret immediately after creation. For security, it is shown only once.',
-    ],
-  },
-  {
-    id: 'api-keys-revoke',
-    title: 'Revoking a compromised key',
-    summary: 'Rotate credentials without downtime.',
-    category: 'api-keys',
-    paragraphs: [
-      'Create a replacement key first, update your services, then revoke the old key from the row actions menu.',
-      'Revoked keys stop working instantly. Active integrations using them will receive 401 responses.',
-      'Use search and permission filters to audit keys across large teams.',
-    ],
-  },
+const INTEGRATIONS_TOPICS: readonly HelpTopicRef[] = [
+  { id: 'integrations-connect', category: 'integrations' },
+  { id: 'integrations-disconnect', category: 'integrations' },
 ];
 
-const INTEGRATIONS_TOPICS: readonly HelpTopic[] = [
-  {
-    id: 'integrations-connect',
-    title: 'Connecting an integration',
-    summary: 'Authorize third-party tools for your workspace.',
-    category: 'integrations',
-    paragraphs: [
-      'Browse the catalog and choose Connect on the integration you need. Authorize access in the dialog to complete the mock OAuth flow.',
-      'Connected integrations show a green status indicator with a Disconnect option.',
-    ],
-  },
-  {
-    id: 'integrations-disconnect',
-    title: 'Disconnecting safely',
-    summary: 'Remove access without affecting other workspaces.',
-    category: 'integrations',
-    paragraphs: [
-      'Hover a connected card and open the actions menu to disconnect. Confirm in the dialog to revoke access immediately.',
-      'Disconnect stops new events from flowing to the integration. Reconnect anytime from the same card.',
-      'If a production integration fails, disconnect and reconnect to refresh credentials in your real deployment.',
-    ],
-  },
+const MEMBERS_TOPICS: readonly HelpTopicRef[] = [
+  { id: 'members-invite', category: 'members' },
+  { id: 'members-seats', category: 'members' },
 ];
 
-const MEMBERS_TOPICS: readonly HelpTopic[] = [
-  {
-    id: 'members-invite',
-    title: 'Inviting teammates',
-    summary: 'Send invites and assign roles.',
-    category: 'members',
-    paragraphs: [
-      'Choose Invite member, enter an email, and select a role. Invited users appear with an Invited badge until they accept.',
-      'Owners can manage billing and delete the workspace. Admins manage settings and members. Members have limited access.',
-      'Use role filter and search to find people quickly in larger workspaces.',
-    ],
-  },
-  {
-    id: 'members-seats',
-    title: 'Seat limits on your plan',
-    summary: 'How active and invited members count toward seats.',
-    category: 'members',
-    paragraphs: [
-      'Both active and invited members count toward your seat limit on paid plans.',
-      'The toolbar shows seats used versus your plan allowance. Upgrade billing when you need more seats.',
-      'Removing a member frees a seat immediately after confirmation.',
-    ],
-  },
+const BILLING_TOPICS: readonly HelpTopicRef[] = [
+  { id: 'billing-plans', category: 'billing' },
+  { id: 'billing-invoices', category: 'billing' },
 ];
 
-const BILLING_TOPICS: readonly HelpTopic[] = [
-  {
-    id: 'billing-plans',
-    title: 'Plans and upgrades',
-    summary: 'Compare tiers and change subscription.',
-    category: 'billing',
-    paragraphs: [
-      'Billing overview lists available plans with feature comparisons. Upgrade opens a confirmation dialog with proration notes.',
-      'Trial workspaces show remaining trial days on the overview banner.',
-      'Payment method must be on file before upgrading from trial.',
-    ],
-  },
-  {
-    id: 'billing-invoices',
-    title: 'Invoices and receipts',
-    summary: 'Find past charges and download PDFs.',
-    category: 'billing',
-    paragraphs: [
-      'The Past Invoices section lists date, amount, invoice number, and status for each billing period.',
-      'Paid invoices include a download action for your records.',
-      'Billing email on the overview receives invoice notifications.',
-    ],
-  },
+const USAGE_TOPICS: readonly HelpTopicRef[] = [
+  { id: 'usage-summary', category: 'usage' },
+  { id: 'usage-upgrade', category: 'usage' },
 ];
 
-const USAGE_TOPICS: readonly HelpTopic[] = [
-  {
-    id: 'usage-summary',
-    title: 'Reading usage meters',
-    summary: 'How plan limits and consumption are displayed.',
-    category: 'usage',
-    paragraphs: [
-      'Each row shows consumed amount versus your plan limit for the current billing cycle.',
-      'Circular indicators fill as you approach limits. Seats and email volume are common early constraints.',
-      'Usage may take up to an hour to refresh after changes in the workspace.',
-    ],
-  },
-  {
-    id: 'usage-upgrade',
-    title: 'Unavailable features on your plan',
-    summary: 'When metrics show Upgrade instead of a meter.',
-    category: 'usage',
-    paragraphs: [
-      'Some capabilities are only included on higher tiers — Monthly Active SSO Users and Storage Image Transformations appear as unavailable on Free and Pro.',
-      'Click Upgrade to open the plan picker and compare tiers without leaving settings.',
-      'After upgrading, locked rows become active meters on your next usage refresh.',
-    ],
-  },
+const ONBOARDING_TOPICS: readonly HelpTopicRef[] = [
+  { id: 'onboarding-activation', category: 'onboarding' },
 ];
 
-const ONBOARDING_TOPICS: readonly HelpTopic[] = [
-  {
-    id: 'onboarding-activation',
-    title: 'Completing workspace activation',
-    summary: 'Finish the checklist to unlock the full workspace.',
-    category: 'onboarding',
-    paragraphs: [
-      'Activation steps guide you through domain setup, API keys, and your first send — tailored to this demo product.',
-      'You can open settings pages while activation is pending; the workspace home redirects here until complete.',
-      'Check off each step as you finish. Progress saves automatically in this demo environment.',
-    ],
-  },
+const ACCOUNT_TOPICS: readonly HelpTopicRef[] = [
+  { id: 'account-profile', category: 'account' },
+  { id: 'account-sessions', category: 'account' },
 ];
 
-const ACCOUNT_TOPICS: readonly HelpTopic[] = [
-  {
-    id: 'account-profile',
-    title: 'Updating your profile',
-    summary: 'Change display name and account details.',
-    category: 'account',
-    paragraphs: [
-      'Profile settings apply to you across all workspaces — not a single organization.',
-      'Display name appears in the user menu and member lists where your email is shown.',
-    ],
-  },
-  {
-    id: 'account-sessions',
-    title: 'Managing active sessions',
-    summary: 'Review devices and sign out remotely.',
-    category: 'account',
-    paragraphs: [
-      'Sessions lists browsers and locations for recent sign-ins. Your current session is marked.',
-      'Revoke individual sessions or sign out all other devices from the Security page.',
-    ],
-  },
+export const HELP_BROWSE_TOPICS: readonly HelpTopicRef[] = [
+  { id: 'general-getting-started', category: 'general' },
+  { id: 'general-security', category: 'general' },
+  { id: 'general-support', category: 'general' },
 ];
 
-export const HELP_BROWSE_TOPICS: readonly HelpTopic[] = [
-  {
-    id: 'general-getting-started',
-    title: 'Getting started with your workspace',
-    summary: 'Create a workspace and invite your team.',
-    category: 'general',
-    paragraphs: [
-      'After sign-up you create a workspace name and slug. Slugs appear in URLs and API references.',
-      'Invite teammates from Members settings. Each workspace has its own billing, API keys, and metrics.',
-    ],
-  },
-  {
-    id: 'general-security',
-    title: 'Security best practices',
-    summary: 'Protect API keys and member access.',
-    category: 'general',
-    paragraphs: [
-      'Never commit API keys to source control. Use environment variables on the server.',
-      'Review member roles regularly and remove inactive accounts.',
-      'Enable two-factor authentication when available in your production deployment.',
-    ],
-  },
-  {
-    id: 'general-support',
-    title: 'When to contact support',
-    summary: 'Issues we can help with fastest.',
-    category: 'general',
-    paragraphs: [
-      'Include your workspace slug, approximate time of the issue, and any error messages.',
-      'For delivery problems, mention the domain and a sample message ID if available.',
-      'Use the impact selector so we can prioritize urgent production outages.',
-    ],
-  },
+export const HELP_SYSTEM_COMPONENTS: readonly HelpSystemComponentRef[] = [
+  { id: 'webApp' },
+  { id: 'api' },
+  { id: 'emailDelivery' },
+  { id: 'authentication' },
 ];
 
 const ROUTE_TOPIC_ENTRIES: readonly {
   readonly prefix: string;
-  readonly topics: readonly HelpTopic[];
+  readonly topics: readonly HelpTopicRef[];
 }[] = [
   { prefix: '/workspace/metrics', topics: METRICS_TOPICS },
   { prefix: '/workspace/api-keys', topics: API_KEYS_TOPICS },
@@ -265,9 +92,21 @@ const ROUTE_TOPIC_ENTRIES: readonly {
   { prefix: '/account', topics: ACCOUNT_TOPICS },
 ];
 
-export function topicsForRoute(url: string): readonly HelpTopic[] {
+const ALL_TOPIC_REFS: readonly HelpTopicRef[] = [
+  ...HELP_BROWSE_TOPICS,
+  ...METRICS_TOPICS,
+  ...API_KEYS_TOPICS,
+  ...INTEGRATIONS_TOPICS,
+  ...MEMBERS_TOPICS,
+  ...BILLING_TOPICS,
+  ...USAGE_TOPICS,
+  ...ONBOARDING_TOPICS,
+  ...ACCOUNT_TOPICS,
+];
+
+export function topicsForRoute(url: string): readonly HelpTopicRef[] {
   const path = url.split('?')[0]?.split('#')[0] ?? '';
-  let bestMatch: readonly HelpTopic[] = HELP_BROWSE_TOPICS.slice(0, 2);
+  let bestMatch: readonly HelpTopicRef[] = HELP_BROWSE_TOPICS.slice(0, 2);
 
   for (const entry of ROUTE_TOPIC_ENTRIES) {
     if (path.startsWith(entry.prefix) && entry.topics.length > 0) {
@@ -278,17 +117,6 @@ export function topicsForRoute(url: string): readonly HelpTopic[] {
   return bestMatch;
 }
 
-export function findHelpTopicById(id: string): HelpTopic | null {
-  const all = [
-    ...HELP_BROWSE_TOPICS,
-    ...METRICS_TOPICS,
-    ...API_KEYS_TOPICS,
-    ...INTEGRATIONS_TOPICS,
-    ...MEMBERS_TOPICS,
-    ...BILLING_TOPICS,
-    ...USAGE_TOPICS,
-    ...ONBOARDING_TOPICS,
-    ...ACCOUNT_TOPICS,
-  ];
-  return all.find((topic) => topic.id === id) ?? null;
+export function findHelpTopicRefById(id: string): HelpTopicRef | null {
+  return ALL_TOPIC_REFS.find((topic) => topic.id === id) ?? null;
 }

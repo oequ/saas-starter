@@ -1,0 +1,215 @@
+{
+  "trigger": "Need help?",
+  "back": "Back",
+  "contact": {
+    "title": "Contact support",
+    "subtitle": "We typically respond within one business day.",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "Summary of your request",
+    "subjectRequired": "Subject is required.",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Describe your issue in detail",
+    "messageMinLength": "Message must be at least 20 characters.",
+    "impactLabel": "What's the current impact?",
+    "impactPlaceholder": "Select impact level",
+    "impact": {
+      "low": "Low — question or guidance",
+      "medium": "Medium — blocking a task",
+      "high": "High — production issue",
+      "critical": "Outage — service unavailable"
+    },
+    "sending": "Sending…",
+    "send": "Send",
+    "toast": "Ticket #{{ticketId}} received. We'll reply by email."
+  },
+  "hub": {
+    "eyebrow": "Help center",
+    "title": "How can we help?",
+    "description": "Contextual guides for the page you're on — no search required.",
+    "forThisPage": "For this page",
+    "browseTopics": "Browse topics",
+    "statusOperational": "All systems operational",
+    "statusHide": "Hide",
+    "statusDetails": "Details",
+    "statusOk": "OK",
+    "contactSupport": "Contact support"
+  },
+  "system": {
+    "webApp": {
+      "name": "Web app",
+      "detail": "Dashboard and settings"
+    },
+    "api": {
+      "name": "API",
+      "detail": "REST endpoints"
+    },
+    "emailDelivery": {
+      "name": "Email delivery",
+      "detail": "Outbound sending pipeline"
+    },
+    "authentication": {
+      "name": "Authentication",
+      "detail": "Sign-in and sessions"
+    }
+  },
+  "topics": {
+    "metrics-deliverability": {
+      "title": "Understanding deliverability rate",
+      "summary": "What the headline percentage means for your workspace.",
+      "paragraphs": [
+        "Deliverability rate shows the share of sent emails that reached recipients without a hard bounce during the selected period.",
+        "Use the period filter to compare trends over 15, 30, or 90 days. Domain filter narrows metrics to a single sending domain.",
+        "A sudden drop often correlates with list quality or DNS authentication — check bounce breakdown before changing volume."
+      ]
+    },
+    "metrics-bounce": {
+      "title": "Bounce rate and risk threshold",
+      "summary": "Transient vs permanent bounces and the risk line.",
+      "paragraphs": [
+        "Bounce rate combines transient (temporary mailbox issues), permanent (invalid addresses), and undetermined bounces.",
+        "The dashed risk line marks the threshold where sending reputation may be affected. Stay below it for healthy delivery.",
+        "Review the breakdown legend to see which bounce type drives your rate."
+      ]
+    },
+    "api-keys-create": {
+      "title": "Creating an API key",
+      "summary": "Generate a key with the right permission scope.",
+      "paragraphs": [
+        "Open API keys and choose Create API key. Pick a descriptive name your team will recognize in audit logs.",
+        "Select the minimum permission needed — sending-only keys cannot manage billing or members.",
+        "Copy the secret immediately after creation. For security, it is shown only once."
+      ]
+    },
+    "api-keys-revoke": {
+      "title": "Revoking a compromised key",
+      "summary": "Rotate credentials without downtime.",
+      "paragraphs": [
+        "Create a replacement key first, update your services, then revoke the old key from the row actions menu.",
+        "Revoked keys stop working instantly. Active integrations using them will receive 401 responses.",
+        "Use search and permission filters to audit keys across large teams."
+      ]
+    },
+    "integrations-connect": {
+      "title": "Connecting an integration",
+      "summary": "Authorize third-party tools for your workspace.",
+      "paragraphs": [
+        "Browse the catalog and choose Connect on the integration you need. Authorize access in the dialog to complete the mock OAuth flow.",
+        "Connected integrations show a green status indicator with a Disconnect option."
+      ]
+    },
+    "integrations-disconnect": {
+      "title": "Disconnecting safely",
+      "summary": "Remove access without affecting other workspaces.",
+      "paragraphs": [
+        "Hover a connected card and open the actions menu to disconnect. Confirm in the dialog to revoke access immediately.",
+        "Disconnect stops new events from flowing to the integration. Reconnect anytime from the same card.",
+        "If a production integration fails, disconnect and reconnect to refresh credentials in your real deployment."
+      ]
+    },
+    "members-invite": {
+      "title": "Inviting teammates",
+      "summary": "Send invites and assign roles.",
+      "paragraphs": [
+        "Choose Invite member, enter an email, and select a role. Invited users appear with an Invited badge until they accept.",
+        "Owners can manage billing and delete the workspace. Admins manage settings and members. Members have limited access.",
+        "Use role filter and search to find people quickly in larger workspaces."
+      ]
+    },
+    "members-seats": {
+      "title": "Seat limits on your plan",
+      "summary": "How active and invited members count toward seats.",
+      "paragraphs": [
+        "Both active and invited members count toward your seat limit on paid plans.",
+        "The toolbar shows seats used versus your plan allowance. Upgrade billing when you need more seats.",
+        "Removing a member frees a seat immediately after confirmation."
+      ]
+    },
+    "billing-plans": {
+      "title": "Plans and upgrades",
+      "summary": "Compare tiers and change subscription.",
+      "paragraphs": [
+        "Billing overview lists available plans with feature comparisons. Upgrade opens a confirmation dialog with proration notes.",
+        "Trial workspaces show remaining trial days on the overview banner.",
+        "Payment method must be on file before upgrading from trial."
+      ]
+    },
+    "billing-invoices": {
+      "title": "Invoices and receipts",
+      "summary": "Find past charges and download PDFs.",
+      "paragraphs": [
+        "The Past Invoices section lists date, amount, invoice number, and status for each billing period.",
+        "Paid invoices include a download action for your records.",
+        "Billing email on the overview receives invoice notifications."
+      ]
+    },
+    "usage-summary": {
+      "title": "Reading usage meters",
+      "summary": "How plan limits and consumption are displayed.",
+      "paragraphs": [
+        "Each row shows consumed amount versus your plan limit for the current billing cycle.",
+        "Circular indicators fill as you approach limits. Seats and email volume are common early constraints.",
+        "Usage may take up to an hour to refresh after changes in the workspace."
+      ]
+    },
+    "usage-upgrade": {
+      "title": "Unavailable features on your plan",
+      "summary": "When metrics show Upgrade instead of a meter.",
+      "paragraphs": [
+        "Some capabilities are only included on higher tiers — Monthly Active SSO Users and Storage Image Transformations appear as unavailable on Free and Pro.",
+        "Click Upgrade to open the plan picker and compare tiers without leaving settings.",
+        "After upgrading, locked rows become active meters on your next usage refresh."
+      ]
+    },
+    "onboarding-activation": {
+      "title": "Completing workspace activation",
+      "summary": "Finish the checklist to unlock the full workspace.",
+      "paragraphs": [
+        "Activation steps guide you through domain setup, API keys, and your first send — tailored to this demo product.",
+        "You can open settings pages while activation is pending; the workspace home redirects here until complete.",
+        "Check off each step as you finish. Progress saves automatically in this demo environment."
+      ]
+    },
+    "account-profile": {
+      "title": "Updating your profile",
+      "summary": "Change display name and account details.",
+      "paragraphs": [
+        "Profile settings apply to you across all workspaces — not a single organization.",
+        "Display name appears in the user menu and member lists where your email is shown."
+      ]
+    },
+    "account-sessions": {
+      "title": "Managing active sessions",
+      "summary": "Review devices and sign out remotely.",
+      "paragraphs": [
+        "Sessions lists browsers and locations for recent sign-ins. Your current session is marked.",
+        "Revoke individual sessions or sign out all other devices from the Security page."
+      ]
+    },
+    "general-getting-started": {
+      "title": "Getting started with your workspace",
+      "summary": "Create a workspace and invite your team.",
+      "paragraphs": [
+        "After sign-up you create a workspace name and slug. Slugs appear in URLs and API references.",
+        "Invite teammates from Members settings. Each workspace has its own billing, API keys, and metrics."
+      ]
+    },
+    "general-security": {
+      "title": "Security best practices",
+      "summary": "Protect API keys and member access.",
+      "paragraphs": [
+        "Never commit API keys to source control. Use environment variables on the server.",
+        "Review member roles regularly and remove inactive accounts.",
+        "Enable two-factor authentication when available in your production deployment."
+      ]
+    },
+    "general-support": {
+      "title": "When to contact support",
+      "summary": "Issues we can help with fastest.",
+      "paragraphs": [
+        "Include your workspace slug, approximate time of the issue, and any error messages.",
+        "For delivery problems, mention the domain and a sample message ID if available.",
+        "Use the impact selector so we can prioritize urgent production outages."
+      ]
+    }
+  }
+}

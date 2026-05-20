@@ -20,6 +20,7 @@ import {
   lucideUser,
   lucideUsers,
 } from '@ng-icons/lucide';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 import { filter, map, startWith } from 'rxjs';
@@ -32,6 +33,10 @@ import {
   topicsForRoute,
 } from './help-context.config';
 import { HelpPanelService } from './help-panel.service';
+import {
+  resolveHelpSystemComponent,
+  resolveHelpTopic,
+} from './help-topic.resolver';
 
 const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
   metrics: 'lucideBarChart2',
@@ -52,6 +57,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
     HlmButtonImports,
     HlmSheetImports,
     HelpContactFormComponent,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
@@ -75,7 +81,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
       class="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
       (click)="panel.open()"
     >
-      Need help?
+      {{ 'help.trigger' | transloco }}
     </button>
 
     <hlm-sheet
@@ -87,7 +93,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
         *hlmSheetPortal="let ctx"
         class="flex w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-md"
       >
-        @if (panel.view() === 'article' && panel.selectedTopic(); as topic) {
+        @if (panel.view() === 'article' && selectedTopic(); as topic) {
           <div class="flex flex-1 flex-col overflow-y-auto">
             <div class="border-border border-b px-4 py-4">
               <button
@@ -96,7 +102,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
                 (click)="panel.backToHub()"
               >
                 <ng-icon name="lucideArrowLeft" class="size-4" />
-                Back
+                {{ 'help.back' | transloco }}
               </button>
               <h2 class="text-lg font-semibold tracking-tight">
                 {{ topic.title }}
@@ -120,11 +126,13 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
                 (click)="panel.backToHub()"
               >
                 <ng-icon name="lucideArrowLeft" class="size-4" />
-                Back
+                {{ 'help.back' | transloco }}
               </button>
-              <h2 class="text-lg font-semibold tracking-tight">Contact support</h2>
+              <h2 class="text-lg font-semibold tracking-tight">
+                {{ 'help.contact.title' | transloco }}
+              </h2>
               <p class="text-muted-foreground mt-1 text-sm">
-                We typically respond within one business day.
+                {{ 'help.contact.subtitle' | transloco }}
               </p>
             </div>
             <div class="px-4 py-4">
@@ -138,11 +146,13 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
           <div class="flex flex-1 flex-col overflow-y-auto">
             <hlm-sheet-header class="border-border space-y-1 border-b px-4 py-4 text-start">
               <p class="text-primary text-xs font-medium tracking-wide uppercase">
-                Help center
+                {{ 'help.hub.eyebrow' | transloco }}
               </p>
-              <h2 hlmSheetTitle class="text-lg">How can we help?</h2>
+              <h2 hlmSheetTitle class="text-lg">
+                {{ 'help.hub.title' | transloco }}
+              </h2>
               <p hlmSheetDescription>
-                Contextual guides for the page you&apos;re on — no search required.
+                {{ 'help.hub.description' | transloco }}
               </p>
             </hlm-sheet-header>
 
@@ -151,7 +161,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
                 <h3
                   class="text-muted-foreground text-xs font-medium tracking-wide uppercase"
                 >
-                  For this page
+                  {{ 'help.hub.forThisPage' | transloco }}
                 </h3>
                 <ul class="space-y-1">
                   @for (topic of pageTopics(); track topic.id) {
@@ -159,7 +169,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
                       <button
                         type="button"
                         class="hover:bg-muted/50 flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-start transition-colors"
-                        (click)="panel.openTopic(topic)"
+                        (click)="openTopic(topic)"
                       >
                         <span
                           class="bg-muted text-muted-foreground grid size-8 shrink-0 place-content-center rounded-md"
@@ -194,15 +204,15 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
                 <h3
                   class="text-muted-foreground text-xs font-medium tracking-wide uppercase"
                 >
-                  Browse topics
+                  {{ 'help.hub.browseTopics' | transloco }}
                 </h3>
                 <ul class="space-y-1">
-                  @for (topic of browseTopics; track topic.id) {
+                  @for (topic of browseTopics(); track topic.id) {
                     <li>
                       <button
                         type="button"
                         class="hover:bg-muted/50 flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-start transition-colors"
-                        (click)="panel.openTopic(topic)"
+                        (click)="openTopic(topic)"
                       >
                         <span
                           class="bg-muted text-muted-foreground grid size-8 shrink-0 place-content-center rounded-md"
@@ -246,15 +256,19 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
                     class="bg-emerald-500 size-2 shrink-0 rounded-full"
                     aria-hidden="true"
                   ></span>
-                  All systems operational
+                  {{ 'help.hub.statusOperational' | transloco }}
                 </span>
                 <span class="text-muted-foreground text-xs">
-                  {{ panel.statusExpanded() ? 'Hide' : 'Details' }}
+                  {{
+                    panel.statusExpanded()
+                      ? ('help.hub.statusHide' | transloco)
+                      : ('help.hub.statusDetails' | transloco)
+                  }}
                 </span>
               </button>
               @if (panel.statusExpanded()) {
                 <ul class="space-y-2 pb-1">
-                  @for (item of systemComponents; track item.name) {
+                  @for (item of systemComponents(); track item.name) {
                     <li
                       class="border-border flex items-center justify-between rounded-md border px-3 py-2"
                     >
@@ -266,7 +280,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
                       </div>
                       <span
                         class="text-emerald-600 dark:text-emerald-400 text-xs font-medium"
-                        >OK</span
+                        >{{ 'help.hub.statusOk' | transloco }}</span
                       >
                     </li>
                   }
@@ -279,7 +293,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
                 class="w-full"
                 (click)="panel.openContact()"
               >
-                Contact support
+                {{ 'help.hub.contactSupport' | transloco }}
               </button>
             </div>
           </div>
@@ -291,9 +305,7 @@ const CATEGORY_ICONS: Record<HelpTopicCategory, string> = {
 export class HelpPanelComponent {
   protected readonly panel = inject(HelpPanelService);
   private readonly router = inject(Router);
-
-  protected readonly browseTopics = HELP_BROWSE_TOPICS;
-  protected readonly systemComponents = HELP_SYSTEM_COMPONENTS;
+  private readonly transloco = inject(TranslocoService);
 
   private readonly currentUrl = toSignal(
     this.router.events.pipe(
@@ -304,12 +316,33 @@ export class HelpPanelComponent {
     { initialValue: this.router.url },
   );
 
+  protected readonly selectedTopic = computed(() => {
+    const ref = this.panel.selectedTopic();
+    return ref ? resolveHelpTopic(ref, this.transloco) : null;
+  });
+
   protected readonly pageTopics = computed(() =>
-    topicsForRoute(this.currentUrl() ?? ''),
+    topicsForRoute(this.currentUrl() ?? '').map((ref) =>
+      resolveHelpTopic(ref, this.transloco),
+    ),
+  );
+
+  protected readonly browseTopics = computed(() =>
+    HELP_BROWSE_TOPICS.map((ref) => resolveHelpTopic(ref, this.transloco)),
+  );
+
+  protected readonly systemComponents = computed(() =>
+    HELP_SYSTEM_COMPONENTS.map((component) =>
+      resolveHelpSystemComponent(component.id, this.transloco),
+    ),
   );
 
   protected iconForCategory(category: HelpTopicCategory): string {
     return CATEGORY_ICONS[category];
+  }
+
+  protected openTopic(topic: { readonly id: string; readonly category: HelpTopicCategory }): void {
+    this.panel.openTopic({ id: topic.id, category: topic.category });
   }
 
   protected onSheetStateChanged(state: 'open' | 'closed'): void {

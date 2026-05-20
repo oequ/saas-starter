@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { TranslocoPipe } from '@oequ/i18n';
 
 @Component({
   selector: 'oequ-auth-legal-layout',
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterOutlet, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-muted/30 flex min-h-svh flex-col">
@@ -17,9 +18,11 @@ import { RouterLink, RouterOutlet } from '@angular/router';
             routerLink="/auth/login"
             class="text-muted-foreground hover:text-foreground text-sm transition-colors"
           >
-            ← Back to sign in
+            {{ 'legal.layout.backToSignIn' | transloco }}
           </a>
-          <span class="text-muted-foreground text-xs">Oequ · Demo</span>
+          <span class="text-muted-foreground text-xs">{{
+            'legal.layout.demoLabel' | transloco
+          }}</span>
         </div>
       </header>
 

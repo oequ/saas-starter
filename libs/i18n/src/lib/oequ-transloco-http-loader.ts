@@ -19,6 +19,8 @@ const SCOPES = [
   'org-api-keys',
   'org-integrations',
   'org-general',
+  'help',
+  'legal',
 ] as const;
 
 function orgScopeSegment(scope: string): string | null {

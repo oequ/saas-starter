@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import type { HelpPanelPort, HelpPanelView } from '@oequ/ports';
 
-import type { HelpTopic } from './help-context.config';
+import type { HelpTopicRef } from './help-context.config';
 
 export type HelpPanelContentView = HelpPanelView | 'article';
 
@@ -9,7 +9,7 @@ export type HelpPanelContentView = HelpPanelView | 'article';
 export class HelpPanelService implements HelpPanelPort {
   readonly sheetState = signal<'open' | 'closed'>('closed');
   readonly view = signal<HelpPanelContentView>('hub');
-  readonly selectedTopic = signal<HelpTopic | null>(null);
+  readonly selectedTopic = signal<HelpTopicRef | null>(null);
   readonly statusExpanded = signal(false);
 
   open(view: HelpPanelView = 'hub'): void {
@@ -32,7 +32,7 @@ export class HelpPanelService implements HelpPanelPort {
     }
   }
 
-  openTopic(topic: HelpTopic): void {
+  openTopic(topic: HelpTopicRef): void {
     this.selectedTopic.set(topic);
     this.view.set('article');
   }

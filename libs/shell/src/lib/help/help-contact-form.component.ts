@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   output,
   signal,
@@ -11,6 +12,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
 import { SUPPORT_PORT, type SupportImpact } from '@oequ/ports';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
@@ -18,14 +20,11 @@ import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmSelectImports } from '@spartan-ng/helm/select';
 import { HlmTextarea } from '@spartan-ng/helm/textarea';
 
-const IMPACT_OPTIONS: readonly {
-  readonly value: SupportImpact;
-  readonly label: string;
-}[] = [
-  { value: 'low', label: 'Low — question or guidance' },
-  { value: 'medium', label: 'Medium — blocking a task' },
-  { value: 'high', label: 'High — production issue' },
-  { value: 'critical', label: 'Outage — service unavailable' },
+const IMPACT_VALUES: readonly SupportImpact[] = [
+  'low',
+  'medium',
+  'high',
+  'critical',
 ];
 
 @Component({
@@ -36,13 +35,14 @@ const IMPACT_OPTIONS: readonly {
     HlmInput,
     HlmTextarea,
     HlmSelectImports,
+    TranslocoPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()">
       <div class="w-full min-w-0">
         <label for="help-subject" class="mb-1.5 block text-sm font-medium">
-          Subject
+          {{ 'help.contact.subjectLabel' | transloco }}
         </label>
         <input
           id="help-subject"
@@ -52,16 +52,18 @@ const IMPACT_OPTIONS: readonly {
           autocomplete="off"
           class="w-full shadow-none"
           formControlName="subject"
-          placeholder="Summary of your request"
+          [placeholder]="'help.contact.subjectPlaceholder' | transloco"
         />
         @if (submitAttempted() && form.controls.subject.invalid) {
-          <p class="text-destructive mt-1.5 text-sm">Subject is required.</p>
+          <p class="text-destructive mt-1.5 text-sm">
+            {{ 'help.contact.subjectRequired' | transloco }}
+          </p>
         }
       </div>
 
       <div class="w-full min-w-0">
         <label for="help-message" class="mb-1.5 block text-sm font-medium">
-          Message
+          {{ 'help.contact.messageLabel' | transloco }}
         </label>
         <textarea
           id="help-message"
@@ -69,11 +71,11 @@ const IMPACT_OPTIONS: readonly {
           rows="5"
           class="w-full shadow-none"
           formControlName="message"
-          placeholder="Describe your issue in detail"
+          [placeholder]="'help.contact.messagePlaceholder' | transloco"
         ></textarea>
         @if (submitAttempted() && form.controls.message.invalid) {
           <p class="text-destructive mt-1.5 text-sm">
-            Message must be at least 20 characters.
+            {{ 'help.contact.messageMinLength' | transloco }}
           </p>
         }
       </div>
@@ -83,7 +85,7 @@ const IMPACT_OPTIONS: readonly {
           for="help-impact-trigger"
           class="mb-1.5 block text-sm font-medium"
         >
-          What&apos;s the current impact?
+          {{ 'help.contact.impactLabel' | transloco }}
         </label>
         <hlm-select
           class="block w-full"
@@ -94,15 +96,15 @@ const IMPACT_OPTIONS: readonly {
             buttonId="help-impact-trigger"
             class="border-input h-9 w-full shadow-none"
           >
-            <span hlmSelectValue placeholder="Select impact level"></span>
+            <span class="truncate">{{ impactLabel() }}</span>
           </hlm-select-trigger>
           <hlm-select-content
             *hlmSelectPortal
             class="w-[var(--brn-select-width)]"
           >
-            @for (option of impactOptions; track option.value) {
-              <hlm-select-item [value]="option.value">
-                {{ option.label }}
+            @for (value of impactValues; track value) {
+              <hlm-select-item [value]="value">
+                {{ impactLabelFor(value) }}
               </hlm-select-item>
             }
           </hlm-select-content>
@@ -120,10 +122,14 @@ const IMPACT_OPTIONS: readonly {
           variant="secondary"
           (click)="cancelled.emit()"
         >
-          Cancel
+          {{ 'common.cancel' | transloco }}
         </button>
         <button hlmBtn type="submit" [disabled]="submitting()">
-          {{ submitting() ? 'Sending…' : 'Send' }}
+          {{
+            submitting()
+              ? ('help.contact.sending' | transloco)
+              : ('help.contact.send' | transloco)
+          }}
         </button>
       </div>
     </form>
@@ -131,14 +137,19 @@ const IMPACT_OPTIONS: readonly {
 })
 export class HelpContactFormComponent {
   private readonly supportPort = inject(SUPPORT_PORT);
+  private readonly transloco = inject(TranslocoService);
 
   readonly cancelled = output<void>();
   readonly submitted = output<void>();
 
-  protected readonly impactOptions = IMPACT_OPTIONS;
+  protected readonly impactValues = IMPACT_VALUES;
   protected readonly submitting = signal(false);
   protected readonly submitAttempted = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly impactLabel = computed(() =>
+    this.impactLabelFor(this.form.controls.impact.value),
+  );
 
   protected readonly form = new FormGroup({
     subject: new FormControl('', {
@@ -155,11 +166,22 @@ export class HelpContactFormComponent {
     }),
   });
 
+  protected impactLabelFor(value: SupportImpact): string {
+    return this.transloco.translate(`help.contact.impact.${value}`);
+  }
+
   protected onImpactChange(value: string | string[] | null | undefined): void {
     if (typeof value !== 'string') {
       return;
     }
-    this.form.controls.impact.setValue(value as SupportImpact);
+    if (
+      value === 'low' ||
+      value === 'medium' ||
+      value === 'high' ||
+      value === 'critical'
+    ) {
+      this.form.controls.impact.setValue(value);
+    }
   }
 
   protected async submit(): Promise<void> {
@@ -179,7 +201,11 @@ export class HelpContactFormComponent {
       return;
     }
 
-    toast.success(`Ticket #${result.data.ticketId} received. We'll reply by email.`);
+    toast.success(
+      this.transloco.translate('help.contact.toast', {
+        ticketId: result.data.ticketId,
+      }),
+    );
     this.form.reset({ impact: 'medium' });
     this.submitAttempted.set(false);
     this.submitted.emit();
