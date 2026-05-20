@@ -1,3 +1,16 @@
+import type { OrgRole } from './models/org.model';
+
+export function formatOrgRole(role: OrgRole): string {
+  return role.charAt(0).toUpperCase() + role.slice(1);
+}
+
+export function formatMemberDisplayLabel(member: {
+  readonly email: string;
+  readonly displayName: string | null;
+}): string {
+  return member.displayName?.trim() || member.email;
+}
+
 /** URL-safe workspace slug from a display name (demo / client-side preview). */
 export function slugifyOrganizationName(name: string): string {
   const slug = name

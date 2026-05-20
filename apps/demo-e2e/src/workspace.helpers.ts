@@ -85,18 +85,18 @@ export async function createWorkspaceViaOnboarding(
   await page.getByLabel('Workspace name').fill(workspaceName);
   await page.getByRole('button', { name: 'Create workspace' }).click();
   await expect(
-    page.getByRole('heading', { name: 'Send your first email' }),
+    page.getByRole('heading', { name: DEMO_ACTIVATION_HEADING }),
   ).toBeVisible();
 }
 
-/** Mock activation: add API key, send email, land on general settings. */
+export const DEMO_ACTIVATION_HEADING = 'Try the demo workspace';
+
+/** Mock activation: run metrics retrospective simulation, land on Metrics. */
 export async function completeActivationViaOnboarding(page: Page): Promise<void> {
-  await page.getByRole('link', { name: 'Add API Key' }).click();
-  await expect(page).toHaveURL(/\/workspace\/api-keys/);
-  await page.getByLabel('Name').fill('Onboarding Key');
-  await page.getByRole('button', { name: 'Add', exact: true }).click();
-  await page.getByRole('button', { name: 'Done' }).click();
-  await page.goto('/onboarding');
-  await page.getByRole('button', { name: 'Send email' }).click();
-  await expect(page).toHaveURL(/\/workspace\/emails$/);
+  await page.getByRole('button', { name: 'Simulate send history' }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Simulate send history' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Run simulation' }).click();
+  await expect(page).toHaveURL(/\/workspace\/metrics$/);
 }

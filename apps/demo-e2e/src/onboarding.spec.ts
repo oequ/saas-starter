@@ -3,6 +3,7 @@ import { test, expect } from '@playwright/test';
 import {
   completeActivationViaOnboarding,
   createWorkspaceViaOnboarding,
+  DEMO_ACTIVATION_HEADING,
   resetMockDemoState,
   setZeroOrganizations,
   signInAsDemo,
@@ -29,16 +30,16 @@ test.describe('onboarding', () => {
     await createWorkspaceViaOnboarding(page, 'Activation Test Co');
     await expect(page).toHaveURL(/\/onboarding$/);
     await expect(
-      page.getByRole('heading', { name: 'Send your first email' }),
+      page.getByRole('heading', { name: DEMO_ACTIVATION_HEADING }),
     ).toBeVisible();
   });
 
-  test('completing activation navigates to emails', async ({ page }) => {
+  test('completing activation navigates to metrics', async ({ page }) => {
     await setZeroOrganizations(page);
     await page.goto('/onboarding');
     await createWorkspaceViaOnboarding(page, 'Activation Complete Co');
     await completeActivationViaOnboarding(page);
-    await expect(page).toHaveURL(/\/workspace\/emails$/);
+    await expect(page.getByRole('heading', { name: 'Metrics' })).toBeVisible();
   });
 
   test('workspace root redirects to onboarding while activation pending', async ({
@@ -50,7 +51,7 @@ test.describe('onboarding', () => {
     await page.goto('/workspace');
     await expect(page).toHaveURL(/\/onboarding$/);
     await expect(
-      page.getByRole('heading', { name: 'Send your first email' }),
+      page.getByRole('heading', { name: DEMO_ACTIVATION_HEADING }),
     ).toBeVisible();
   });
 
@@ -58,7 +59,7 @@ test.describe('onboarding', () => {
     await signInAsDemo(page);
     await expect(page).toHaveURL(/\/onboarding$/);
     await expect(
-      page.getByRole('heading', { name: 'Send your first email' }),
+      page.getByRole('heading', { name: DEMO_ACTIVATION_HEADING }),
     ).toBeVisible();
   });
 
@@ -70,7 +71,7 @@ test.describe('onboarding', () => {
     await page.getByRole('link', { name: 'Onboarding' }).click();
     await expect(page).toHaveURL(/\/onboarding$/);
     await expect(
-      page.getByRole('heading', { name: 'Send your first email' }),
+      page.getByRole('heading', { name: DEMO_ACTIVATION_HEADING }),
     ).toBeVisible();
   });
 

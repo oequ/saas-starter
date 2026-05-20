@@ -5,6 +5,7 @@ import {
   provideAppInitializer,
 } from '@angular/core';
 
+import { DEMO_AUTH_EXTENSION } from '@oequ/ports';
 import {
   MOCK_AUTH_PROVIDER,
   MockAuthAdapter,
@@ -63,6 +64,10 @@ export function provideDemoAdapters(): EnvironmentProviders {
     MockMetricsAdapter,
     MockSupportAdapter,
     MOCK_AUTH_PROVIDER,
+    {
+      provide: DEMO_AUTH_EXTENSION,
+      useExisting: MockAuthAdapter,
+    },
     MOCK_ORG_PROVIDER,
     MOCK_BILLING_PROVIDER,
     MOCK_ACTIVATION_PROVIDER,

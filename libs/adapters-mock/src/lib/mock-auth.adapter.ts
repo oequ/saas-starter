@@ -7,6 +7,7 @@ import {
   type AuthSessionDevice,
   type AuthUser,
   type EmailPasswordCredentials,
+  type OrgContextClaim,
   type RegisterCredentials,
   portErr,
   portOk,
@@ -14,6 +15,7 @@ import {
 } from '@oequ/ports';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
+import type { DemoWorkspaceMemberImpersonationInput } from '@oequ/ports';
 import {
   MOCK_AUTH_SESSION,
   MOCK_DEMO_EMAIL,
@@ -24,6 +26,7 @@ import { MockOrgAdapter } from './mock-org.adapter';
 
 const DEMO_SIGNED_IN_STORAGE_KEY = 'oequ-demo-signed-in';
 const DEMO_USER_DISPLAY_NAME_KEY = 'oequ-demo-user-display-name';
+const DEMO_IMPERSONATION_SESSION_KEY = 'oequ-demo-impersonation-session';
 
 function readStoredDisplayName(): string | null {
   if (typeof sessionStorage === 'undefined') {
@@ -54,6 +57,35 @@ function sessionWithStoredProfile(base: AuthSession): AuthSession {
   };
 }
 
+function readImpersonationSession(): AuthSession | null {
+  if (typeof sessionStorage === 'undefined') {
+    return null;
+  }
+  const raw = sessionStorage.getItem(DEMO_IMPERSONATION_SESSION_KEY);
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw) as AuthSession;
+  } catch {
+    return null;
+  }
+}
+
+function writeImpersonationSession(session: AuthSession): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  sessionStorage.setItem(DEMO_IMPERSONATION_SESSION_KEY, JSON.stringify(session));
+}
+
+function clearImpersonationSession(): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  sessionStorage.removeItem(DEMO_IMPERSONATION_SESSION_KEY);
+}
+
 function readSignedInFlag(): boolean {
   if (typeof sessionStorage === 'undefined') {
     return false;
@@ -73,9 +105,23 @@ function setSignedInFlag(signedIn: boolean): void {
 }
 
 function initialSession(): AuthSession | null {
-  return readSignedInFlag()
-    ? sessionWithStoredProfile(MOCK_AUTH_SESSION)
-    : null;
+  if (!readSignedInFlag()) {
+    return null;
+  }
+  const impersonated = readImpersonationSession();
+  const base = impersonated ?? MOCK_AUTH_SESSION;
+  return sessionWithStoredProfile(base);
+}
+
+/** Preserve impersonated org role when mock org adapter re-selects the same workspace. */
+export function orgClaimForOrganization(
+  claims: AuthClaims,
+  organizationId: string,
+): OrgContextClaim {
+  if (claims.org?.organizationId === organizationId) {
+    return claims.org;
+  }
+  return { organizationId, role: 'owner' };
 }
 
 @Injectable()
@@ -91,6 +137,7 @@ export class MockAuthAdapter implements AuthPort {
     this.sessionSubject.asObservable();
 
   resetMockState(): void {
+    clearImpersonationSession();
     setSignedInFlag(true);
     writeStoredDisplayName(null);
     this.sessions = [...MOCK_SESSION_DEVICES];
@@ -118,8 +165,39 @@ export class MockAuthAdapter implements AuthPort {
       });
     }
 
+    clearImpersonationSession();
     setSignedInFlag(true);
     const session = sessionWithStoredProfile(MOCK_AUTH_SESSION);
+    this.sessionSubject.next(session);
+    return portOk(session);
+  }
+
+  /** Demo-only — use via `DEMO_AUTH_EXTENSION`, not production `AuthPort`. */
+  async impersonateWorkspaceMember(
+    input: DemoWorkspaceMemberImpersonationInput,
+  ): Promise<PortResult<AuthSession>> {
+    const email = input.email.trim().toLowerCase();
+    const displayName = input.displayName?.trim() || null;
+
+    const session: AuthSession = {
+      user: {
+        id: input.userId,
+        email,
+        displayName,
+      },
+      claims: {
+        sub: input.userId,
+        email,
+        org: {
+          organizationId: input.organizationId,
+          role: input.role,
+        },
+      },
+    };
+
+    setSignedInFlag(true);
+    writeStoredDisplayName(displayName);
+    writeImpersonationSession(session);
     this.sessionSubject.next(session);
     return portOk(session);
   }
@@ -151,6 +229,8 @@ export class MockAuthAdapter implements AuthPort {
       });
     }
 
+    clearImpersonationSession();
+
     const userId = crypto.randomUUID();
     const session: AuthSession = {
       user: {
@@ -174,7 +254,9 @@ export class MockAuthAdapter implements AuthPort {
   }
 
   async signOut(): Promise<PortResult<void>> {
+    clearImpersonationSession();
     setSignedInFlag(false);
+    writeStoredDisplayName(null);
     this.sessionSubject.next(null);
     return portOk(undefined);
   }
@@ -196,12 +278,9 @@ export class MockAuthAdapter implements AuthPort {
       displayName: input.displayName.trim(),
     };
 
+    const next: AuthSession = { user, claims: current.claims };
     writeStoredDisplayName(user.displayName);
-    this.sessionSubject.next({
-      user,
-      claims: current.claims,
-    });
-
+    this.applySession(next);
     return portOk(user);
   }
 
@@ -232,8 +311,28 @@ export class MockAuthAdapter implements AuthPort {
   }
 
   setSession(session: AuthSession | null): void {
+    if (!session) {
+      clearImpersonationSession();
+      this.sessionSubject.next(null);
+      setSignedInFlag(false);
+      return;
+    }
+    this.applySession(session);
+  }
+
+  private applySession(session: AuthSession): void {
+    const isDemoOwner =
+      session.user.id === MOCK_AUTH_SESSION.user.id &&
+      session.user.email === MOCK_DEMO_EMAIL;
+
+    if (isDemoOwner) {
+      clearImpersonationSession();
+    } else {
+      writeImpersonationSession(session);
+    }
+
+    setSignedInFlag(true);
     this.sessionSubject.next(session);
-    setSignedInFlag(session !== null);
   }
 }
 

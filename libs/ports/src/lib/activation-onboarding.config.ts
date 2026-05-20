@@ -14,29 +14,26 @@ export interface ActivationStepConfig {
   readonly completeLabel?: string;
 }
 
-export interface ActivationExploreCardConfig {
+/** Demo-only timeline step (metrics simulation, member impersonation, …). */
+export type ActivationDemoStepAction =
+  | 'metrics-retrospective'
+  | 'member-impersonation';
+
+export interface ActivationDemoStepConfig {
   readonly id: string;
   readonly title: string;
   readonly description: string;
   readonly actionLabel: string;
-  readonly badge?: string;
-}
-
-export interface ActivationRetrospectiveBlockConfig {
-  readonly title: string;
-  readonly description: string;
-  readonly actionLabel: string;
+  readonly action: ActivationDemoStepAction;
 }
 
 export interface ActivationOnboardingConfig {
   readonly title: string;
   readonly subtitle: string;
-  readonly steps: readonly ActivationStepConfig[];
-  /** Optional first-block CTA: simulate historical sends and open Metrics. */
-  readonly retrospective?: ActivationRetrospectiveBlockConfig;
-  readonly exploreTitle?: string;
-  readonly exploreSubtitle?: string;
-  readonly exploreCards?: readonly ActivationExploreCardConfig[];
+  /** Production activation checklist (API key, send email, …). */
+  readonly steps?: readonly ActivationStepConfig[];
+  /** Demo timeline steps; rendered like `steps` with the vertical rail. */
+  readonly demoSteps?: readonly ActivationDemoStepConfig[];
 }
 
 export const ACTIVATION_ONBOARDING_CONFIG =

@@ -31,11 +31,12 @@ test.describe('api keys', () => {
     await expect(page.getByText('E2E Test Key')).toBeVisible();
   });
 
-  test('opens create dialog from onboarding link', async ({ page }) => {
+  test('opens create dialog from api keys page', async ({ page }) => {
     await setZeroOrganizations(page);
     await page.goto('/onboarding');
     await createWorkspaceViaOnboarding(page, 'API Key Flow Co');
-    await page.getByRole('link', { name: 'Add API Key' }).click();
+    await page.goto('/workspace/api-keys');
+    await page.getByRole('button', { name: '+ Create API key' }).click();
 
     await expect(page).toHaveURL(/\/workspace\/api-keys/);
     await expect(page.getByRole('heading', { name: 'Add API Key' })).toBeVisible();

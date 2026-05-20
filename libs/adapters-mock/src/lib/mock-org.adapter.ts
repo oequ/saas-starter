@@ -22,7 +22,7 @@ import {
   MOCK_MEMBERS_BY_ORG_ID,
   MOCK_ORGANIZATIONS,
 } from './data/mock-data';
-import { MockAuthAdapter } from './mock-auth.adapter';
+import { MockAuthAdapter, orgClaimForOrganization } from './mock-auth.adapter';
 import { MockActivationAdapter } from './mock-activation.adapter';
 import { MockApiKeysAdapter } from './mock-api-keys.adapter';
 import { MockBillingAdapter } from './mock-billing.adapter';
@@ -228,7 +228,7 @@ export class MockOrgAdapter implements OrgPort {
       claims: {
         ...session.data,
         org: active
-          ? { organizationId: active.id, role: 'owner' }
+          ? orgClaimForOrganization(session.data, active.id)
           : null,
       },
     });
@@ -508,7 +508,7 @@ export class MockOrgAdapter implements OrgPort {
         claims: {
           ...session.data,
           org: nextActive
-            ? { organizationId: nextActive.id, role: 'owner' }
+            ? orgClaimForOrganization(session.data, nextActive.id)
             : null,
         },
       });
@@ -531,7 +531,7 @@ export class MockOrgAdapter implements OrgPort {
         user: await this.sessionUser(),
         claims: {
           ...session.data,
-          org: { organizationId: result.data.id, role: 'owner' },
+          org: orgClaimForOrganization(session.data, result.data.id),
         },
       });
     }

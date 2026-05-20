@@ -5,6 +5,7 @@ import { expect, test } from '@playwright/test';
 import {
   NOVA_WORKSPACE,
   PARCEL_WORKSPACE,
+  DEMO_ACTIVATION_HEADING,
   resetMockDemoState,
   switchWorkspace,
   waitForBillingLoaded,
@@ -29,7 +30,7 @@ test.describe('README screenshots', () => {
 
     await page.goto('/onboarding');
     await expect(
-      page.getByRole('heading', { name: 'Send your first email' }),
+      page.getByRole('heading', { name: DEMO_ACTIVATION_HEADING }),
     ).toBeVisible();
     await page.screenshot({
       path: path.join(assetsDir, 'demo-onboarding.png'),
