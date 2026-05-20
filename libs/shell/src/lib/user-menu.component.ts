@@ -20,7 +20,7 @@ import {
   lucideSun,
   lucideUser,
 } from '@ng-icons/lucide';
-import { OequLocaleSwitcherComponent, TranslocoPipe } from '@oequ/i18n';
+import { TranslocoPipe } from '@oequ/i18n';
 import { AUTH_PORT, ORG_PORT } from '@oequ/ports';
 import {
   HlmDropdownMenuImports,
@@ -33,7 +33,7 @@ import { ThemeService } from './theme.service';
 
 @Component({
   selector: 'oequ-user-menu',
-  imports: [HlmDropdownMenuImports, NgIcon, TranslocoPipe, OequLocaleSwitcherComponent],
+  imports: [HlmDropdownMenuImports, NgIcon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     provideIcons({
@@ -148,7 +148,6 @@ import { ThemeService } from './theme.service';
           <span>{{ 'shell.userMenu.toggleTheme' | transloco }}</span>
           <span hlmDropdownMenuShortcut>M</span>
         </button>
-        <oequ-locale-switcher />
         <div hlmDropdownMenuSeparator></div>
         <button
           type="button"

@@ -11,6 +11,19 @@ Standalone UI monorepo (Spartan + Tailwind v4). Implement `@oequ/ports` against 
 - Angular 21 · Nx 22
 - [Spartan UI](https://spartan.ng) (`@spartan-ng/brain`, helm in `libs/ui`)
 - Tailwind CSS v4 · Chart.js (metrics demo)
+- [@jsverse/transloco](https://jsverse.github.io/transloco/) via `@oequ/i18n` — UI strings and port errors are translation keys, not hardcoded copy
+
+## Internationalization (i18n)
+
+The shell and workspace UI are built for **multilingual apps**: copy lives in scoped JSON under `libs/i18n/src/assets/i18n/<lang>/`, loaded at runtime (no rebuild to add a locale). English (`en`) ships today; adding Deutsch or another language is copy + `supported-locales.ts` — see **[docs/I18N.md](./docs/I18N.md)**.
+
+| Today | Notes |
+|-------|--------|
+| **English only** | Demo and E2E assume English visible strings |
+| **No language menu** | `OequLocaleSwitcherComponent` exists in `@oequ/i18n` but is not shown until you register a second locale and wire it back into the user menu |
+| **Port errors** | Mock adapters return `reason` keys; UI resolves them via `translatePortError` (`errors.json`) |
+
+Forks should keep new user-facing text as Transloco keys from the start.
 
 ## Quick start
 
@@ -127,6 +140,7 @@ libs/shell             # App layout (sidebar, header, billing banner, help panel
 libs/features-org      # Workspace pages (metrics, api-keys, settings, onboarding)
 libs/ui                # Spartan helm components (@spartan-ng/helm/*)
 libs/adapters-mock     # Mock port implementations for demo
+libs/i18n              # Transloco wiring, locale preference, translation assets
 ```
 
 ## Workspace activation (onboarding)
