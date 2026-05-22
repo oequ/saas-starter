@@ -46,7 +46,7 @@
 | App | Purpose | Adapter |
 |-----|---------|---------|
 | `demo` | BYO / mock / GitHub Pages | `provideDemoAdapters()` |
-| `web` | Full-stack (planned) | `provideSupabaseAdapters()` |
+| `web` | Full-stack (Supabase auth/org) | `provideWebAdapters()` |
 
 ## Adding dependencies (checklist)
 
@@ -63,13 +63,6 @@
 - [Supabase](https://supabase.com/docs) — before `supabase/` or `@supabase/supabase-js`
 - [Spartan](https://spartan.ng) — CDK major must match Angular major
 - [Transloco](https://jsverse.github.io/transloco/)
-
-## Supabase (full-stack track)
-
-| Tool | Notes |
-|------|--------|
-| CLI | Install globally on Windows ([supabase/README.md](../supabase/README.md)); `npx supabase` may not ship a win32 binary |
-| `@supabase/supabase-js` | Pin `^2.106.x` after peer check; add when `apps/web` starts |
 
 ## Supabase (full-stack track)
 

@@ -106,11 +106,12 @@ From [QUALITY.md](./QUALITY.md):
 
 ---
 
-## Out of scope (this repo)
+## Out of scope (for now)
 
-- Database / RLS / Supabase (see saas-starter)
+- Org writes / invites / JWT org hook (Supabase `0002` — in progress on `web`)
+- Real Stripe billing (mock in both apps until HTTP adapter)
 - Real email delivery (activation demo is pluggable fiction)
-- Counsel-final legal text (provide structure only)
+- Counsel-final legal text (structure only)
 
 ---
 
