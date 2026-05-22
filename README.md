@@ -1,8 +1,17 @@
-# angular-saas-starter-ui
+# Oequ SaaS Starter
 
-Angular B2B SaaS shell — layout, org settings, auth UI. **You bring the API.**
+Angular B2B SaaS **control plane** — workspace shell, org settings, billing UI, ports/adapters. Spartan + Tailwind v4.
 
-Standalone UI monorepo (Spartan + Tailwind v4). Implement `@oequ/ports` against your API. For Supabase, RLS, and tenant isolation at the database layer, see the full-stack starter: [oequ/saas-starter](https://github.com/oequ/saas-starter). **Marketing site (full-stack positioning):** [oequ/saas-starter-landing](https://oequ.github.io/saas-starter-landing/).
+| Mode | Command | Backend |
+|------|---------|---------|
+| **Demo (mock)** | `npx nx serve demo` | `provideDemoAdapters()` — no Supabase |
+| **Full-stack (Supabase)** | `npm run start:web` → http://localhost:4201 | `provideWebAdapters()` — auth/org Supabase, rest mock |
+
+Locked dependency versions: [docs/STACK.md](./docs/STACK.md).
+
+**Local Supabase (full-stack):** [supabase/README.md](./supabase/README.md) — needs **Docker Desktop**, then `npm run db:start` and `npm run db:reset`.
+
+**Marketing site:** [oequ/saas-starter-landing](https://oequ.github.io/saas-starter-landing/).
 
 **Current UI release:** `v0.4.0-ui` — metrics, API keys, list-style members, outline settings, activation onboarding, in-app payment methods, stacked paywall checkout/downgrade dialogs.
 
@@ -35,6 +44,17 @@ npx nx serve demo
 Open http://localhost:4200
 
 **Demo sign-in (mock adapters only):** `demo@example.com` / `OequDemo2026!` — pre-filled on the login form; constants in `@oequ/ports` (`DEMO_AUTH_EMAIL`, `DEMO_AUTH_PASSWORD`).
+
+### Full-stack (`apps/web`)
+
+```bash
+npm run db:start
+npm run db:reset
+# Copy publishable key into apps/web/src/app/supabase.settings.ts (see supabase.settings.example.ts)
+npm run start:web
+```
+
+Register a user in the app, then link them to the `demo` org in Studio (SQL in [supabase/README.md](./supabase/README.md)).
 
 ## Live demo (GitHub Pages)
 

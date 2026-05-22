@@ -64,6 +64,21 @@
 - [Spartan](https://spartan.ng) — CDK major must match Angular major
 - [Transloco](https://jsverse.github.io/transloco/)
 
+## Supabase (full-stack track)
+
+| Tool | Notes |
+|------|--------|
+| CLI | Install globally on Windows ([supabase/README.md](../supabase/README.md)); `npx supabase` may not ship a win32 binary |
+| `@supabase/supabase-js` | Pin `^2.106.x` after peer check; add when `apps/web` starts |
+
+## Supabase (full-stack track)
+
+| Tool | Notes |
+|------|--------|
+| Docker Desktop | **Required** for `npm run db:start` — CLI runs containers ([supabase/README.md](../supabase/README.md)) |
+| CLI | devDependency `supabase@~2.101.0` — use `npm run db:*`, not global `npm i -g` |
+| `@supabase/supabase-js` | `~2.106.1` — `apps/web` + `libs/data-access-supabase` |
+
 ## Forbidden on bootstrap
 
 - `ng new` / `create-nx-workspace` for new apps (use `nx g @nx/angular:application` from this workspace).

@@ -24,6 +24,14 @@ node_modules
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# env (secrets)
+.env
+.env.local
+apps/web/src/app/supabase.settings.ts
+
+# Supabase Studio SQL snippets (local, may contain user UUIDs)
+supabase/snippets/
+
 # misc
 /.sass-cache
 /connect.lock

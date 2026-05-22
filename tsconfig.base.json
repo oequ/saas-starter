@@ -26,6 +26,9 @@
       "@oequ/adapters-mock": [
         "./libs/adapters-mock/src/index.ts"
       ],
+      "@oequ/data-access-supabase": [
+        "./libs/data-access-supabase/src/index.ts"
+      ],
       "@oequ/ui": [
         "./libs/ui/src/index.ts"
       ],

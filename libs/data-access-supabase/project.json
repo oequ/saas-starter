@@ -1,0 +1,22 @@
+{
+  "name": "data-access-supabase",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/data-access-supabase/src",
+  "projectType": "library",
+  "tags": ["type:adapters"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/data-access-supabase",
+        "main": "libs/data-access-supabase/src/index.ts",
+        "tsConfig": "libs/data-access-supabase/tsconfig.lib.json",
+        "assets": ["libs/data-access-supabase/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

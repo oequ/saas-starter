@@ -48,6 +48,12 @@
     "emailQuotaDaily": "Daily email limit exceeded ({{todayCount}} / {{dailyLimit}} today).",
     "emailQuotaExceeded": "Email quota exceeded for your plan.",
     "supportSubjectRequired": "Subject is required.",
-    "supportMessageMinLength": "Message must be at least 20 characters."
+    "supportMessageMinLength": "Message must be at least 20 characters.",
+    "supabaseNotConfigured": "Supabase is not configured. Set URL and publishable key in apps/web/src/app/supabase.settings.ts.",
+    "supabaseWritesNotEnabled": "This action is not available until organization write APIs are enabled.",
+    "supabaseQueryFailed": "Database request failed.",
+    "authFailed": "Authentication failed. Try again.",
+    "emailConfirmationRequired": "Check your email to confirm your account before signing in.",
+    "sessionRevokeNotSupported": "Session management is not available in the local Supabase stack yet."
   }
 }
