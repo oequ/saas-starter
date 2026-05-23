@@ -10,8 +10,9 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 |------|---------|
 | `0000_hardened_baseline.sql` | `REVOKE ALL` on `public` for `anon` / `authenticated`; grant `USAGE` only |
 | `0001_init_orgs.sql` | `organizations`, `organization_members`, RLS read policies, `GRANT SELECT` |
+| `0002_org_writes_rls.sql` | RPC `create_organization`, `invite_organization_member`, write RLS, invitations, JWT hook |
 
-There are **no** `WITH CHECK (true)` insert policies. Demo rows are seeded as superuser, not via a hole in RLS.
+There are **no** permissive `WITH CHECK (true)` insert policies on `organizations`. Demo rows are seeded as superuser, not via a hole in RLS.
 
 ## Using an existing Supabase in Docker
 
@@ -113,11 +114,17 @@ Run from the **repository root** (folder that contains `supabase/`), not from in
 | `npm run db:reset` | `supabase db reset` |
 | `npm run db:status` | `supabase status` |
 
-## After first sign-up (link yourself to `demo`)
+## Auth hook (workspace in JWT)
 
-`seed.sql` creates org slug **`demo`**. It does not know your `auth.users.id` yet.
+`config.toml` enables `custom_access_token_hook`. The app sets `user_metadata.active_org_slug` when you switch workspace; the hook embeds `app_metadata.org` in the access token.
 
-In **SQL Editor** (Studio → SQL), run once (replace the UUID):
+After changing `0002` or `config.toml`, run `npm run db:stop` then `npm run db:start` (or full `db:reset`).
+
+## After first sign-up (optional: link to seeded `demo`)
+
+`seed.sql` creates org slug **`demo`**. New users can also **create a workspace** in the app (`create_organization` RPC) without manual SQL.
+
+To attach to the seeded org instead, in **SQL Editor** (Studio → SQL), run once (replace the UUID):
 
 ```sql
 insert into public.organization_members (organization_id, user_id, role)
@@ -139,8 +146,16 @@ Find your user id: Studio → **Authentication** → Users → copy UUID.
 | CLI / `npx supabase` errors on Windows | Use `npm run db:*` after `npm install`; or install CLI via Scoop |
 | Port already in use | `npm run db:stop`, or change ports in `supabase/config.toml` |
 
+## Verify tenant isolation
+
+```bash
+npx nx e2e web-e2e --grep "tenant isolation"
+```
+
+Requires local Supabase + `apps/web` (`npm run start:web` is started by the e2e target).
+
 ## Next step (roadmap)
 
-- `0002` — invites, JWT hook, write policies
-- `apps/web` + `libs/data-access-supabase`
-- Tenant-isolation E2E
+- Auto-accept invitations on sign-up
+- Org delete, seat limits backed by Postgres
+- Hosted Supabase project + CI migration pipeline

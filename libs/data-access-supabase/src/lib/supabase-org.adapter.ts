@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import {
+  isValidOrganizationSlug,
   ORG_PORT,
   type CreateOrganizationInput,
   type InviteMemberInput,
@@ -25,6 +26,7 @@ import {
   supabaseErr,
   supabaseErrFromPostgrest,
 } from './supabase-port-error';
+import { supabaseErrFromRpc } from './supabase-rpc-error';
 
 interface DbOrganization {
   id: string;
@@ -40,6 +42,22 @@ interface DbOrganizationMember {
   created_at: string;
 }
 
+interface DbOrganizationInvitation {
+  id: string;
+  organization_id: string;
+  email: string;
+  role: string;
+}
+
+interface InviteRpcResult {
+  kind: 'member' | 'invitation';
+  organization_id: string;
+  user_id?: string;
+  email: string;
+  role: string;
+  status: 'active' | 'invited';
+}
+
 function mapOrganization(row: DbOrganization): Organization {
   return {
     id: row.id,
@@ -50,22 +68,35 @@ function mapOrganization(row: DbOrganization): Organization {
   };
 }
 
+function parseOrgRole(role: string): OrgRole {
+  return role === 'owner' || role === 'admin' || role === 'member'
+    ? role
+    : 'member';
+}
+
 function mapMember(
   row: DbOrganizationMember,
   currentUserId: string | null,
   currentEmail: string | null,
 ): OrganizationMember {
-  const role = row.role as OrgRole;
   return {
     organizationId: row.organization_id,
     userId: row.user_id,
     email: row.user_id === currentUserId ? (currentEmail ?? '') : '',
     displayName: null,
-    role:
-      role === 'owner' || role === 'admin' || role === 'member'
-        ? role
-        : 'member',
+    role: parseOrgRole(row.role),
     status: 'active',
+  };
+}
+
+function mapInvitation(row: DbOrganizationInvitation): OrganizationMember {
+  return {
+    organizationId: row.organization_id,
+    userId: row.id,
+    email: row.email,
+    displayName: null,
+    role: parseOrgRole(row.role),
+    status: 'invited',
   };
 }
 
@@ -128,24 +159,29 @@ export class SupabaseOrgAdapter implements OrgPort {
       organizations[0] ??
       null;
     this.activeOrganizationSubject.next(active);
-    this.syncClaims(active);
+    await this.applyActiveOrganization(active, false);
   }
 
-  private syncClaims(active: Organization | null): void {
-    if (!active) {
-      this.authAdapter.setSessionClaims(null);
-      return;
-    }
-    void this.loadMemberRole(active.id).then((role) => {
-      if (!role) {
-        this.authAdapter.setSessionClaims(null);
+  private async applyActiveOrganization(
+    active: Organization | null,
+    persistMetadata: boolean,
+  ): Promise<void> {
+    writeActiveOrgSlug(active?.slug ?? null);
+    if (persistMetadata) {
+      const persisted = await this.authAdapter.persistActiveOrgSlug(
+        active?.slug ?? null,
+      );
+      if (!persisted.ok) {
         return;
       }
-      this.authAdapter.setSessionClaims({
-        organizationId: active.id,
-        role,
-      });
-    });
+    } else {
+      const role = active ? await this.loadMemberRole(active.id) : null;
+      this.authAdapter.setSessionClaims(
+        active && role
+          ? { organizationId: active.id, role }
+          : null,
+      );
+    }
   }
 
   private async loadMemberRole(
@@ -165,10 +201,7 @@ export class SupabaseOrgAdapter implements OrgPort {
     if (error || !data) {
       return null;
     }
-    const role = (data as { role: string }).role;
-    return role === 'owner' || role === 'admin' || role === 'member'
-      ? role
-      : 'member';
+    return parseOrgRole((data as { role: string }).role);
   }
 
   async listOrganizations(): Promise<PortResult<readonly Organization[]>> {
@@ -195,55 +228,231 @@ export class SupabaseOrgAdapter implements OrgPort {
     const currentUserId = user.ok && user.data ? user.data.id : null;
     const currentEmail = user.ok && user.data ? user.data.email : null;
 
-    const { data, error } = await client
+    const [membersResult, invitesResult] = await Promise.all([
+      client
+        .from('organization_members')
+        .select('organization_id, user_id, role, created_at')
+        .eq('organization_id', organizationId),
+      client
+        .from('organization_invitations')
+        .select('id, organization_id, email, role')
+        .eq('organization_id', organizationId),
+    ]);
+
+    if (membersResult.error) {
+      return supabaseErrFromPostgrest(membersResult.error);
+    }
+    if (invitesResult.error) {
+      return supabaseErrFromPostgrest(invitesResult.error);
+    }
+
+    const members = (membersResult.data ?? []).map((row) =>
+      mapMember(row as DbOrganizationMember, currentUserId, currentEmail),
+    );
+    const invites = (invitesResult.data ?? []).map((row) =>
+      mapInvitation(row as DbOrganizationInvitation),
+    );
+
+    return portOk([...members, ...invites]);
+  }
+
+  async inviteMember(
+    organizationId: OrganizationId,
+    input: InviteMemberInput,
+  ): Promise<PortResult<OrganizationMember>> {
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const { data, error } = await client.rpc('invite_organization_member', {
+      p_organization_id: organizationId,
+      p_email: input.email.trim(),
+      p_role: input.role,
+    });
+
+    if (error) {
+      return supabaseErrFromRpc(error);
+    }
+
+    const payload = data as InviteRpcResult;
+    const member: OrganizationMember = {
+      organizationId: payload.organization_id,
+      userId: payload.user_id ?? crypto.randomUUID(),
+      email: payload.email,
+      displayName: null,
+      role: parseOrgRole(payload.role),
+      status: payload.status,
+    };
+
+    return portOk(member);
+  }
+
+  async removeMember(
+    organizationId: OrganizationId,
+    userId: string,
+  ): Promise<PortResult<void>> {
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const { data: target, error: loadError } = await client
+      .from('organization_members')
+      .select('role')
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (loadError) {
+      return supabaseErrFromPostgrest(loadError);
+    }
+    if (!target) {
+      return supabaseErr('NOT_FOUND', 'memberNotFound');
+    }
+    if ((target as { role: string }).role === 'owner') {
+      return supabaseErr('FORBIDDEN', 'ownerCannotRemove');
+    }
+
+    const { error } = await client
+      .from('organization_members')
+      .delete()
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId);
+
+    if (error) {
+      return supabaseErrFromPostgrest(error);
+    }
+    return portOk(undefined);
+  }
+
+  async updateMemberRole(
+    organizationId: OrganizationId,
+    userId: string,
+    input: UpdateMemberRoleInput,
+  ): Promise<PortResult<OrganizationMember>> {
+    if (input.role !== 'admin' && input.role !== 'member') {
+      return supabaseErr('VALIDATION', 'invalidMemberRole');
+    }
+
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const { data: existing, error: loadError } = await client
       .from('organization_members')
       .select('organization_id, user_id, role, created_at')
-      .eq('organization_id', organizationId);
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (loadError) {
+      return supabaseErrFromPostgrest(loadError);
+    }
+    if (!existing) {
+      return supabaseErr('NOT_FOUND', 'memberNotFound');
+    }
+    if ((existing as DbOrganizationMember).role === 'owner') {
+      return supabaseErr('FORBIDDEN', 'ownerRoleCannotChange');
+    }
+
+    const { data, error } = await client
+      .from('organization_members')
+      .update({ role: input.role })
+      .eq('organization_id', organizationId)
+      .eq('user_id', userId)
+      .select('organization_id, user_id, role, created_at')
+      .single();
 
     if (error) {
       return supabaseErrFromPostgrest(error);
     }
 
+    const user = await this.authAdapter.getVerifiedUser();
+    const currentUserId = user.ok && user.data ? user.data.id : null;
+    const currentEmail = user.ok && user.data ? user.data.email : null;
+
     return portOk(
-      (data ?? []).map((row) =>
-        mapMember(row as DbOrganizationMember, currentUserId, currentEmail),
-      ),
+      mapMember(data as DbOrganizationMember, currentUserId, currentEmail),
     );
   }
 
-  async inviteMember(
-    _organizationId: OrganizationId,
-    _input: InviteMemberInput,
-  ): Promise<PortResult<OrganizationMember>> {
-    return supabaseErr('UNAVAILABLE', 'supabaseWritesNotEnabled');
-  }
-
-  async removeMember(
-    _organizationId: OrganizationId,
-    _userId: string,
-  ): Promise<PortResult<void>> {
-    return supabaseErr('UNAVAILABLE', 'supabaseWritesNotEnabled');
-  }
-
-  async updateMemberRole(
-    _organizationId: OrganizationId,
-    _userId: string,
-    _input: UpdateMemberRoleInput,
-  ): Promise<PortResult<OrganizationMember>> {
-    return supabaseErr('UNAVAILABLE', 'supabaseWritesNotEnabled');
-  }
-
   async update(
-    _organizationId: OrganizationId,
-    _input: UpdateOrganizationInput,
+    organizationId: OrganizationId,
+    input: UpdateOrganizationInput,
   ): Promise<PortResult<Organization>> {
-    return supabaseErr('UNAVAILABLE', 'supabaseWritesNotEnabled');
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const patch: { name?: string } = {};
+    if (input.name !== undefined) {
+      const name = input.name.trim();
+      if (name.length < 2 || name.length > 64) {
+        return supabaseErr('VALIDATION', 'workspaceNameInvalid');
+      }
+      patch.name = name;
+    }
+
+    const { data, error } = await client
+      .from('organizations')
+      .update(patch)
+      .eq('id', organizationId)
+      .select('id, slug, name, created_at')
+      .single();
+
+    if (error) {
+      return supabaseErrFromPostgrest(error);
+    }
+
+    const organization = mapOrganization(data as DbOrganization);
+    const next = this.organizationsSubject.value.map((org) =>
+      org.id === organizationId ? organization : org,
+    );
+    this.organizationsSubject.next(next);
+    if (this.activeOrganizationSubject.value?.id === organizationId) {
+      this.activeOrganizationSubject.next(organization);
+    }
+
+    return portOk(organization);
   }
 
   async createOrganization(
-    _input: CreateOrganizationInput,
+    input: CreateOrganizationInput,
   ): Promise<PortResult<Organization>> {
-    return supabaseErr('UNAVAILABLE', 'supabaseWritesNotEnabled');
+    const name = input.name.trim();
+    const slug = input.slug.trim().toLowerCase();
+
+    if (name.length < 2 || name.length > 64) {
+      return supabaseErr('VALIDATION', 'workspaceNameInvalid');
+    }
+    if (!isValidOrganizationSlug(slug)) {
+      return supabaseErr('VALIDATION', 'workspaceSlugInvalid');
+    }
+
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const { data, error } = await client.rpc('create_organization', {
+      p_name: name,
+      p_slug: slug,
+    });
+
+    if (error) {
+      return supabaseErrFromRpc(error);
+    }
+
+    const organization = mapOrganization(data as DbOrganization);
+    this.organizationsSubject.next([
+      ...this.organizationsSubject.value,
+      organization,
+    ]);
+    await this.selectOrganization(slug);
+    return portOk(organization);
   }
 
   async deleteOrganization(
@@ -257,16 +466,14 @@ export class SupabaseOrgAdapter implements OrgPort {
     if (!result.ok) {
       return result;
     }
-    writeActiveOrgSlug(slug);
     this.activeOrganizationSubject.next(result.data);
-    this.syncClaims(result.data);
+    await this.applyActiveOrganization(result.data, true);
     return portOk(result.data);
   }
 
   async selectPersonal(): Promise<PortResult<void>> {
-    writeActiveOrgSlug(null);
     this.activeOrganizationSubject.next(null);
-    this.authAdapter.setSessionClaims(null);
+    await this.applyActiveOrganization(null, true);
     return portOk(undefined);
   }
 }

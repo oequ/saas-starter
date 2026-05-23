@@ -54,6 +54,7 @@
     "supabaseQueryFailed": "Database request failed.",
     "authFailed": "Authentication failed. Try again.",
     "emailConfirmationRequired": "Check your email to confirm your account before signing in.",
-    "sessionRevokeNotSupported": "Session management is not available in the local Supabase stack yet."
+    "sessionRevokeNotSupported": "Session management is not available in the local Supabase stack yet.",
+    "forbidden": "You do not have permission to perform this action."
   }
 }

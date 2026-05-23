@@ -108,7 +108,7 @@ From [QUALITY.md](./QUALITY.md):
 
 ## Out of scope (for now)
 
-- Org writes / invites / JWT org hook (Supabase `0002` — in progress on `web`)
+- Invitation auto-accept on sign-up (Supabase)
 - Real Stripe billing (mock in both apps until HTTP adapter)
 - Real email delivery (activation demo is pluggable fiction)
 - Counsel-final legal text (structure only)

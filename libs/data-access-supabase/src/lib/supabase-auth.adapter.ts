@@ -9,6 +9,7 @@ import {
   type EmailPasswordCredentials,
   type OrgContextClaim,
   type RegisterCredentials,
+  portErr,
   portOk,
   type PortResult,
 } from '@oequ/ports';
@@ -48,6 +49,25 @@ export class SupabaseAuthAdapter implements AuthPort {
     client.auth.onAuthStateChange((_event, session) => {
       this.applySupabaseSession(session);
     });
+  }
+
+  /** Persists active workspace for JWT hook (`custom_access_token_hook`). */
+  async persistActiveOrgSlug(slug: string | null): Promise<PortResult<void>> {
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+    const { error } = await client.auth.updateUser({
+      data: { active_org_slug: slug ?? '' },
+    });
+    if (error) {
+      return supabaseErrFromAuth(error);
+    }
+    const refreshed = await this.refreshSession();
+    if (refreshed.ok === false) {
+      return portErr<void>(refreshed.error);
+    }
+    return portOk(undefined);
   }
 
   /** Used by `SupabaseOrgAdapter` to sync workspace context until JWT hook lands. */

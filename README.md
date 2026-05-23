@@ -50,7 +50,8 @@ Honest split — UI is largely shared; **adapters** decide what is real.
 |------------|------|-----|
 | Auth (sign-in, register, session) | Mock | Supabase |
 | Organizations / workspace switch | Mock | Supabase (read + RLS) |
-| Members invite / org writes | Mock | Not yet (migration `0002`) |
+| Members invite / org writes | Mock | Supabase RPC + RLS (`0002`) |
+| Tenant isolation | N/A (mock) | RLS + `web-e2e` smoke |
 | Billing, paywall, payment methods | Mock | Mock |
 | Metrics, API keys, activation | Mock | Mock |
 | i18n (English) | Yes | Yes |
