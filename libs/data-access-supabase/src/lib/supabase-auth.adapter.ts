@@ -42,7 +42,17 @@ export class SupabaseAuthAdapter implements AuthPort {
       return;
     }
 
-    void client.auth.getSession().then(({ data }) => {
+    void client.auth.getSession().then(async ({ data }) => {
+      if (data.session) {
+        const { data: userData, error: userError } =
+          await client.auth.getUser();
+        if (userError || !userData.user) {
+          await client.auth.signOut();
+          this.orgOverride = undefined;
+          this.sessionSubject.next(null);
+          return;
+        }
+      }
       this.applySupabaseSession(data.session);
     });
 
@@ -74,6 +84,13 @@ export class SupabaseAuthAdapter implements AuthPort {
   setSessionClaims(org: OrgContextClaim | null): void {
     const current = this.sessionSubject.value;
     if (!current) {
+      return;
+    }
+    const prev = current.claims.org;
+    if (
+      prev?.organizationId === org?.organizationId &&
+      prev?.role === org?.role
+    ) {
       return;
     }
     this.orgOverride = org;
@@ -159,6 +176,7 @@ export class SupabaseAuthAdapter implements AuthPort {
       return supabaseErr('UNKNOWN', 'authFailed');
     }
     this.orgOverride = undefined;
+    await client.rpc('claim_my_invitations');
     const session = mapSession(data.session);
     this.sessionSubject.next(session);
     return portOk(session);
@@ -188,6 +206,7 @@ export class SupabaseAuthAdapter implements AuthPort {
       return supabaseErr('VALIDATION', 'emailConfirmationRequired');
     }
     this.orgOverride = null;
+    await client.rpc('claim_my_invitations');
     const session = mapSession(data.session, null);
     this.sessionSubject.next(session);
     return portOk(session);

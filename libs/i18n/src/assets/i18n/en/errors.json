@@ -13,6 +13,7 @@
   },
   "reasons": {
     "notSignedIn": "Sign in to continue.",
+    "sessionStale": "Your session is out of date (often after a local database reset). Sign out, sign in again, then retry.",
     "invalidCredentials": "Invalid email or password.",
     "termsRequired": "You must accept the Terms of Service and Privacy Policy.",
     "passwordTooShort": "Password must be at least 8 characters.",

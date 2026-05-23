@@ -11,6 +11,10 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 | `0000_hardened_baseline.sql` | `REVOKE ALL` on `public` for `anon` / `authenticated`; grant `USAGE` only |
 | `0001_init_orgs.sql` | `organizations`, `organization_members`, RLS read policies, `GRANT SELECT` |
 | `0002_org_writes_rls.sql` | RPC `create_organization`, `invite_organization_member`, write RLS, invitations, JWT hook |
+| `0003_claim_invitations.sql` | `claim_my_invitations()`, auth signup trigger, owner-only org delete |
+| `0004_create_org_validate_auth_user.sql` | `create_organization` rejects stale JWT (user missing in `auth.users`) |
+| `0005_fix_rls_recursion.sql` | RLS on orgs/members via `private.is_org_member` (fixes `42P17`) |
+| `0006_rls_helper_grants.sql` | `GRANT EXECUTE` on private helpers for RLS |
 
 There are **no** permissive `WITH CHECK (true)` insert policies on `organizations`. Demo rows are seeded as superuser, not via a hole in RLS.
 
@@ -118,7 +122,7 @@ Run from the **repository root** (folder that contains `supabase/`), not from in
 
 `config.toml` enables `custom_access_token_hook`. The app sets `user_metadata.active_org_slug` when you switch workspace; the hook embeds `app_metadata.org` in the access token.
 
-After changing `0002` or `config.toml`, run `npm run db:stop` then `npm run db:start` (or full `db:reset`).
+After changing migrations or `config.toml`, run `npm run db:stop` then `npm run db:start` (or full `db:reset`).
 
 ## After first sign-up (optional: link to seeded `demo`)
 
@@ -145,6 +149,12 @@ Find your user id: Studio → **Authentication** → Users → copy UUID.
 | `Cannot connect to Docker` | Start Docker Desktop; wait until `docker ps` works |
 | CLI / `npx supabase` errors on Windows | Use `npm run db:*` after `npm install`; or install CLI via Scoop |
 | Port already in use | `npm run db:stop`, or change ports in `supabase/config.toml` |
+| `supabase_analytics_*` unhealthy / `Analytics on Windows requires Docker daemon exposed on tcp://localhost:2375` | This repo sets `[analytics] enabled = false` in `config.toml` (not needed for auth/org). To use analytics anyway: Docker Desktop → Settings → General → **Expose daemon on tcp://localhost:2375 without TLS**, then set `enabled = true`. |
+| Several containers unhealthy after failed start | `npm run db:stop`, wait 10s, `npm run db:start` again |
+| `supabase_storage_*` unhealthy | This repo sets `[storage] enabled = false` (not required for auth/org). Re-enable when you need Storage buckets locally. |
+| Stack still flaky on slow Docker | `npx supabase start --ignore-health-check`, then `npm run db:status`; give Postgres ~1–2 min on first boot |
+| `23503` on `organization_members_user_id_fkey` when creating workspace | JWT `sub` is not in `auth.users` (usual: `db:reset` while browser still has old session). **Sign out** in the app (or clear site data), **sign in** again. Confirm `.env` `SUPABASE_URL` matches the running stack (`http://127.0.0.1:54321` for CLI). |
+| `42P17` infinite recursion on `organization_members` | Fixed in `0005` — run `npm run db:reset` or `npx supabase migration up` after pull. |
 
 ## Verify tenant isolation
 
@@ -156,6 +166,6 @@ Requires local Supabase + `apps/web` (`npm run start:web` is started by the e2e 
 
 ## Next step (roadmap)
 
-- Auto-accept invitations on sign-up
-- Org delete, seat limits backed by Postgres
+- Seat limits backed by Postgres
 - Hosted Supabase project + CI migration pipeline
+- E2E: invite-by-email → sign-up → member visible in org

@@ -159,12 +159,13 @@ export class SupabaseOrgAdapter implements OrgPort {
       organizations[0] ??
       null;
     this.activeOrganizationSubject.next(active);
-    await this.applyActiveOrganization(active, false);
+    await this.applyActiveOrganization(active, false, userId);
   }
 
   private async applyActiveOrganization(
     active: Organization | null,
     persistMetadata: boolean,
+    userId?: string | null,
   ): Promise<void> {
     writeActiveOrgSlug(active?.slug ?? null);
     if (persistMetadata) {
@@ -175,7 +176,9 @@ export class SupabaseOrgAdapter implements OrgPort {
         return;
       }
     } else {
-      const role = active ? await this.loadMemberRole(active.id) : null;
+      const uid = userId ?? (await this.currentUserId());
+      const role =
+        active && uid ? await this.loadMemberRole(active.id, uid) : null;
       this.authAdapter.setSessionClaims(
         active && role
           ? { organizationId: active.id, role }
@@ -186,17 +189,18 @@ export class SupabaseOrgAdapter implements OrgPort {
 
   private async loadMemberRole(
     organizationId: OrganizationId,
+    userId?: string | null,
   ): Promise<OrgRole | null> {
     const client = this.supabase.getClient();
-    const userId = await this.currentUserId();
-    if (!client || !userId) {
+    const uid = userId ?? (await this.currentUserId());
+    if (!client || !uid) {
       return null;
     }
     const { data, error } = await client
       .from('organization_members')
       .select('role')
       .eq('organization_id', organizationId)
-      .eq('user_id', userId)
+      .eq('user_id', uid)
       .maybeSingle();
     if (error || !data) {
       return null;
@@ -456,9 +460,37 @@ export class SupabaseOrgAdapter implements OrgPort {
   }
 
   async deleteOrganization(
-    _organizationId: OrganizationId,
+    organizationId: OrganizationId,
   ): Promise<PortResult<void>> {
-    return supabaseErr('UNAVAILABLE', 'supabaseWritesNotEnabled');
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const role = await this.loadMemberRole(organizationId);
+    if (role !== 'owner') {
+      return supabaseErr('FORBIDDEN', 'forbidden');
+    }
+
+    const { error } = await client
+      .from('organizations')
+      .delete()
+      .eq('id', organizationId);
+
+    if (error) {
+      return supabaseErrFromPostgrest(error);
+    }
+
+    const next = this.organizationsSubject.value.filter(
+      (org) => org.id !== organizationId,
+    );
+    this.organizationsSubject.next(next);
+    if (this.activeOrganizationSubject.value?.id === organizationId) {
+      this.activeOrganizationSubject.next(next[0] ?? null);
+      await this.applyActiveOrganization(next[0] ?? null, true);
+    }
+
+    return portOk(undefined);
   }
 
   async selectOrganization(slug: string): Promise<PortResult<Organization>> {

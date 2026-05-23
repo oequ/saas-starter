@@ -5,6 +5,7 @@ import {
   provideAppInitializer,
 } from '@angular/core';
 import { provideMockNonAuthAdapters } from '@oequ/adapters-mock';
+import { distinctUntilChanged, filter, map } from 'rxjs';
 
 import {
   SUPABASE_CONFIG,
@@ -27,11 +28,17 @@ export function provideSupabaseAdapters(
     provideAppInitializer(() => {
       const org = inject(SupabaseOrgAdapter);
       const auth = inject(SupabaseAuthAdapter);
-      auth.session$.subscribe((session) => {
-        if (session) {
+      // Reload orgs when the signed-in user changes — not on every session$ tick
+      // (setSessionClaims after reload would otherwise loop listOrganizations).
+      auth.session$
+        .pipe(
+          map((session) => session?.user.id ?? null),
+          distinctUntilChanged(),
+          filter((userId): userId is string => userId !== null),
+        )
+        .subscribe(() => {
           void org.listOrganizations();
-        }
-      });
+        });
     }),
   ]);
 }

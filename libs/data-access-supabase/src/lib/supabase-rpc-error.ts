@@ -29,10 +29,24 @@ export function supabaseErrFromRpc<T>(error: PostgrestError): PortResult<T> {
     };
   }
 
-  if (code === '28000' || message.includes('not authenticated')) {
+  if (
+    code === '28000' ||
+    message.includes('not authenticated') ||
+    message.includes('session stale')
+  ) {
     return {
       ok: false,
-      error: portErrorReason('UNAUTHENTICATED', 'notSignedIn'),
+      error: portErrorReason(
+        'UNAUTHENTICATED',
+        message.includes('session stale') ? 'sessionStale' : 'notSignedIn',
+      ),
+    };
+  }
+
+  if (code === '23503' && message.includes('user_id')) {
+    return {
+      ok: false,
+      error: portErrorReason('UNAUTHENTICATED', 'sessionStale'),
     };
   }
 

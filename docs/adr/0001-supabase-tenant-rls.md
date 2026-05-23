@@ -12,15 +12,15 @@
 1. **Default-deny** on `public` (`0000`), then explicit grants per table (`0001`, `0002`).
 2. **No permissive `INSERT` policies** on `organizations`. Creation goes through `create_organization()` (security definer).
 3. **RLS** on `organizations`, `organization_members`, `organization_invitations` using `private.*` helpers (`is_org_member`, `is_org_admin`, `is_org_owner`).
-4. **Invites:** `invite_organization_member()` — existing `auth.users` → member row; unknown email → `organization_invitations`.
+4. **Invites:** `invite_organization_member()` — existing `auth.users` → member row; unknown email → `organization_invitations`. On sign-up (trigger on `auth.users`) or sign-in/sign-up RPC `claim_my_invitations()`, pending rows become `organization_members`.
 5. **JWT org context:** `custom_access_token_hook` reads `user_metadata.active_org_slug` and sets `app_metadata.org` after membership check. Client updates metadata on workspace switch + `refreshSession()`.
 6. **Client fallback:** until refresh completes, `SupabaseAuthAdapter.setSessionClaims()` mirrors active org from localStorage.
+7. **Delete org:** owners may `DELETE` from `organizations` (RLS `orgs_delete_owner`); `SupabaseOrgAdapter.deleteOrganization()` uses the same check client-side.
 
 ## Consequences
 
-- Local dev requires `npm run db:reset` after pulling `0002` and restarting Supabase (hook in `config.toml`).
-- `delete organization` and seat limits are still mock-only in the UI layer.
-- Pending invitations do not auto-join on sign-up yet (manual SQL or future hook).
+- Local dev requires `npm run db:reset` after pulling migrations and restarting Supabase (hook in `config.toml`).
+- Seat limits and billing remain mock in the UI layer.
 
 ## Alternatives considered
 
