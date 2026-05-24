@@ -13,6 +13,7 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideEllipsis, lucideSearch, lucideUsers } from '@ng-icons/lucide';
 import {
   BILLING_PORT,
+  countMembersTowardSeats,
   formatSeatUsageValue,
   isBillingSeatsExhausted,
   ORG_PORT,
@@ -359,6 +360,12 @@ export class OrgSettingsMembersComponent {
   });
 
   protected readonly inviteSeatsExhausted = computed(() => {
+    const members = this.members();
+    if (members.length > 0) {
+      const used = countMembersTowardSeats(members);
+      const limit = this.billingResource.value()?.seatsLimit ?? 3;
+      return limit !== null && used >= limit;
+    }
     const summary = this.billingResource.value();
     return summary ? isBillingSeatsExhausted(summary) : false;
   });

@@ -64,7 +64,7 @@ Honest split — UI is largely shared; **adapters** decide what is real.
 |------------|------|-----|
 | Auth (sign-in, register, session) | Mock | Supabase |
 | Organizations / workspace switch | Mock | Supabase (read + RLS) |
-| Members invite / org writes | Mock | Supabase RPC + RLS (`0002`–`0003`) |
+| Members invite / org writes | Mock (seat cap in adapter) | Supabase RPC + RLS; Postgres enforces `seats_limit` (`0007`) |
 | Tenant isolation + invite claim | N/A (mock) | RLS + `web-e2e` (`@web` smoke) |
 | Billing, paywall, payment methods | Mock | Mock |
 | Metrics, API keys, activation | Mock | Mock |

@@ -13,14 +13,15 @@
 2. **No permissive `INSERT` policies** on `organizations`. Creation goes through `create_organization()` (security definer).
 3. **RLS** on `organizations`, `organization_members`, `organization_invitations` using `private.*` helpers (`is_org_member`, `is_org_admin`, `is_org_owner`).
 4. **Invites:** `invite_organization_member()` — existing `auth.users` → member row; unknown email → `organization_invitations`. On sign-up (trigger on `auth.users`) or sign-in/sign-up RPC `claim_my_invitations()`, pending rows become `organization_members`.
-5. **JWT org context:** `custom_access_token_hook` reads `user_metadata.active_org_slug` and sets `app_metadata.org` after membership check. Client updates metadata on workspace switch + `refreshSession()`.
-6. **Client fallback:** until refresh completes, `SupabaseAuthAdapter.setSessionClaims()` mirrors active org from localStorage.
-7. **Delete org:** owners may `DELETE` from `organizations` (RLS `orgs_delete_owner`); `SupabaseOrgAdapter.deleteOrganization()` uses the same check client-side.
+5. **Seat limits (`0007`):** `organizations.seats_limit` (default 3). Used seats = active `organization_members` + pending `organization_invitations`. `invite_organization_member`, claim flows, and `BEFORE INSERT` triggers call `private.assert_org_seat_available`; overflow raises `P0001` (`seats exhausted`) mapped to `SEATS_EXHAUSTED` in the web adapter.
+6. **JWT org context:** `custom_access_token_hook` reads `user_metadata.active_org_slug` and sets `app_metadata.org` after membership check. Client updates metadata on workspace switch + `refreshSession()`.
+7. **Client fallback:** until refresh completes, `SupabaseAuthAdapter.setSessionClaims()` mirrors active org from localStorage.
+8. **Delete org:** owners may `DELETE` from `organizations` (RLS `orgs_delete_owner`); `SupabaseOrgAdapter.deleteOrganization()` uses the same check client-side.
 
 ## Consequences
 
 - Local dev requires `npm run db:reset` after pulling migrations and restarting Supabase (hook in `config.toml`).
-- Seat limits and billing remain mock in the UI layer.
+- Seat caps are enforced in Postgres; billing UI (plan upgrades, Stripe) remains mock until phase 3.
 
 ## Alternatives considered
 

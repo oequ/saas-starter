@@ -50,6 +50,13 @@ export function supabaseErrFromRpc<T>(error: PostgrestError): PortResult<T> {
     };
   }
 
+  if (code === 'P0001' && message.includes('seats exhausted')) {
+    return {
+      ok: false,
+      error: portErrorReason('SEATS_EXHAUSTED', 'seatsExhausted'),
+    };
+  }
+
   if (code === '22023') {
     if (message.includes('slug')) {
       return {

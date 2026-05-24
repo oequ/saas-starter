@@ -115,6 +115,21 @@ export async function inviteMemberByEmail(page: Page, email: string): Promise<vo
   ).toBeVisible();
 }
 
+/** Opens invite dialog when seat cap is reached (UI gate before RPC). */
+export async function expectInviteDialogSeatsExhausted(
+  page: Page,
+  email?: string,
+): Promise<void> {
+  await page.getByRole('button', { name: '+ Invite member' }).click();
+  if (email) {
+    await page.getByLabel('Email address').fill(email);
+  }
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'All seats on your plan are in use' }),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Send invite' })).toBeDisabled();
+}
+
 export async function expectWorkspaceInSwitcher(
   page: Page,
   workspaceName: string,
