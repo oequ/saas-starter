@@ -8,9 +8,10 @@ import {
   resource,
   signal,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   BILLING_PORT,
+  STRIPE_BILLING_ENABLED,
   formatPaymentMethodBrand,
   formatPaymentMethodExpiry,
   formatPlanLabel,
@@ -119,15 +120,27 @@ import { AddPaymentMethodDialogComponent } from './add-payment-method-dialog.com
                     </p>
                   }
                 </div>
-                <button
-                  hlmBtn
-                  type="button"
-                  variant="outline"
-                  class="shrink-0"
-                  (click)="openUpgradeDialog()"
-                >
-                  {{ 'org.billing.subscription.changePlan' | transloco }}
-                </button>
+                <div class="flex shrink-0 flex-wrap gap-2">
+                  @if (stripeBillingEnabled && resolveCurrentPlanId(billing) !== 'free') {
+                    <button
+                      hlmBtn
+                      type="button"
+                      variant="outline"
+                      [disabled]="portalLoading()"
+                      (click)="openStripePortal()"
+                    >
+                      {{ 'org.billing.subscription.manageInStripe' | transloco }}
+                    </button>
+                  }
+                  <button
+                    hlmBtn
+                    type="button"
+                    variant="outline"
+                    (click)="openUpgradeDialog()"
+                  >
+                    {{ 'org.billing.subscription.changePlan' | transloco }}
+                  </button>
+                </div>
               </div>
 
               @if (resolveCurrentPlanId(billing) === 'free') {
@@ -368,6 +381,9 @@ export class OrgSettingsBillingComponent {
   private readonly billingPort = inject(BILLING_PORT);
   private readonly paywallDialog = inject(PaywallDialogService);
   private readonly transloco = inject(TranslocoService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  protected readonly stripeBillingEnabled = inject(STRIPE_BILLING_ENABLED);
 
   protected readonly formatPlanLabel = formatPlanLabel;
   protected readonly formatPaymentMethodBrand = formatPaymentMethodBrand;
@@ -376,6 +392,34 @@ export class OrgSettingsBillingComponent {
   protected readonly usageSettingsPath = USAGE_SETTINGS_PATH;
 
   protected readonly statusMessage = signal<string | null>(null);
+  protected readonly portalLoading = signal(false);
+
+  constructor() {
+    const checkout = this.route.snapshot.queryParamMap.get('checkout');
+    if (checkout === 'success') {
+      queueMicrotask(() => {
+        this.billingResource.reload();
+        this.statusMessage.set(
+          this.transloco.translate('org.billing.subscription.checkoutSuccess'),
+        );
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { checkout: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      });
+    } else if (checkout === 'cancel') {
+      queueMicrotask(() => {
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { checkout: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      });
+    }
+  }
   protected readonly addPaymentDialogOpen = signal(false);
   protected readonly addPaymentSaving = signal(false);
   protected readonly addPaymentError = signal<string | null>(null);
@@ -453,6 +497,26 @@ export class OrgSettingsBillingComponent {
     return this.transloco.translate('org.billing.invoices.downloadAria', {
       number,
     });
+  }
+
+  protected async openStripePortal(): Promise<void> {
+    this.portalLoading.set(true);
+    this.statusMessage.set(null);
+    const returnUrl = `${globalThis.location.origin}${globalThis.location.pathname}`;
+    const result = await this.billingPort.createPortalSession(
+      this.organizationId(),
+      returnUrl,
+    );
+    this.portalLoading.set(false);
+    if (result.ok && result.data.url) {
+      globalThis.location.assign(result.data.url);
+      return;
+    }
+    this.statusMessage.set(
+      result.ok
+        ? this.transloco.translate('org.billing.subscription.portalUnavailable')
+        : translatePortError(result.error, this.transloco),
+    );
   }
 
   protected async openUpgradeDialog(): Promise<void> {

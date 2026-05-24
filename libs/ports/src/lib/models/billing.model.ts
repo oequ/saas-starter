@@ -81,7 +81,10 @@ export interface InvoiceListPage {
 }
 
 export interface CheckoutSession {
-  readonly clientSecret: string;
+  /** Mock checkout (demo / local without Stripe). */
+  readonly clientSecret?: string;
+  /** Hosted Stripe Checkout URL (Supabase Edge Functions). */
+  readonly url?: string;
 }
 
 export interface PortalSession {

@@ -129,7 +129,9 @@ export async function expectInviteDialogSeatsExhausted(
     await page.getByLabel('Email address').fill(email);
   }
   await expect(
-    page.getByRole('alert').filter({ hasText: 'All seats on your plan are in use' }),
+    page
+      .getByRole('alert')
+      .filter({ hasText: /All seats (are in use|on your plan are in use)/ }),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Send invite' })).toBeDisabled();
   await page.getByRole('button', { name: 'Cancel' }).click();

@@ -90,6 +90,7 @@
   "errors": {
     "noWorkspace": "No active workspace.",
     "billingUnavailable": "Billing information is not available.",
-    "downgradeSeats": "You have {{used}} members but {{plan}} allows {{limit}}. Remove members before downgrading."
+    "downgradeSeats": "You have {{used}} members but {{plan}} allows {{limit}}. Remove members before downgrading.",
+    "portalUnavailable": "Could not open the billing portal. Try again from Billing settings."
   }
 }

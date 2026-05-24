@@ -86,3 +86,9 @@ export interface BillingPort {
 }
 
 export const BILLING_PORT = new InjectionToken<BillingPort>('BILLING_PORT');
+
+/** True when `apps/web` uses Stripe Checkout / Customer Portal via Supabase Edge Functions. */
+export const STRIPE_BILLING_ENABLED = new InjectionToken<boolean>(
+  'STRIPE_BILLING_ENABLED',
+  { factory: () => false },
+);

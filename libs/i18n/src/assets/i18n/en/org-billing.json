@@ -14,7 +14,10 @@
     "freeLimitLead": "Projects may become unresponsive when this organization exceeds its",
     "includedQuotaLink": "included usage quota",
     "freeLimitSuffix": ". To scale seamlessly, upgrade to a paid plan.",
-    "planUpdated": "Plan updated successfully."
+    "planUpdated": "Plan updated successfully.",
+    "checkoutSuccess": "Subscription updated. It may take a moment for your plan and seat limits to refresh.",
+    "manageInStripe": "Manage in Stripe",
+    "portalUnavailable": "Could not open the billing portal. Try again in a moment."
   },
   "subscriptionStatus": {
     "trialing": "Trial",

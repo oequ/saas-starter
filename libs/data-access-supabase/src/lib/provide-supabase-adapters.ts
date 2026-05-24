@@ -5,7 +5,7 @@ import {
   provideAppInitializer,
 } from '@angular/core';
 import { provideMockNonAuthAdapters } from '@oequ/adapters-mock';
-import { BILLING_PORT } from '@oequ/ports';
+import { BILLING_PORT, STRIPE_BILLING_ENABLED } from '@oequ/ports';
 import { distinctUntilChanged, filter, map } from 'rxjs';
 
 import {
@@ -55,6 +55,10 @@ export function provideWebAdapters(
     makeEnvironmentProviders([
       WebBillingAdapter,
       { provide: BILLING_PORT, useExisting: WebBillingAdapter },
+      {
+        provide: STRIPE_BILLING_ENABLED,
+        useValue: config.stripeEnabled === true,
+      },
     ]),
   ];
 }

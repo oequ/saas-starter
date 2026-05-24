@@ -17,6 +17,9 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 | `0006_rls_helper_grants.sql` | `GRANT EXECUTE` on private helpers for RLS |
 | `0007_org_seat_limits.sql` | `organizations.seats_limit` (default 3); seat count = members + pending invitations; enforced on invite, claim, and `BEFORE INSERT` triggers |
 | `0008_org_billing_plan.sql` | `organizations.plan_id`; `get_organization_billing_snapshot`, `update_organization_plan` (syncs `seats_limit` with plan tier) |
+| `0009_stripe_billing.sql` | `organization_stripe`, `billing_events` (webhook idempotency), `apply_stripe_subscription` (service role); snapshot includes subscription fields |
+
+Edge Functions (Deno 2, see `config.toml`): `billing-create-checkout`, `billing-create-portal`, `stripe-webhook`. Local Stripe setup: [docs/STRIPE_LOCAL.md](../docs/STRIPE_LOCAL.md).
 
 There are **no** permissive `WITH CHECK (true)` insert policies on `organizations`. Demo rows are seeded as superuser, not via a hole in RLS.
 

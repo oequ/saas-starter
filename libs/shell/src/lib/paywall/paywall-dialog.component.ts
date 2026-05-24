@@ -14,6 +14,7 @@ import { lucideCheck } from '@ng-icons/lucide';
 import {
   BILLING_PORT,
   COMMERCIAL_PLAN_IDS,
+  STRIPE_BILLING_ENABLED,
   comparePlanTiers,
   formatUsageNumber,
   getDowngradeBlocker,
@@ -269,6 +270,7 @@ export class PaywallDialogComponent {
   private readonly billingPort = inject(BILLING_PORT);
   private readonly orgPort = inject(ORG_PORT);
   private readonly transloco = inject(TranslocoService);
+  private readonly stripeBillingEnabled = inject(STRIPE_BILLING_ENABLED);
 
   protected readonly planSkeletonSlots = [0, 1, 2] as const;
   protected readonly featureSkeletonSlots = [0, 1, 2, 3, 4] as const;
@@ -375,7 +377,16 @@ export class PaywallDialogComponent {
 
     if (!result.ok) {
       this.checkoutConfirmError.set(translatePortError(result.error, this.transloco));
+      this.checkoutConfirmOpen.set(true);
+      return;
     }
+
+    if (result.data.url) {
+      globalThis.location.assign(result.data.url);
+      return;
+    }
+
+    this.checkoutConfirmOpen.set(true);
   }
 
   protected closeCheckoutConfirm(): void {
@@ -434,6 +445,23 @@ export class PaywallDialogComponent {
 
     this.downgradeConfirming.set(true);
     this.downgradeConfirmError.set(null);
+
+    if (this.stripeBillingEnabled) {
+      const returnUrl = `${globalThis.location.origin}/workspace/settings/billing`;
+      const portal = await this.billingPort.createPortalSession(org.id, returnUrl);
+      this.downgradeConfirming.set(false);
+      if (portal.ok && portal.data.url) {
+        globalThis.location.assign(portal.data.url);
+        return;
+      }
+      this.downgradeConfirmError.set(
+        portal.ok
+          ? this.transloco.translate('paywall.errors.portalUnavailable')
+          : translatePortError(portal.error, this.transloco),
+      );
+      return;
+    }
+
     const result = await this.billingPort.changePlan(org.id, plan.id);
     this.downgradeConfirming.set(false);
 
