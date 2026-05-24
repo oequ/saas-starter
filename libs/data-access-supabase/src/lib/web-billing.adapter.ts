@@ -32,6 +32,10 @@ interface BillingSnapshotRpc {
   current_period_end?: string | null;
   cancel_at_period_end?: boolean;
   has_stripe_customer?: boolean;
+  emails_used_month?: number;
+  emails_used_today?: number;
+  emails_monthly_limit?: number | null;
+  emails_daily_limit?: number | null;
 }
 
 const PLAN_NAMES: Readonly<Record<string, string>> = {
@@ -267,6 +271,19 @@ export class WebBillingAdapter implements BillingPort {
   ): BillingSummary {
     const planId = snapshot.plan_id === 'free' ? null : snapshot.plan_id;
     const status = this.mapSubscriptionStatus(snapshot.subscription_status);
+    const meters = summary.meters.map((meter) => {
+      if (meter.metricId !== 'emails_sent') {
+        return meter;
+      }
+      return {
+        ...meter,
+        consumed: snapshot.emails_used_month ?? meter.consumed,
+        limit: snapshot.emails_monthly_limit ?? meter.limit,
+        dailyLimit: snapshot.emails_daily_limit ?? meter.dailyLimit,
+        dailyConsumed: snapshot.emails_used_today ?? meter.dailyConsumed,
+      };
+    });
+
     return {
       ...summary,
       planId,
@@ -278,6 +295,7 @@ export class WebBillingAdapter implements BillingPort {
         snapshot.current_period_end ?? summary.currentPeriodEnd,
       cancelAtPeriodEnd:
         snapshot.cancel_at_period_end ?? summary.cancelAtPeriodEnd,
+      meters,
     };
   }
 

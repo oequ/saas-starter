@@ -5,6 +5,8 @@ Last updated: **2026-05-20** (after i18n infrastructure pilot).
 
 Aligns with [QUALITY.md](./QUALITY.md) (L1 target) and full-stack wiring in [oequ/saas-starter](https://github.com/oequ/saas-starter).
 
+**`apps/web` (Supabase + Stripe):** see [APPS_WEB_PLAN.md](./APPS_WEB_PLAN.md) — not duplicated here.
+
 ---
 
 ## Already shipped (baseline — do not re-litigate)
@@ -108,8 +110,8 @@ From [QUALITY.md](./QUALITY.md):
 
 ## Out of scope (for now)
 
-- Invitation auto-accept on sign-up (Supabase)
-- Real Stripe billing (mock in both apps until HTTP adapter)
+- Invitation auto-accept on sign-up (Supabase) — partial in `apps/web`; see APPS_WEB_PLAN
+- ~~Real Stripe billing~~ — **v1 shipped** on `apps/web` (Edge Functions); v2 polish in [APPS_WEB_PLAN.md](./APPS_WEB_PLAN.md)
 - Real email delivery (activation demo is pluggable fiction)
 - Counsel-final legal text (structure only)
 

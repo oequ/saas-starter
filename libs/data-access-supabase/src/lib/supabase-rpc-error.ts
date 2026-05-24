@@ -57,6 +57,27 @@ export function supabaseErrFromRpc<T>(error: PostgrestError): PortResult<T> {
     };
   }
 
+  if (code === 'P0001' && message.includes('monthly email quota')) {
+    return {
+      ok: false,
+      error: portErrorReason('RATE_LIMITED', 'emailQuotaMonthly'),
+    };
+  }
+
+  if (code === 'P0001' && message.includes('daily email quota')) {
+    return {
+      ok: false,
+      error: portErrorReason('RATE_LIMITED', 'emailQuotaDaily'),
+    };
+  }
+
+  if (code === 'P0001' && message.includes('email quota')) {
+    return {
+      ok: false,
+      error: portErrorReason('RATE_LIMITED', 'emailQuotaExceeded'),
+    };
+  }
+
   if (code === '22023') {
     if (message.includes('slug')) {
       return {
@@ -80,6 +101,18 @@ export function supabaseErrFromRpc<T>(error: PostgrestError): PortResult<T> {
       return {
         ok: false,
         error: portErrorReason('VALIDATION', 'invalidMemberRole'),
+      };
+    }
+    if (message.includes('api key not found')) {
+      return {
+        ok: false,
+        error: portErrorReason('NOT_FOUND', 'apiKeyNotFound'),
+      };
+    }
+    if (message.includes('api key name')) {
+      return {
+        ok: false,
+        error: portErrorReason('VALIDATION', 'apiKeyNameRequired'),
       };
     }
   }

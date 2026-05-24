@@ -18,6 +18,9 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 | `0007_org_seat_limits.sql` | `organizations.seats_limit` (default 3); seat count = members + pending invitations; enforced on invite, claim, and `BEFORE INSERT` triggers |
 | `0008_org_billing_plan.sql` | `organizations.plan_id`; `get_organization_billing_snapshot`, `update_organization_plan` (syncs `seats_limit` with plan tier) |
 | `0009_stripe_billing.sql` | `organization_stripe`, `billing_events` (webhook idempotency), `apply_stripe_subscription` (service role); snapshot includes subscription fields |
+| `0010_organization_api_keys.sql` | Hashed API keys; `list` / `create` / `revoke` RPCs (admin writes) |
+| `0011_outbound_emails.sql` | Outbound email log, quota helpers, `list_outbound_emails` / `simulate_outbound_emails`; billing snapshot email usage |
+| `0012_organization_activation.sql` | `organization_activation` + onboarding RPCs; `create_organization` seeds `pending` |
 
 Edge Functions (Deno 2, see `config.toml`): `billing-create-checkout`, `billing-create-portal`, `stripe-webhook`. Local Stripe setup: [docs/STRIPE_LOCAL.md](../docs/STRIPE_LOCAL.md).
 

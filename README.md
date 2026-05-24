@@ -9,7 +9,7 @@
 | **Needs** | `npm install` only | Docker + `npm run db:start` |
 | **Ship target** | GitHub Pages, BYO API | Local/prod Supabase project |
 
-Locked versions: [docs/STACK.md](./docs/STACK.md) · Backlog: [docs/ROADMAP.md](./docs/ROADMAP.md) · DB: [supabase/README.md](./supabase/README.md)
+Locked versions: [docs/STACK.md](./docs/STACK.md) · Backlog: [docs/ROADMAP.md](./docs/ROADMAP.md) · **Web plan:** [docs/APPS_WEB_PLAN.md](./docs/APPS_WEB_PLAN.md) · DB: [supabase/README.md](./supabase/README.md)
 
 ---
 
@@ -68,14 +68,14 @@ Honest split — UI is largely shared; **adapters** decide what is real.
 | Billing plan → seat cap | Mock only | Mock (`0008`) or Stripe webhooks (`0009`) update Postgres `seats_limit` |
 | Tenant isolation + invite claim | N/A (mock) | RLS + `web-e2e` (`@web` smoke) |
 | Billing, paywall, payment methods | Mock | Mock by default; optional Stripe Checkout/Portal (`STRIPE_ENABLED`, [docs/STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md)) |
-| Metrics, API keys, activation | Mock | Mock |
+| Metrics, API keys, emails, activation | Mock | Supabase (`0010`–`0012`) + adapters; mock integrations/support |
 | i18n (English) | Yes | Yes |
 
 **Architecture rule:** features depend on `@oequ/ports` tokens only — never `@supabase/supabase-js` in `libs/features-*` or `libs/shell`.
 
 ```text
 apps/demo  ──► provideDemoAdapters()     ──► mock everything
-apps/web   ──► provideWebAdapters()       ──► Supabase auth/org + mock rest
+apps/web   ──► provideWebAdapters()       ──► Supabase auth/org/metrics/keys/emails/activation + mock integrations
 
 libs/features-* / libs/shell  →  AuthPort, OrgPort, BillingPort, …
 libs/adapters-mock            →  demo + non-auth ports for web

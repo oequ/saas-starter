@@ -12,6 +12,8 @@ export * from './lib/models/email.model';
 export * from './lib/integrations.port';
 export * from './lib/metrics.port';
 export * from './lib/metrics.utils';
+export * from './lib/email-usage-stats';
+export * from './lib/metrics-dashboard';
 export * from './lib/billing.port';
 export * from './lib/billing.utils';
 export * from './lib/org.port';
