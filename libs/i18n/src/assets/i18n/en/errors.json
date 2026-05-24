@@ -36,6 +36,8 @@
     "billingUseStripePortal": "Plan changes for paid subscriptions are managed in the Stripe customer portal.",
     "billingNoActiveSubscription": "No active subscription to cancel. Upgrade via checkout first.",
     "billingCancelFailed": "Could not cancel the subscription. Try again in a moment.",
+    "billingInvoicesUnavailable": "Could not load invoices. Try again in a moment.",
+    "billingNoCustomer": "No billing customer linked to this workspace yet.",
     "paymentMethodNotFound": "Payment method not found.",
     "paymentCardholderRequired": "Enter the name on the card.",
     "paymentCardNumberInvalid": "Enter a valid card number.",

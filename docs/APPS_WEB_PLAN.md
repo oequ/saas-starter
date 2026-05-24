@@ -29,14 +29,13 @@ Previously «out of scope» for phase 2. Same stack: Edge Functions + webhooks +
 
 | # | Item | Notes |
 |---|------|--------|
-| 1 | **Real invoices from Stripe API** | Replace mock `listInvoices` when `stripeEnabled`; optional Edge Function `billing-list-invoices` or server-side Stripe SDK |
-| 2 | **Per-seat pricing in Stripe** | Quantity on subscription line item; sync seat count with `organizations` / usage |
-| 3 | **Embedded Checkout / Elements** | Alternative to hosted redirect; SetupIntent only if we add card-on-file outside Checkout |
-| 4 | **E2E with Stripe** | Optional local/staging smoke; **not** in CI (keep mock path for `e2e:web:release`) |
+| 1 | **Per-seat pricing in Stripe** | Quantity on subscription line item; sync seat count with `organizations` / usage |
+| 2 | **Embedded Checkout / Elements** | Alternative to hosted redirect; SetupIntent only if we add card-on-file outside Checkout |
+| 3 | **E2E with Stripe** | Optional local/staging smoke; **not** in CI (keep mock path for `e2e:web:release`) |
 
-**Done (Stripe v2):** Cancel subscription — `billing-cancel-subscription`, billing UI, webhooks (`subscription.updated` / `deleted`).
+**Done (Stripe v2):** Cancel subscription (`billing-cancel-subscription`). **Invoices** — `billing-list-invoices` (Stripe live API; `organization_invoices` + `upsert_organization_invoice` for custom/YooKassa).
 
-Suggested PR order: **invoices** → per-seat → embedded (only if product needs it).
+Suggested PR order: **per-seat** → embedded (only if product needs it).
 
 ---
 
@@ -64,8 +63,9 @@ Suggested PR order: **invoices** → per-seat → embedded (only if product need
 | Stripe | Unchanged UX; uses `provider = 'stripe'` |
 | Custom / RF | `billingProvider: 'custom' \| 'mock'` — [BILLING_CUSTOM_PROVIDER.md](./BILLING_CUSTOM_PROVIDER.md), [ADR 0002](./adr/0002-billing-multi-provider.md) |
 | Example webhook | `supabase/functions/billing-custom-webhook.example/` |
+| Invoices | `0014_organization_invoices.sql`, `billing-list-invoices` |
 
-YooKassa and others: implement as `provider = 'yookassa'` (or your slug) — no core migration required.
+YooKassa and others: implement as `provider = 'yookassa'` (or your slug); invoices via `upsert_organization_invoice`.
 
 ## Explicitly later
 

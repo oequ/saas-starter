@@ -55,8 +55,10 @@ Do **not** change `BillingPort` unless adding cross-provider capabilities (docum
 
 ## Consequences
 
-- Stripe v2 work (cancel, invoices) extends Stripe functions and `apply_stripe_subscription` / shared `billing-rpc.ts`.
-- Second real provider reuses `0013` schema; no new migration required for YooKassa-specific columns in core tables (provider-specific secrets live in Edge Function env).
+- Stripe v2 work extends shared billing Edge Functions (`billing-rpc.ts`, `billing-invoices.ts`).
+- Subscriptions: `0013` + `apply_billing_subscription`.
+- Invoices: `0014_organization_invoices` for custom providers; Stripe reads live API in `billing-list-invoices` when `provider = 'stripe'`.
+- Second real provider reuses `0013`/`0014`; provider-specific secrets live in Edge Function env.
 - Demo app (`apps/demo`) unchanged; remains mock.
 
 ## References

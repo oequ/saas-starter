@@ -19,11 +19,12 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 | `0008_org_billing_plan.sql` | `organizations.plan_id`; `get_organization_billing_snapshot`, `update_organization_plan` (syncs `seats_limit` with plan tier) |
 | `0009_stripe_billing.sql` | Stripe billing (superseded by `0013` for mirror table) |
 | `0013_billing_multi_provider.sql` | `organization_billing`, `billing_events (provider, external_event_id)`, `apply_billing_subscription`; Stripe wrappers kept |
+| `0014_organization_invoices.sql` | `organization_invoices`, `list_organization_invoices`, `upsert_organization_invoice` (custom providers) |
 | `0010_organization_api_keys.sql` | Hashed API keys; `list` / `create` / `revoke` RPCs (admin writes) |
 | `0011_outbound_emails.sql` | Outbound email log, quota helpers, `list_outbound_emails` / `simulate_outbound_emails`; billing snapshot email usage |
 | `0012_organization_activation.sql` | `organization_activation` + onboarding RPCs; `create_organization` seeds `pending` |
 
-Edge Functions (Deno 2, see `config.toml`): `billing-create-checkout`, `billing-create-portal`, `billing-cancel-subscription`, `stripe-webhook`; example `billing-custom-webhook.example` for other providers. Stripe: [docs/STRIPE_LOCAL.md](../docs/STRIPE_LOCAL.md). Custom: [docs/BILLING_CUSTOM_PROVIDER.md](../docs/BILLING_CUSTOM_PROVIDER.md).
+Edge Functions (Deno 2, see `config.toml`): `billing-create-checkout`, `billing-create-portal`, `billing-cancel-subscription`, `billing-list-invoices`, `stripe-webhook`; example `billing-custom-webhook.example` for other providers. Stripe: [docs/STRIPE_LOCAL.md](../docs/STRIPE_LOCAL.md). Custom: [docs/BILLING_CUSTOM_PROVIDER.md](../docs/BILLING_CUSTOM_PROVIDER.md).
 
 There are **no** permissive `WITH CHECK (true)` insert policies on `organizations`. Demo rows are seeded as superuser, not via a hole in RLS.
 

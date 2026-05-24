@@ -8,7 +8,9 @@ import {
   type BillingPlan,
   type BillingSummary,
   type CheckoutSession,
+  type Invoice,
   type InvoiceListPage,
+  type InvoiceStatus,
   type OrganizationId,
   type PaymentMethod,
   type PortalSession,
@@ -66,12 +68,49 @@ export class WebBillingAdapter implements BillingPort {
     );
   }
 
-  listInvoices(
+  async listInvoices(
     organizationId: OrganizationId,
     cursor?: string,
     abortSignal?: AbortSignal,
   ): Promise<PortResult<InvoiceListPage>> {
-    return this.mock.listInvoices(organizationId, cursor, abortSignal);
+    if (resolveBillingProvider(this.config) === 'mock') {
+      return this.mock.listInvoices(organizationId, cursor, abortSignal);
+    }
+
+    void abortSignal;
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const { data, error } = await client.functions.invoke(
+      'billing-list-invoices',
+      {
+        body: {
+          organization_id: organizationId,
+          cursor: cursor ?? undefined,
+        },
+      },
+    );
+
+    if (error) {
+      return supabaseErr('UNAVAILABLE', 'billingInvoicesUnavailable');
+    }
+
+    const payload = data as {
+      items?: unknown[];
+      nextCursor?: string | null;
+      error?: string;
+    } | null;
+
+    if (payload?.error) {
+      if (payload.error.includes('no billing customer')) {
+        return portOk({ items: [], nextCursor: null });
+      }
+      return supabaseErr('UNAVAILABLE', 'billingInvoicesUnavailable');
+    }
+
+    return portOk(this.mapInvoiceListPage(payload));
   }
 
   listAvailablePlans(
@@ -334,6 +373,60 @@ export class WebBillingAdapter implements BillingPort {
         (snapshot.cancel_at_period_end ?? false) || summary.cancelAtPeriodEnd,
       meters,
     };
+  }
+
+  private mapInvoiceListPage(payload: {
+    items?: unknown[];
+    nextCursor?: string | null;
+  } | null): InvoiceListPage {
+    const items = (payload?.items ?? []).map((raw) =>
+      this.mapInvoiceDto(raw),
+    );
+    return {
+      items,
+      nextCursor: payload?.nextCursor ?? null,
+    };
+  }
+
+  private mapInvoiceDto(raw: unknown): Invoice {
+    const row = raw as {
+      id: string;
+      number: string;
+      amountDue: number;
+      amountPaid: number;
+      currency: string;
+      status: string;
+      created: string;
+      hostedInvoiceUrl: string;
+      invoicePdf: string;
+    };
+
+    const status = this.mapInvoiceStatus(row.status);
+
+    return {
+      id: row.id,
+      number: row.number,
+      amountDue: row.amountDue,
+      amountPaid: row.amountPaid,
+      currency: row.currency,
+      status,
+      created: row.created,
+      hostedInvoiceUrl: row.hostedInvoiceUrl,
+      invoicePdf: row.invoicePdf || row.hostedInvoiceUrl,
+    };
+  }
+
+  private mapInvoiceStatus(status: string): InvoiceStatus {
+    switch (status) {
+      case 'draft':
+      case 'open':
+      case 'paid':
+      case 'uncollectible':
+      case 'void':
+        return status;
+      default:
+        return 'open';
+    }
   }
 
   private mapSubscriptionStatus(

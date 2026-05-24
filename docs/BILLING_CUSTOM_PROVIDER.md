@@ -118,7 +118,36 @@ select link_organization_billing_provider(
 
 (Service role via `admin.rpc(...)` from Edge Functions.)
 
-## 5. What you do not need to change
+## 5. Invoices (Past Invoices table)
+
+Billing UI calls `BillingPort.listInvoices` → Edge Function **`billing-list-invoices`**:
+
+- **`billingProvider: 'stripe'`** — live list from Stripe API (not stored in Postgres in v1).
+- **`billingProvider: 'custom'`** (and other non-Stripe providers) — rows from **`organization_invoices`** (migration `0014`).
+
+On payment success (or receipt issued), upsert a row from your webhook:
+
+```ts
+await admin.rpc('upsert_organization_invoice', {
+  p_organization_id: organizationId,
+  p_provider: 'yookassa',
+  p_external_invoice_id: receipt.id,
+  p_invoice_number: receipt.number ?? receipt.id,
+  p_amount_due: amountCents,
+  p_amount_paid: amountCents,
+  p_currency: 'rub',
+  p_status: 'paid',
+  p_invoice_created_at: new Date().toISOString(),
+  p_hosted_url: receipt.receiptUrl ?? '',
+  p_invoice_pdf: receipt.pdfUrl ?? receipt.receiptUrl ?? '',
+});
+```
+
+Amounts are in **minor units** (cents/kopecks). Status must be one of: `draft`, `open`, `paid`, `uncollectible`, `void`.
+
+Members with billing access see invoices after refresh; no Angular changes required.
+
+## 6. What you do not need to change
 
 | Layer | Action |
 |-------|--------|
@@ -127,7 +156,7 @@ select link_organization_billing_provider(
 | Seat limits / RLS | None — driven by `plan_id` |
 | `e2e:web:release` | Keep `billingProvider: 'mock'` |
 
-## 6. Russia / no Stripe
+## 7. Russia / no Stripe
 
 Recommended production setup:
 
@@ -138,7 +167,7 @@ Recommended production setup:
 | Plan upgrades | Your webhook → `apply_billing_subscription` |
 | Local dev | `mock` + `update_organization_plan` (same as today) |
 
-## 7. Stripe reference
+## 8. Stripe reference
 
 If you also ship Stripe in other regions, see [STRIPE_LOCAL.md](./STRIPE_LOCAL.md). Stripe uses `provider = 'stripe'` and the same `organization_billing` table.
 
@@ -151,3 +180,4 @@ If you also ship Stripe in other regions, see [STRIPE_LOCAL.md](./STRIPE_LOCAL.m
 - [ ] `billingProvider` in web settings
 - [ ] Secrets in Supabase project (not committed)
 - [ ] Manual smoke: upgrade plan → UI shows new plan + seat limit
+- [ ] `upsert_organization_invoice` on paid events (if showing Past Invoices)

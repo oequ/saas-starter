@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
     }
 
     // TODO: verify signature, parse body, then e.g.:
+    // await admin.rpc('upsert_organization_invoice', { ... }); // Past Invoices for custom provider
     // await applyBillingSubscription(admin, {
     //   organizationId: body.organization_id,
     //   planId: 'pro',

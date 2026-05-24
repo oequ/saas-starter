@@ -65,6 +65,12 @@ Manual smoke:
 3. `stripe listen` should receive `customer.subscription.updated` (webhook idempotent with the Edge Function sync).
 4. After period end (or Stripe test clock), `customer.subscription.deleted` downgrades the org to **Free** in Postgres.
 
+## 6. Past invoices
+
+**Settings → Billing → Past Invoices** uses `billing-list-invoices`. For `billingProvider: 'stripe'`, invoices are fetched live from the Stripe API (not cached in Postgres in v1). After Checkout, open Billing and confirm rows appear with PDF download links.
+
+Custom providers use `organization_invoices` instead — see [BILLING_CUSTOM_PROVIDER.md](./BILLING_CUSTOM_PROVIDER.md).
+
 ## CI / E2E
 
 `e2e:web:release` keeps `STRIPE_ENABLED` unset (mock checkout). No Stripe keys in CI.
@@ -76,4 +82,5 @@ Manual smoke:
 | `billing-create-checkout` | yes | Creates Checkout Session (`mode=subscription`) |
 | `billing-create-portal` | yes | Customer Portal session |
 | `billing-cancel-subscription` | yes | Cancel at period end + Postgres sync |
+| `billing-list-invoices` | yes | List invoices (Stripe API or `organization_invoices`) |
 | `stripe-webhook` | no | Verifies signature, idempotent `billing_events`, `apply_billing_subscription` (`provider = stripe`) |
