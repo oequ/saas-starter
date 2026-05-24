@@ -1,10 +1,25 @@
 import { InjectionToken } from '@angular/core';
+import type { BillingProviderId } from '@oequ/ports';
 
 export interface SupabaseConfig {
   readonly url: string;
   readonly anonKey: string;
-  /** When true, billing checkout/portal use Supabase Edge Functions + Stripe. */
+  /**
+   * Billing backend for checkout/portal/webhooks.
+   * When omitted: `stripe` if `stripeEnabled`, otherwise `mock`.
+   */
+  readonly billingProvider?: BillingProviderId;
+  /** @deprecated Prefer `billingProvider: 'stripe'`. */
   readonly stripeEnabled?: boolean;
+}
+
+export function resolveBillingProvider(
+  config: SupabaseConfig,
+): BillingProviderId {
+  if (config.billingProvider) {
+    return config.billingProvider;
+  }
+  return config.stripeEnabled === true ? 'stripe' : 'mock';
 }
 
 export const SUPABASE_CONFIG = new InjectionToken<SupabaseConfig>(

@@ -11,11 +11,13 @@ import {
   BILLING_PORT,
   EMAILS_PORT,
   METRICS_PORT,
+  BILLING_PROVIDER_ID,
   STRIPE_BILLING_ENABLED,
 } from '@oequ/ports';
 import { distinctUntilChanged, filter, map } from 'rxjs';
 
 import {
+  resolveBillingProvider,
   SUPABASE_CONFIG,
   type SupabaseConfig,
 } from './supabase-config';
@@ -73,8 +75,12 @@ export function provideWebAdapters(
       WEB_METRICS_PROVIDER,
       SUPABASE_ACTIVATION_PROVIDER,
       {
+        provide: BILLING_PROVIDER_ID,
+        useValue: resolveBillingProvider(config),
+      },
+      {
         provide: STRIPE_BILLING_ENABLED,
-        useValue: config.stripeEnabled === true,
+        useValue: resolveBillingProvider(config) === 'stripe',
       },
     ]),
   ];

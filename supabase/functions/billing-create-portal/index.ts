@@ -34,18 +34,19 @@ Deno.serve(async (req) => {
     await assertOrgAdmin(userClient, organizationId, user.id);
 
     const admin = createServiceClient();
-    const { data: stripeRow, error } = await admin
-      .from('organization_stripe')
-      .select('stripe_customer_id')
+    const { data: billingRow, error } = await admin
+      .from('organization_billing')
+      .select('external_customer_id')
       .eq('organization_id', organizationId)
+      .eq('provider', 'stripe')
       .maybeSingle();
 
-    if (error || !stripeRow?.stripe_customer_id) {
+    if (error || !billingRow?.external_customer_id) {
       return jsonResponse({ error: 'no stripe customer for organization' }, 400);
     }
 
     const session = await getStripe().billingPortal.sessions.create({
-      customer: stripeRow.stripe_customer_id as string,
+      customer: billingRow.external_customer_id as string,
       return_url: returnUrl,
     });
 

@@ -55,9 +55,19 @@ Suggested PR order: **cancel + webhooks** → **invoices** → per-seat → embe
 
 ---
 
+## Billing — multi-provider (done)
+
+| Item | Location |
+|------|----------|
+| Schema + RPC | `0013_billing_multi_provider.sql` — `organization_billing`, `apply_billing_subscription` |
+| Stripe | Unchanged UX; uses `provider = 'stripe'` |
+| Custom / RF | `billingProvider: 'custom' \| 'mock'` — [BILLING_CUSTOM_PROVIDER.md](./BILLING_CUSTOM_PROVIDER.md), [ADR 0002](./adr/0002-billing-multi-provider.md) |
+| Example webhook | `supabase/functions/billing-custom-webhook.example/` |
+
+YooKassa and others: implement as `provider = 'yookassa'` (or your slug) — no core migration required.
+
 ## Explicitly later
 
-- **YooKassa / multi-provider** — same ports pattern; provider-specific tables or `payment_provider` column (see architecture discussion)  
 - **Hosted deploy** — Supabase project secrets, production webhook URL  
 - **Demo app (`apps/demo`)** — stays mock unless we intentionally parity features  
 

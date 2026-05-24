@@ -1,6 +1,8 @@
 # Stripe billing (local, `apps/web`)
 
-Hosted **Stripe Checkout** and **Customer Portal** run in Supabase Edge Functions. Postgres remains the source of truth for `organizations.plan_id` and `seats_limit` (migration `0009_stripe_billing.sql`).
+Hosted **Stripe Checkout** and **Customer Portal** run in Supabase Edge Functions. Postgres remains the source of truth for `organizations.plan_id` and `seats_limit` (`organization_billing` with `provider = 'stripe'`, migration `0013_billing_multi_provider.sql`).
+
+For non-Stripe regions, see [BILLING_CUSTOM_PROVIDER.md](./BILLING_CUSTOM_PROVIDER.md).
 
 ## Prerequisites
 
@@ -61,4 +63,4 @@ With `STRIPE_ENABLED=true`, paywall downgrades open **Customer Portal** (cancel 
 |----------|-----|------|
 | `billing-create-checkout` | yes | Creates Checkout Session (`mode=subscription`) |
 | `billing-create-portal` | yes | Customer Portal session |
-| `stripe-webhook` | no | Verifies signature, idempotent `billing_events`, `apply_stripe_subscription` |
+| `stripe-webhook` | no | Verifies signature, idempotent `billing_events`, `apply_billing_subscription` (`provider = stripe`) |

@@ -65,9 +65,9 @@ Honest split — UI is largely shared; **adapters** decide what is real.
 | Auth (sign-in, register, session) | Mock | Supabase |
 | Organizations / workspace switch | Mock | Supabase (read + RLS) |
 | Members invite / org writes | Mock (seat cap in adapter) | Supabase RPC + RLS; Postgres enforces `seats_limit` (`0007`) |
-| Billing plan → seat cap | Mock only | Mock (`0008`) or Stripe webhooks (`0009`) update Postgres `seats_limit` |
+| Billing plan → seat cap | Mock only | Mock (`0008`) or provider webhooks (`0013`) update Postgres `seats_limit` |
 | Tenant isolation + invite claim | N/A (mock) | RLS + `web-e2e` (`@web` smoke) |
-| Billing, paywall, payment methods | Mock | Mock by default; optional Stripe Checkout/Portal (`STRIPE_ENABLED`, [docs/STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md)) |
+| Billing, paywall, payment methods | Mock | `billingProvider`: `mock` (default), `stripe`, or `custom` — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md), [BILLING_CUSTOM_PROVIDER.md](docs/BILLING_CUSTOM_PROVIDER.md) |
 | Metrics, API keys, emails, activation | Mock | Supabase (`0010`–`0012`) + adapters; mock integrations/support |
 | i18n (English) | Yes | Yes |
 

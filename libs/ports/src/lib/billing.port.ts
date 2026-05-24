@@ -10,8 +10,11 @@ import type {
   PaymentMethod,
   PortalSession,
 } from './models/billing.model';
+import type { BillingProviderId } from './billing-provider.model';
 import type { PortResult } from './models/common.model';
 import type { OrganizationId } from './models/org.model';
+
+export type { BillingProviderId } from './billing-provider.model';
 
 /**
  * Billing UI contract. v0.3: mock adapter; v1.0: Stripe via full-stack repo.
@@ -87,7 +90,13 @@ export interface BillingPort {
 
 export const BILLING_PORT = new InjectionToken<BillingPort>('BILLING_PORT');
 
-/** True when `apps/web` uses Stripe Checkout / Customer Portal via Supabase Edge Functions. */
+/** Active billing backend for `apps/web` (`mock` | `stripe` | `custom`). */
+export const BILLING_PROVIDER_ID = new InjectionToken<BillingProviderId>(
+  'BILLING_PROVIDER_ID',
+  { factory: () => 'mock' },
+);
+
+/** True when {@link BILLING_PROVIDER_ID} is `stripe` (Checkout / Customer Portal Edge Functions). */
 export const STRIPE_BILLING_ENABLED = new InjectionToken<boolean>(
   'STRIPE_BILLING_ENABLED',
   { factory: () => false },

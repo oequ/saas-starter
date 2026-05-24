@@ -43,12 +43,13 @@ Deno.serve(async (req) => {
     const stripe = getStripe();
 
     const { data: existing } = await admin
-      .from('organization_stripe')
-      .select('stripe_customer_id')
+      .from('organization_billing')
+      .select('external_customer_id')
       .eq('organization_id', organizationId)
+      .eq('provider', 'stripe')
       .maybeSingle();
 
-    let customerId = existing?.stripe_customer_id as string | undefined;
+    let customerId = existing?.external_customer_id as string | undefined;
 
     if (!customerId) {
       const customer = await stripe.customers.create({

@@ -1,5 +1,11 @@
 import Stripe from 'npm:stripe@17.7.0';
 import {
+  applyBillingSubscription,
+  BILLING_PROVIDER_STRIPE,
+  deleteBillingEvent,
+  recordBillingEvent,
+} from '../_shared/billing-rpc.ts';
+import {
   getStripe,
   mapSubscriptionStatus,
   planIdFromSubscription,
@@ -22,19 +28,16 @@ async function applySubscription(
     ? new Date(subscription.current_period_end * 1000).toISOString()
     : null;
 
-  const { error } = await admin.rpc('apply_stripe_subscription', {
-    p_organization_id: organizationId,
-    p_plan_id: planId,
-    p_stripe_customer_id: customerId,
-    p_stripe_subscription_id: subscription.id,
-    p_subscription_status: mapSubscriptionStatus(subscription.status),
-    p_current_period_end: periodEnd,
-    p_cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+  await applyBillingSubscription(admin, {
+    organizationId,
+    planId,
+    provider: BILLING_PROVIDER_STRIPE,
+    externalCustomerId: customerId,
+    externalSubscriptionId: subscription.id,
+    subscriptionStatus: mapSubscriptionStatus(subscription.status),
+    currentPeriodEnd: periodEnd,
+    cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
   });
-
-  if (error) {
-    throw new Error(error.message);
-  }
 }
 
 async function handleCheckoutCompleted(
@@ -124,21 +127,24 @@ Deno.serve(async (req) => {
 
   const admin = createServiceClient();
 
-  const { error: insertError } = await admin.from('billing_events').insert({
-    stripe_event_id: event.id,
-    event_type: event.type,
-  });
+  let eventRecord: 'inserted' | 'duplicate';
+  try {
+    eventRecord = await recordBillingEvent(
+      admin,
+      BILLING_PROVIDER_STRIPE,
+      event.id,
+      event.type,
+    );
+  } catch (err) {
+    console.error('billing_events insert', err);
+    return new Response('failed to record event', { status: 500 });
+  }
 
-  if (insertError?.code === '23505') {
+  if (eventRecord === 'duplicate') {
     return new Response(JSON.stringify({ received: true, duplicate: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  }
-
-  if (insertError) {
-    console.error('billing_events insert', insertError);
-    return new Response('failed to record event', { status: 500 });
   }
 
   try {
@@ -167,7 +173,7 @@ Deno.serve(async (req) => {
         console.log('unhandled event', event.type);
     }
   } catch (err) {
-    await admin.from('billing_events').delete().eq('stripe_event_id', event.id);
+    await deleteBillingEvent(admin, BILLING_PROVIDER_STRIPE, event.id);
     console.error('webhook handler failed', err);
     return new Response('webhook processing failed', { status: 500 });
   }

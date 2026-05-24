@@ -17,7 +17,7 @@ import {
 } from '@oequ/ports';
 import type { Observable } from 'rxjs';
 
-import { SUPABASE_CONFIG } from './supabase-config';
+import { resolveBillingProvider, SUPABASE_CONFIG } from './supabase-config';
 import { SupabaseClientService } from './supabase-client.service';
 import { supabaseErr } from './supabase-port-error';
 import { supabaseErrFromRpc } from './supabase-rpc-error';
@@ -32,6 +32,8 @@ interface BillingSnapshotRpc {
   current_period_end?: string | null;
   cancel_at_period_end?: boolean;
   has_stripe_customer?: boolean;
+  billing_provider?: string;
+  has_billing_customer?: boolean;
   emails_used_month?: number;
   emails_used_today?: number;
   emails_monthly_limit?: number | null;
@@ -224,7 +226,7 @@ export class WebBillingAdapter implements BillingPort {
   }
 
   private isStripeEnabled(): boolean {
-    return this.config.stripeEnabled === true;
+    return resolveBillingProvider(this.config) === 'stripe';
   }
 
   private billingReturnUrl(): string {
