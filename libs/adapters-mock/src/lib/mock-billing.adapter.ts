@@ -4,6 +4,7 @@ import {
   BILLING_PORT,
   checkoutBillableSeatCount,
   isPerSeatBillingPlan,
+  TEAM_PLAN_MAX_SEATS,
   type AddPaymentMethodInput,
   type BillingPort,
   type BillingPlan,
@@ -320,12 +321,14 @@ export class MockBillingAdapter implements BillingPort {
     if (!isPerSeatBillingPlan(planId)) {
       return mockErr('VALIDATION', 'billingNotPerSeatPlan');
     }
-    const cap = current.seatsLimit ?? 50;
-    const target =
+    const cap = TEAM_PLAN_MAX_SEATS;
+    const nextLimit =
       seatQuantity !== undefined
         ? checkoutBillableSeatCount(planId, seatQuantity, cap)
-        : checkoutBillableSeatCount(planId, current.seatsUsed + 1, cap);
-    const nextLimit = Math.max(current.seatsLimit ?? 1, target);
+        : Math.max(
+            current.seatsLimit ?? 1,
+            checkoutBillableSeatCount(planId, current.seatsUsed + 1, cap),
+          );
     const summary = this.persistSummary({
       ...current,
       seatsLimit: nextLimit,
@@ -459,9 +462,24 @@ export class MockBillingAdapter implements BillingPort {
   }
 
   private normalizeSummary(summary: BillingSummary): BillingSummary {
-    return alignBillingSummaryMeters(
-      alignBillingSummarySeats(summary, MOCK_BILLING_PLANS),
-    );
+    const withMeters = alignBillingSummaryMeters(summary);
+    const planId = resolveCurrentPlanId(withMeters);
+    if (isPerSeatBillingPlan(planId)) {
+      const usageQty = checkoutBillableSeatCount(
+        planId,
+        withMeters.seatsUsed,
+        TEAM_PLAN_MAX_SEATS,
+      );
+      const paid =
+        summary.seatsLimit !== null && summary.seatsLimit >= usageQty
+          ? summary.seatsLimit
+          : usageQty;
+      return {
+        ...withMeters,
+        seatsLimit: paid,
+      };
+    }
+    return alignBillingSummarySeats(withMeters, MOCK_BILLING_PLANS);
   }
 
   private persistSummary(summary: BillingSummary): BillingSummary {

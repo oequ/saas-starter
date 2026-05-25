@@ -147,6 +147,19 @@ export async function inviteMemberByEmail(page: Page, email: string): Promise<vo
   ).toBeVisible();
 }
 
+/** Team at seat cap: mock bumps seats_limit in Postgres, then invites. */
+export async function inviteMemberByEmailExpectingSeatSync(
+  page: Page,
+  email: string,
+): Promise<void> {
+  await page.getByRole('button', { name: '+ Invite member' }).click();
+  await page.getByLabel('Email address').fill(email);
+  await page.getByRole('button', { name: 'Send invite' }).click();
+  await expect(
+    page.getByText(`Invitation sent to ${email}.`),
+  ).toBeVisible({ timeout: 15_000 });
+}
+
 /** Opens invite dialog when seat cap is reached (UI gate before RPC). */
 export async function expectInviteDialogSeatsExhausted(
   page: Page,

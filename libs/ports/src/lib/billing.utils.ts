@@ -50,14 +50,10 @@ export function seatsLimitFromStripeQuantity(
   return Math.min(Math.max(1, qty), Math.max(1, cap));
 }
 
-/** True when invite needs a Stripe quantity bump before `invite_organization_member`. */
-export function needsStripeSeatBumpBeforeInvite(
+/** Team at seat cap: sync subscription quantity before invite (mock + Stripe). */
+export function needsPerSeatSeatSyncBeforeInvite(
   summary: BillingSummary,
-  providerId: BillingProviderId,
 ): boolean {
-  if (providerId !== 'stripe') {
-    return false;
-  }
   const planId = resolveCurrentPlanId(summary);
   if (!isPerSeatBillingPlan(planId)) {
     return false;
@@ -68,6 +64,22 @@ export function needsStripeSeatBumpBeforeInvite(
   return summary.seatsUsed >= summary.seatsLimit;
 }
 
+/** True when invite needs a Stripe quantity bump before `invite_organization_member`. */
+export function needsStripeSeatBumpBeforeInvite(
+  summary: BillingSummary,
+  providerId: BillingProviderId,
+): boolean {
+  return providerId === 'stripe' && needsPerSeatSeatSyncBeforeInvite(summary);
+}
+
+/** Stripe only: confirm prorated charge before seat sync + invite. */
+export function needsStripeSeatChargeConfirmBeforeInvite(
+  summary: BillingSummary,
+  providerId: BillingProviderId,
+): boolean {
+  return needsStripeSeatBumpBeforeInvite(summary, providerId);
+}
+
 /** Target Stripe quantity when adding one seat via invite (Team). */
 export function targetSeatQuantityForInvite(summary: BillingSummary): number {
   const planId = resolveCurrentPlanId(summary);
@@ -76,6 +88,57 @@ export function targetSeatQuantityForInvite(summary: BillingSummary): number {
     summary.seatsUsed + 1,
     TEAM_PLAN_MAX_SEATS,
   );
+}
+
+/** Target subscription quantity after a member was removed (fresh billing snapshot). */
+export function targetSeatQuantityAfterMemberRemoved(
+  summary: BillingSummary,
+): number {
+  const planId = resolveCurrentPlanId(summary);
+  return checkoutBillableSeatCount(
+    planId,
+    summary.seatsUsed,
+    TEAM_PLAN_MAX_SEATS,
+  );
+}
+
+/**
+ * Team seats_limit for UI when Postgres still has catalog max (50) but usage is lower.
+ * Stripe/mock sync writes explicit quantity; until then bill by `seats_used`.
+ */
+export function effectiveTeamSeatsLimitFromSnapshot(
+  planId: string,
+  seatsUsed: number,
+  postgresSeatsLimit: number | null,
+): number | null {
+  if (!isPerSeatBillingPlan(planId)) {
+    return postgresSeatsLimit;
+  }
+  const cap = postgresSeatsLimit ?? TEAM_PLAN_MAX_SEATS;
+  const usageQty = checkoutBillableSeatCount(planId, seatsUsed, cap);
+  if (cap >= TEAM_PLAN_MAX_SEATS && seatsUsed < cap) {
+    return usageQty;
+  }
+  return cap;
+}
+
+/** Team: subscription quantity exceeds usage after remove (mock + Stripe). */
+export function needsPerSeatSeatSyncAfterRemove(
+  summary: BillingSummary,
+  providerId: BillingProviderId,
+): boolean {
+  if (providerId !== 'stripe' && providerId !== 'mock') {
+    return false;
+  }
+  const planId = resolveCurrentPlanId(summary);
+  if (!isPerSeatBillingPlan(planId)) {
+    return false;
+  }
+  if (summary.seatsLimit === null) {
+    return false;
+  }
+  const target = targetSeatQuantityAfterMemberRemoved(summary);
+  return summary.seatsLimit > target;
 }
 
 export const COMMERCIAL_PLAN_IDS: readonly CommercialPlanId[] = [

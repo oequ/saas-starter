@@ -32,7 +32,7 @@ Cursor plan archive: Stripe phase 2 implementation notes in `.cursor/plans/` (if
 | 3 | **Embedded Checkout / Elements** | Later — alternative to hosted redirect |
 | 4 | **E2E with Stripe** | Optional local smoke; **not** in CI |
 
-**Done (Stripe v2):** Cancel subscription, invoices, multi-provider (`0013`/`0014`), per-seat Team checkout, seat sync on invite.
+**Done (Stripe v2):** Cancel subscription, invoices, multi-provider (`0013`/`0014`), per-seat Team checkout, seat sync on invite, **seat decrease on remove**, **confirm before Stripe seat charge**, **mock e2e Team seat bump** (`billing-seats-sync.spec.ts`).
 
 ---
 

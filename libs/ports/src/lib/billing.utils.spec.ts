@@ -3,8 +3,13 @@ import { describe, expect, it } from 'vitest';
 import type { BillingSummary } from './models/billing.model';
 import {
   checkoutBillableSeatCount,
+  effectiveTeamSeatsLimitFromSnapshot,
+  needsPerSeatSeatSyncAfterRemove,
+  needsPerSeatSeatSyncBeforeInvite,
   needsStripeSeatBumpBeforeInvite,
+  needsStripeSeatChargeConfirmBeforeInvite,
   seatsLimitFromStripeQuantity,
+  targetSeatQuantityAfterMemberRemoved,
   targetSeatQuantityForInvite,
   TEAM_PLAN_MAX_SEATS,
 } from './billing.utils';
@@ -55,6 +60,46 @@ describe('seatsLimitFromStripeQuantity', () => {
   });
 });
 
+describe('effectiveTeamSeatsLimitFromSnapshot', () => {
+  it('uses seats_used when Postgres still has catalog Team cap', () => {
+    expect(effectiveTeamSeatsLimitFromSnapshot('team', 1, 50)).toBe(1);
+  });
+
+  it('keeps explicit subscription quantity below catalog max', () => {
+    expect(effectiveTeamSeatsLimitFromSnapshot('team', 2, 3)).toBe(3);
+  });
+
+  it('returns Postgres limit for Pro', () => {
+    expect(effectiveTeamSeatsLimitFromSnapshot('pro', 5, 10)).toBe(10);
+  });
+});
+
+describe('needsPerSeatSeatSyncBeforeInvite', () => {
+  it('is true for Team when at capacity', () => {
+    expect(
+      needsPerSeatSeatSyncBeforeInvite(
+        summary({ planId: 'team', seatsUsed: 3, seatsLimit: 3 }),
+      ),
+    ).toBe(true);
+  });
+
+  it('is false when seats remain', () => {
+    expect(
+      needsPerSeatSeatSyncBeforeInvite(
+        summary({ planId: 'team', seatsUsed: 2, seatsLimit: 5 }),
+      ),
+    ).toBe(false);
+  });
+
+  it('is false for Pro', () => {
+    expect(
+      needsPerSeatSeatSyncBeforeInvite(
+        summary({ planId: 'pro', seatsUsed: 10, seatsLimit: 10 }),
+      ),
+    ).toBe(false);
+  });
+});
+
 describe('needsStripeSeatBumpBeforeInvite', () => {
   it('is false for mock provider', () => {
     expect(
@@ -73,14 +118,13 @@ describe('needsStripeSeatBumpBeforeInvite', () => {
       ),
     ).toBe(true);
   });
+});
 
-  it('is false when seats remain', () => {
-    expect(
-      needsStripeSeatBumpBeforeInvite(
-        summary({ planId: 'team', seatsUsed: 2, seatsLimit: 5 }),
-        'stripe',
-      ),
-    ).toBe(false);
+describe('needsStripeSeatChargeConfirmBeforeInvite', () => {
+  it('matches stripe bump gate', () => {
+    const atCap = summary({ planId: 'team', seatsUsed: 2, seatsLimit: 2 });
+    expect(needsStripeSeatChargeConfirmBeforeInvite(atCap, 'stripe')).toBe(true);
+    expect(needsStripeSeatChargeConfirmBeforeInvite(atCap, 'mock')).toBe(false);
   });
 });
 
@@ -91,5 +135,50 @@ describe('targetSeatQuantityForInvite', () => {
         summary({ planId: 'team', seatsUsed: 5, seatsLimit: 5 }),
       ),
     ).toBe(6);
+  });
+});
+
+describe('targetSeatQuantityAfterMemberRemoved', () => {
+  it('returns seats_used for Team after remove', () => {
+    expect(
+      targetSeatQuantityAfterMemberRemoved(
+        summary({ planId: 'team', seatsUsed: 2, seatsLimit: 3 }),
+      ),
+    ).toBe(2);
+  });
+});
+
+describe('needsPerSeatSeatSyncAfterRemove', () => {
+  it('is true when limit exceeds usage after remove', () => {
+    expect(
+      needsPerSeatSeatSyncAfterRemove(
+        summary({ planId: 'team', seatsUsed: 2, seatsLimit: 3 }),
+        'stripe',
+      ),
+    ).toBe(true);
+    expect(
+      needsPerSeatSeatSyncAfterRemove(
+        summary({ planId: 'team', seatsUsed: 2, seatsLimit: 3 }),
+        'mock',
+      ),
+    ).toBe(true);
+  });
+
+  it('is false when limit matches usage', () => {
+    expect(
+      needsPerSeatSeatSyncAfterRemove(
+        summary({ planId: 'team', seatsUsed: 2, seatsLimit: 2 }),
+        'stripe',
+      ),
+    ).toBe(false);
+  });
+
+  it('is false for custom provider', () => {
+    expect(
+      needsPerSeatSeatSyncAfterRemove(
+        summary({ planId: 'team', seatsUsed: 1, seatsLimit: 3 }),
+        'custom',
+      ),
+    ).toBe(false);
   });
 });

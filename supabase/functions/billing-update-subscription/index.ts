@@ -156,13 +156,21 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: 'team_seat_cap_reached' }, 400);
     }
 
-    if (targetQuantity <= currentQuantity) {
+    const minQuantity = Math.max(1, Math.floor(snapshot.seatsUsed));
+
+    if (targetQuantity === currentQuantity) {
       return jsonResponse({
         ok: true,
         unchanged: true,
         quantity: currentQuantity,
         seats_limit: currentQuantity,
       });
+    }
+
+    if (targetQuantity < currentQuantity) {
+      if (targetQuantity < minQuantity) {
+        return jsonResponse({ error: 'quantity_below_usage' }, 400);
+      }
     }
 
     const updated = await stripe.subscriptions.update(subscriptionId, {

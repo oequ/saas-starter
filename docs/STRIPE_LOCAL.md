@@ -100,16 +100,26 @@ Create **Team** price as recurring **per unit** (not flat). Example test amounts
 
 ## Auto seat bump on invite (Team)
 
-When **Team + Stripe** and `seats_used >= seats_limit`, **Members → Invite** calls `billing-update-subscription` automatically (prorated), then `invite_organization_member`. No extra confirmation dialog in v1.
+When **Team + Stripe** and `seats_used >= seats_limit`, **Members → Invite** shows a **confirm seat charge** dialog (prorated add-on copy), then `billing-update-subscription`, then `invite_organization_member`. Mock billing (`e2e:web:release`) skips the confirm step but still syncs seats.
 
-Manual smoke:
+Manual smoke (invite bump):
 
 1. Subscribe to **Team** with one member (`quantity = 1`, `seats_limit = 1`).
-2. **Members → Invite** a second email — button shows **Updating subscription…**, then **Sending…**.
+2. **Members → Invite** a second email — confirm dialog → **Updating subscription…** → **Sending…**.
 3. Stripe Dashboard: subscription `quantity = 2`; Billing: `seats_limit` 2.
 4. `stripe listen`: `customer.subscription.updated`.
 
 **Pro** at 10/10: invite stays blocked → paywall (flat price, no quantity bump).
+
+## Auto seat decrease on remove (Team)
+
+When **Team + Stripe** (or mock in CI) and `seats_limit > seats_used` after **Remove member**, Members calls `billing-update-subscription` with `seat_quantity = seats_used` (prorated credit).
+
+Manual smoke (remove decrease):
+
+1. Team workspace with **2** members (`quantity = 2`).
+2. **Members → Remove** one non-owner member — **Updating subscription…** on the remove dialog.
+3. Stripe Dashboard: `quantity = 1`; Billing reflects `seats_limit` 1.
 
 ## Downgrades
 

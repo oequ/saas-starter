@@ -57,6 +57,12 @@
     "removing": "Removing…",
     "submit": "Remove member"
   },
+  "seatChargeDialog": {
+    "title": "Add a billable seat?",
+    "description": "Inviting {{email}} will add one seat to your Team subscription ({{quantity}} seats total). Your card on file may be charged a prorated amount.",
+    "prorationNote": "Charges are handled by Stripe. You can manage payment methods in Billing settings.",
+    "confirm": "Confirm and invite"
+  },
   "toast": {
     "planUpgraded": "Plan upgraded. You can invite more members.",
     "inviteSent": "Invitation sent to {{email}}.",

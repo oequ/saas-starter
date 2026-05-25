@@ -6,14 +6,12 @@ import {
   output,
 } from '@angular/core';
 import { TranslocoPipe } from '@oequ/i18n';
-import {
-  SETTINGS_DIALOG_CONTENT_CLASS,
-} from '@oequ/shell';
+import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
 
 @Component({
-  selector: 'oequ-remove-member-dialog',
+  selector: 'oequ-confirm-seat-charge-dialog',
   imports: [HlmButtonImports, HlmDialogImports, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -21,16 +19,20 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
       <ng-template hlmDialogPortal>
         <hlm-dialog-content [class]="dialogContentClass">
           <hlm-dialog-header>
-            <h3 hlmDialogTitle class="text-destructive">
-              {{ 'org.members.removeDialog.title' | transloco }}
+            <h3 hlmDialogTitle>
+              {{ 'org.members.seatChargeDialog.title' | transloco }}
             </h3>
             <p hlmDialogDescription>
               {{
-                'org.members.removeDialog.description'
-                  | transloco: { name: memberLabel() }
+                'org.members.seatChargeDialog.description'
+                  | transloco: { email: inviteEmail(), quantity: seatQuantity() }
               }}
             </p>
           </hlm-dialog-header>
+
+          <p class="text-muted-foreground text-sm leading-relaxed">
+            {{ 'org.members.seatChargeDialog.prorationNote' | transloco }}
+          </p>
 
           <hlm-dialog-footer>
             <button hlmBtn type="button" variant="secondary" hlmDialogClose>
@@ -39,16 +41,13 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
             <button
               hlmBtn
               type="button"
-              class="!border-destructive !bg-destructive !text-white shadow-xs hover:!bg-destructive/90"
-              [disabled]="removing() || syncingSeats()"
+              [disabled]="confirming()"
               (click)="confirm()"
             >
-              @if (syncingSeats()) {
+              @if (confirming()) {
                 {{ 'org.members.inviteDialog.syncingSeats' | transloco }}
-              } @else if (removing()) {
-                {{ 'org.members.removeDialog.removing' | transloco }}
               } @else {
-                {{ 'org.members.removeDialog.submit' | transloco }}
+                {{ 'org.members.seatChargeDialog.confirm' | transloco }}
               }
             </button>
           </hlm-dialog-footer>
@@ -57,11 +56,11 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
     </hlm-dialog>
   `,
 })
-export class RemoveMemberDialogComponent {
+export class ConfirmSeatChargeDialogComponent {
   readonly open = input(false);
-  readonly memberLabel = input.required<string>();
-  readonly removing = input(false);
-  readonly syncingSeats = input(false);
+  readonly inviteEmail = input.required<string>();
+  readonly seatQuantity = input.required<number>();
+  readonly confirming = input(false);
 
   readonly confirmed = output<void>();
   readonly cancelled = output<void>();
@@ -72,16 +71,16 @@ export class RemoveMemberDialogComponent {
     this.open() ? 'open' : 'closed',
   );
 
-  private confirming = false;
+  private confirmingAction = false;
 
   protected confirm(): void {
-    this.confirming = true;
+    this.confirmingAction = true;
     this.confirmed.emit();
   }
 
   protected onDialogClosed(): void {
-    if (this.confirming) {
-      this.confirming = false;
+    if (this.confirmingAction) {
+      this.confirmingAction = false;
       return;
     }
     this.cancelled.emit();

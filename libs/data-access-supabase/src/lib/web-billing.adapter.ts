@@ -2,7 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { MockBillingAdapter } from '@oequ/adapters-mock';
 import {
   BILLING_PORT,
+  checkoutBillableSeatCount,
+  effectiveTeamSeatsLimitFromSnapshot,
+  isPerSeatBillingPlan,
   portOk,
+  resolveCurrentPlanId,
+  TEAM_PLAN_MAX_SEATS,
   type AddPaymentMethodInput,
   type BillingPort,
   type BillingPlan,
@@ -169,7 +174,11 @@ export class WebBillingAdapter implements BillingPort {
       return result;
     }
     const planId = result.data.planId ?? 'free';
-    const syncError = await this.syncPlanToPostgres(organizationId, planId);
+    const syncError = await this.syncPlanToPostgres(
+      organizationId,
+      planId,
+      this.seatsLimitForPlanSync(result.data),
+    );
     if (syncError) {
       return syncError;
     }
@@ -188,7 +197,11 @@ export class WebBillingAdapter implements BillingPort {
     if (!result.ok) {
       return result;
     }
-    const syncError = await this.syncPlanToPostgres(organizationId, planId);
+    const syncError = await this.syncPlanToPostgres(
+      organizationId,
+      planId,
+      this.seatsLimitForPlanSync(result.data),
+    );
     if (syncError) {
       return syncError;
     }
@@ -305,7 +318,31 @@ export class WebBillingAdapter implements BillingPort {
     seatQuantity?: number,
   ): Promise<PortResult<BillingSummary>> {
     if (!this.isStripeEnabled()) {
-      return this.mock.syncSubscriptionSeats(organizationId, seatQuantity);
+      const aligned = await this.ensureMockBillingAligned(organizationId);
+      if (!aligned.ok) {
+        return aligned;
+      }
+      const planId = resolveCurrentPlanId(aligned.data);
+      if (!isPerSeatBillingPlan(planId)) {
+        return supabaseErr('VALIDATION', 'billingNotPerSeatPlan');
+      }
+
+      const result = await this.mock.syncSubscriptionSeats(
+        organizationId,
+        seatQuantity,
+      );
+      if (!result.ok) {
+        return result;
+      }
+      const syncError = await this.syncPlanToPostgres(
+        organizationId,
+        planId,
+        result.data.seatsLimit ?? undefined,
+      );
+      if (syncError) {
+        return syncError;
+      }
+      return this.getSummary(organizationId);
     }
 
     const client = this.supabase.getClient();
@@ -428,7 +465,11 @@ export class WebBillingAdapter implements BillingPort {
       ...summary,
       planId,
       planName: PLAN_NAMES[snapshot.plan_id] ?? summary.planName,
-      seatsLimit: snapshot.seats_limit,
+      seatsLimit: effectiveTeamSeatsLimitFromSnapshot(
+        snapshot.plan_id,
+        snapshot.seats_used,
+        snapshot.seats_limit,
+      ),
       seatsUsed: snapshot.seats_used,
       status,
       currentPeriodEnd:
@@ -511,9 +552,36 @@ export class WebBillingAdapter implements BillingPort {
     }
   }
 
+  /** Keep in-memory mock plan in sync with Postgres-backed billing snapshot. */
+  private async ensureMockBillingAligned(
+    organizationId: OrganizationId,
+  ): Promise<PortResult<BillingSummary>> {
+    const merged = await this.getSummary(organizationId);
+    if (!merged.ok) {
+      return merged;
+    }
+    const tier = resolveCurrentPlanId(merged.data);
+    if (tier !== 'free') {
+      this.mock.applyMockUpgrade(organizationId, tier);
+    }
+    return merged;
+  }
+
+  private seatsLimitForPlanSync(summary: BillingSummary): number | undefined {
+    const planId = summary.planId ?? 'free';
+    if (!isPerSeatBillingPlan(planId)) {
+      return undefined;
+    }
+    return (
+      summary.seatsLimit ??
+      checkoutBillableSeatCount(planId, summary.seatsUsed, TEAM_PLAN_MAX_SEATS)
+    );
+  }
+
   private async syncPlanToPostgres(
     organizationId: OrganizationId,
     planId: string | null,
+    seatsLimit?: number,
   ): Promise<PortResult<BillingSummary> | null> {
     const client = this.supabase.getClient();
     if (!client) {
@@ -523,6 +591,7 @@ export class WebBillingAdapter implements BillingPort {
     const { error } = await client.rpc('update_organization_plan', {
       p_organization_id: organizationId,
       p_plan_id: tier,
+      p_seats_limit: seatsLimit ?? null,
     });
     if (error) {
       return supabaseErrFromRpc(error);

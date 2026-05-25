@@ -17,8 +17,11 @@ import {
   countMembersTowardSeats,
   formatSeatUsageValue,
   isBillingSeatsExhausted,
-  needsStripeSeatBumpBeforeInvite,
+  needsPerSeatSeatSyncAfterRemove,
+  needsPerSeatSeatSyncBeforeInvite,
+  needsStripeSeatChargeConfirmBeforeInvite,
   ORG_PORT,
+  targetSeatQuantityAfterMemberRemoved,
   targetSeatQuantityForInvite,
   type BillingProviderId,
   type OrganizationMember,
@@ -45,6 +48,7 @@ import { HlmTableImports } from '@spartan-ng/helm/table';
 import { startWith } from 'rxjs';
 
 import { ChangeMemberRoleDialogComponent } from './change-member-role-dialog.component';
+import { ConfirmSeatChargeDialogComponent } from './confirm-seat-charge-dialog.component';
 import {
   InviteMemberDialogComponent,
   type InviteMemberInput,
@@ -66,6 +70,7 @@ type MemberRoleFilter = 'all' | OrgRole;
     HlmEmptyImports,
     HlmDropdownMenuImports,
     InviteMemberDialogComponent,
+    ConfirmSeatChargeDialogComponent,
     ChangeMemberRoleDialogComponent,
     RemoveMemberDialogComponent,
     TranslocoPipe,
@@ -297,10 +302,20 @@ type MemberRoleFilter = 'all' | OrgRole;
       (cancelled)="closeChangeRoleDialog()"
     />
 
+    <oequ-confirm-seat-charge-dialog
+      [open]="seatChargeConfirmOpen()"
+      [inviteEmail]="pendingInviteEmail()"
+      [seatQuantity]="pendingSeatQuantity()"
+      [confirming]="syncingSeats()"
+      (confirmed)="onSeatChargeConfirmed()"
+      (cancelled)="closeSeatChargeConfirm()"
+    />
+
     <oequ-remove-member-dialog
       [open]="removeDialogOpen()"
       [memberLabel]="removeTargetLabel()"
       [removing]="removing()"
+      [syncingSeats]="syncingSeatsOnRemove()"
       (confirmed)="confirmRemove()"
       (cancelled)="closeRemoveDialog()"
     />
@@ -350,7 +365,14 @@ export class OrgSettingsMembersComponent {
   protected readonly inviteDialogOpen = signal(false);
   protected readonly inviting = signal(false);
   protected readonly syncingSeats = signal(false);
+  protected readonly syncingSeatsOnRemove = signal(false);
   protected readonly inviteSubmitError = signal<string | null>(null);
+  protected readonly seatChargeConfirmOpen = signal(false);
+  protected readonly pendingInvite = signal<InviteMemberInput | null>(null);
+  protected readonly pendingSeatQuantity = signal(1);
+  protected readonly pendingInviteEmail = computed(
+    () => this.pendingInvite()?.email ?? '',
+  );
 
   protected readonly billingResource = resource({
     params: () => ({
@@ -370,10 +392,7 @@ export class OrgSettingsMembersComponent {
     const summary = this.billingResource.value();
     if (
       summary &&
-      needsStripeSeatBumpBeforeInvite(
-        summary,
-        this.billingProviderId as BillingProviderId,
-      )
+      needsPerSeatSeatSyncBeforeInvite(summary)
     ) {
       return false;
     }
@@ -530,45 +549,119 @@ export class OrgSettingsMembersComponent {
       return;
     }
 
-    this.inviting.set(true);
     this.inviteSubmitError.set(null);
 
     const summary = this.billingResource.value();
     if (
       summary &&
-      needsStripeSeatBumpBeforeInvite(
+      needsStripeSeatChargeConfirmBeforeInvite(
         summary,
         this.billingProviderId as BillingProviderId,
       )
     ) {
-      this.syncingSeats.set(true);
-      const syncResult = await this.billingPort.syncSubscriptionSeats(
-        this.organizationId(),
-        targetSeatQuantityForInvite(summary),
-      );
-      this.syncingSeats.set(false);
+      this.pendingInvite.set(input);
+      this.pendingSeatQuantity.set(targetSeatQuantityForInvite(summary));
+      this.closeInviteDialog();
+      this.seatChargeConfirmOpen.set(true);
+      return;
+    }
 
-      if (!syncResult.ok) {
-        this.inviting.set(false);
-        this.inviteSubmitError.set(
-          translatePortError(syncResult.error, this.transloco),
-        );
+    await this.runInviteWithOptionalSeatSync(input);
+  }
+
+  protected closeSeatChargeConfirm(): void {
+    if (this.syncingSeats()) {
+      return;
+    }
+    this.seatChargeConfirmOpen.set(false);
+    this.pendingInvite.set(null);
+  }
+
+  protected async onSeatChargeConfirmed(): Promise<void> {
+    const input = this.pendingInvite();
+    if (!input || this.syncingSeats()) {
+      return;
+    }
+
+    const synced = await this.syncSeatsBeforeInvite();
+    if (!synced) {
+      const message = this.inviteSubmitError();
+      if (message) {
+        toast.error(message);
+      }
+      return;
+    }
+
+    this.seatChargeConfirmOpen.set(false);
+    this.pendingInvite.set(null);
+    await this.sendInvite(input);
+  }
+
+  private async runInviteWithOptionalSeatSync(
+    input: InviteMemberInput,
+  ): Promise<void> {
+    const summary = this.billingResource.value();
+    if (summary && needsPerSeatSeatSyncBeforeInvite(summary)) {
+      const synced = await this.syncSeatsBeforeInvite();
+      if (!synced) {
         return;
       }
-
-      this.billingResource.reload();
     }
+
+    this.inviting.set(true);
+    await this.sendInvite(input);
+    this.inviting.set(false);
+  }
+
+  private async syncSeatsBeforeInvite(): Promise<boolean> {
+    const summary = this.billingResource.value();
+    if (!summary) {
+      this.inviteSubmitError.set(
+        this.transloco.translate('errors.billingSeatSyncFailed'),
+      );
+      return false;
+    }
+
+    this.syncingSeats.set(true);
+    const syncResult = await this.billingPort.syncSubscriptionSeats(
+      this.organizationId(),
+      targetSeatQuantityForInvite(summary),
+    );
+    this.syncingSeats.set(false);
+
+    if (!syncResult.ok) {
+      this.inviteSubmitError.set(
+        translatePortError(syncResult.error, this.transloco),
+      );
+      return false;
+    }
+
+    if (needsPerSeatSeatSyncBeforeInvite(syncResult.data)) {
+      this.inviteSubmitError.set(
+        this.transloco.translate('errors.billingSeatSyncFailed'),
+      );
+      return false;
+    }
+
+    this.dataRefresh.update((value) => value + 1);
+    return true;
+  }
+
+  private async sendInvite(input: InviteMemberInput): Promise<void> {
+    this.inviteSubmitError.set(null);
 
     const result = await this.orgPort.inviteMember(this.organizationId(), {
       email: input.email,
       role: input.role,
     });
-    this.inviting.set(false);
 
     if (!result.ok) {
       this.inviteSubmitError.set(
         translatePortError(result.error, this.transloco),
       );
+      if (!this.seatChargeConfirmOpen()) {
+        this.inviteDialogOpen.set(true);
+      }
       return;
     }
 
@@ -644,7 +737,7 @@ export class OrgSettingsMembersComponent {
 
   protected async confirmRemove(): Promise<void> {
     const member = this.removeTarget();
-    if (!member || this.removing()) {
+    if (!member || this.removing() || this.syncingSeatsOnRemove()) {
       return;
     }
 
@@ -661,9 +754,35 @@ export class OrgSettingsMembersComponent {
     }
 
     const label = member.displayName ?? member.email;
+    this.dataRefresh.update((value) => value + 1);
+
+    await this.billingResource.reload();
+    const summary = this.billingResource.value();
+    if (
+      summary &&
+      needsPerSeatSeatSyncAfterRemove(
+        summary,
+        this.billingProviderId as BillingProviderId,
+      )
+    ) {
+      this.syncingSeatsOnRemove.set(true);
+      const syncResult = await this.billingPort.syncSubscriptionSeats(
+        this.organizationId(),
+        targetSeatQuantityAfterMemberRemoved(summary),
+      );
+      this.syncingSeatsOnRemove.set(false);
+
+      if (!syncResult.ok) {
+        toast.error(
+          translatePortError(syncResult.error, this.transloco),
+        );
+      } else {
+        this.billingResource.reload();
+      }
+    }
+
     this.removeDialogOpen.set(false);
     this.removeTarget.set(null);
-    this.dataRefresh.update((value) => value + 1);
     toast.success(
       this.transloco.translate('org.members.toast.memberRemoved', {
         name: label,
