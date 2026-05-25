@@ -300,6 +300,69 @@ export class WebBillingAdapter implements BillingPort {
     return this.mock.cancelSubscription(organizationId, reason);
   }
 
+  async syncSubscriptionSeats(
+    organizationId: OrganizationId,
+    seatQuantity?: number,
+  ): Promise<PortResult<BillingSummary>> {
+    if (!this.isStripeEnabled()) {
+      return this.mock.syncSubscriptionSeats(organizationId, seatQuantity);
+    }
+
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const { data, error } = await client.functions.invoke(
+      'billing-update-subscription',
+      {
+        body: {
+          organization_id: organizationId,
+          seat_quantity: seatQuantity,
+        },
+      },
+    );
+
+    if (error) {
+      return supabaseErr('UNAVAILABLE', error.message);
+    }
+
+    const payload = data as {
+      ok?: boolean;
+      error?: string;
+      seats_limit?: number;
+    } | null;
+
+    if (payload?.error) {
+      return this.mapSeatSyncError(payload.error);
+    }
+
+    if (!payload?.ok) {
+      return supabaseErr('UNAVAILABLE', 'billingSeatSyncFailed');
+    }
+
+    return this.getSummary(organizationId);
+  }
+
+  private mapSeatSyncError<T>(message: string): PortResult<T> {
+    if (message.includes('no active stripe subscription')) {
+      return supabaseErr('VALIDATION', 'billingNoActiveSubscription');
+    }
+    if (message.includes('not_per_seat_plan')) {
+      return supabaseErr('VALIDATION', 'billingNotPerSeatPlan');
+    }
+    if (
+      message.includes('subscription_canceling') ||
+      message.includes('subscription_not_billable')
+    ) {
+      return supabaseErr('VALIDATION', 'billingSubscriptionNotBillable');
+    }
+    if (message.includes('team_seat_cap_reached')) {
+      return supabaseErr('VALIDATION', 'billingTeamSeatCapReached');
+    }
+    return supabaseErr('UNAVAILABLE', 'billingSeatSyncFailed');
+  }
+
   private isStripeEnabled(): boolean {
     return resolveBillingProvider(this.config) === 'stripe';
   }

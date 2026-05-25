@@ -86,6 +86,12 @@ export interface BillingPort {
     organizationId: OrganizationId,
     reason: string,
   ): Promise<PortResult<void>>;
+
+  /** Team per-seat: bump Stripe subscription quantity (and Postgres seats_limit). */
+  syncSubscriptionSeats(
+    organizationId: OrganizationId,
+    seatQuantity?: number,
+  ): Promise<PortResult<BillingSummary>>;
 }
 
 export const BILLING_PORT = new InjectionToken<BillingPort>('BILLING_PORT');

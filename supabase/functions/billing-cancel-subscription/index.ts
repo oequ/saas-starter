@@ -1,14 +1,7 @@
-import Stripe from 'npm:stripe@17.7.0';
 import { corsHeaders, handleCors, jsonResponse } from '../_shared/cors.ts';
-import {
-  applyBillingSubscription,
-  BILLING_PROVIDER_STRIPE,
-} from '../_shared/billing-rpc.ts';
-import {
-  getStripe,
-  mapSubscriptionStatus,
-  planIdFromSubscription,
-} from '../_shared/stripe.ts';
+import { BILLING_PROVIDER_STRIPE } from '../_shared/billing-rpc.ts';
+import { getStripe } from '../_shared/stripe.ts';
+import { syncStripeSubscription } from '../_shared/stripe-sync.ts';
 import {
   assertOrgAdmin,
   createServiceClient,
@@ -19,40 +12,6 @@ import {
 interface CancelBody {
   organization_id?: string;
   reason?: string;
-}
-
-function planIdFromStripeSubscription(
-  subscription: Stripe.Subscription,
-): string {
-  if (
-    subscription.status === 'canceled' ||
-    subscription.status === 'incomplete_expired'
-  ) {
-    return 'free';
-  }
-  return planIdFromSubscription(subscription);
-}
-
-async function syncSubscription(
-  admin: ReturnType<typeof createServiceClient>,
-  organizationId: string,
-  customerId: string,
-  subscription: Stripe.Subscription,
-): Promise<void> {
-  const periodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000).toISOString()
-    : null;
-
-  await applyBillingSubscription(admin, {
-    organizationId,
-    planId: planIdFromStripeSubscription(subscription),
-    provider: BILLING_PROVIDER_STRIPE,
-    externalCustomerId: customerId,
-    externalSubscriptionId: subscription.id,
-    subscriptionStatus: mapSubscriptionStatus(subscription.status),
-    currentPeriodEnd: periodEnd,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
-  });
 }
 
 Deno.serve(async (req) => {
@@ -87,7 +46,7 @@ Deno.serve(async (req) => {
       .from('organization_billing')
       .select('external_customer_id, external_subscription_id')
       .eq('organization_id', organizationId)
-      .eq('provider', 'stripe')
+      .eq('provider', BILLING_PROVIDER_STRIPE)
       .maybeSingle();
 
     if (billingError) {
@@ -112,7 +71,7 @@ Deno.serve(async (req) => {
       cancel_at_period_end: true,
     });
 
-    await syncSubscription(admin, organizationId, customerId, updated);
+    await syncStripeSubscription(admin, organizationId, customerId, updated);
 
     return jsonResponse({ ok: true });
   } catch (err) {

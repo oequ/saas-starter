@@ -28,11 +28,11 @@ Cursor plan archive: Stripe phase 2 implementation notes in `.cursor/plans/` (if
 | # | Item | Status |
 |---|------|--------|
 | 1 | **Per-seat pricing in Stripe** | **Done** — Team Checkout `quantity = seats_used`; webhook → `p_seats_limit` (`0015`); [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) runbook |
-| 2 | **Sync quantity on invite** | Later — bump Stripe subscription when `seats_used` exceeds paid quantity |
+| 2 | **Sync quantity on invite** | **Done** — `billing-update-subscription` + Members invite auto-bump (Team / Stripe) |
 | 3 | **Embedded Checkout / Elements** | Later — alternative to hosted redirect |
 | 4 | **E2E with Stripe** | Optional local smoke; **not** in CI |
 
-**Done (Stripe v2):** Cancel subscription, invoices, multi-provider (`0013`/`0014`), per-seat Team checkout.
+**Done (Stripe v2):** Cancel subscription, invoices, multi-provider (`0013`/`0014`), per-seat Team checkout, seat sync on invite.
 
 ---
 

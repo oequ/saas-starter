@@ -152,11 +152,13 @@ export interface InviteMemberRoleOption {
                 type="submit"
                 [disabled]="inviting() || seatsExhausted()"
               >
-                {{
-                  inviting()
-                    ? ('org.members.inviteDialog.sending' | transloco)
-                    : ('org.members.inviteDialog.sendInvite' | transloco)
-                }}
+                @if (syncingSeats()) {
+                  {{ 'org.members.inviteDialog.syncingSeats' | transloco }}
+                } @else if (inviting()) {
+                  {{ 'org.members.inviteDialog.sending' | transloco }}
+                } @else {
+                  {{ 'org.members.inviteDialog.sendInvite' | transloco }}
+                }
               </button>
             </hlm-dialog-footer>
           </form>
@@ -168,6 +170,7 @@ export interface InviteMemberRoleOption {
 export class InviteMemberDialogComponent {
   readonly open = input(false);
   readonly inviting = input(false);
+  readonly syncingSeats = input(false);
   readonly seatsExhausted = input(false);
   readonly seatsUsageLabel = input<string | null>(null);
   readonly submitError = input<string | null>(null);

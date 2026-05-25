@@ -25,7 +25,7 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 | `0011_outbound_emails.sql` | Outbound email log, quota helpers, `list_outbound_emails` / `simulate_outbound_emails`; billing snapshot email usage |
 | `0012_organization_activation.sql` | `organization_activation` + onboarding RPCs; `create_organization` seeds `pending` |
 
-Edge Functions (Deno 2, see `config.toml`): `billing-create-checkout`, `billing-create-portal`, `billing-cancel-subscription`, `billing-list-invoices`, `stripe-webhook`; example `billing-custom-webhook.example` for other providers. Stripe: [docs/STRIPE_LOCAL.md](../docs/STRIPE_LOCAL.md). Custom: [docs/BILLING_CUSTOM_PROVIDER.md](../docs/BILLING_CUSTOM_PROVIDER.md).
+Edge Functions (Deno 2, see `config.toml`): `billing-create-checkout`, `billing-create-portal`, `billing-cancel-subscription`, `billing-update-subscription`, `billing-list-invoices`, `stripe-webhook`; example `billing-custom-webhook.example` for other providers. Stripe: [docs/STRIPE_LOCAL.md](../docs/STRIPE_LOCAL.md). Custom: [docs/BILLING_CUSTOM_PROVIDER.md](../docs/BILLING_CUSTOM_PROVIDER.md).
 
 There are **no** permissive `WITH CHECK (true)` insert policies on `organizations`. Demo rows are seeded as superuser, not via a hole in RLS.
 

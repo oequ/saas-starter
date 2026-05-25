@@ -2,6 +2,8 @@ import { Injectable, Injector, inject } from '@angular/core';
 import {
   alignBillingSummarySeats,
   BILLING_PORT,
+  checkoutBillableSeatCount,
+  isPerSeatBillingPlan,
   type AddPaymentMethodInput,
   type BillingPort,
   type BillingPlan,
@@ -303,6 +305,32 @@ export class MockBillingAdapter implements BillingPort {
       status: current.status === 'trialing' ? 'canceled' : current.status,
     });
     return portOk(undefined);
+  }
+
+  async syncSubscriptionSeats(
+    organizationId: OrganizationId,
+    seatQuantity?: number,
+  ): Promise<PortResult<BillingSummary>> {
+    await delay(400);
+    const current = alignBillingSummarySeats(
+      this.getOrCreateSummary(organizationId),
+      MOCK_BILLING_PLANS,
+    );
+    const planId = resolveCurrentPlanId(current);
+    if (!isPerSeatBillingPlan(planId)) {
+      return mockErr('VALIDATION', 'billingNotPerSeatPlan');
+    }
+    const cap = current.seatsLimit ?? 50;
+    const target =
+      seatQuantity !== undefined
+        ? checkoutBillableSeatCount(planId, seatQuantity, cap)
+        : checkoutBillableSeatCount(planId, current.seatsUsed + 1, cap);
+    const nextLimit = Math.max(current.seatsLimit ?? 1, target);
+    const summary = this.persistSummary({
+      ...current,
+      seatsLimit: nextLimit,
+    });
+    return portOk(summary);
   }
 
   seedOrganization(organizationId: OrganizationId): void {

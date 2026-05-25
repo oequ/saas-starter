@@ -42,6 +42,7 @@
     "seatsExhausted": "All seats on your plan are in use.",
     "upgradePlan": "Upgrade your plan",
     "upgradeSuffix": "to invite more members.",
+    "syncingSeats": "Updating subscription…",
     "sending": "Sending…",
     "sendInvite": "Send invite"
   },

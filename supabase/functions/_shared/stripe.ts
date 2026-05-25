@@ -30,7 +30,7 @@ export function priceIdForPlan(planId: string): string {
   throw new Error(`Unsupported plan_id for checkout: ${planId}`);
 }
 
-const TEAM_PLAN_MAX_SEATS = 50;
+export const TEAM_PLAN_MAX_SEATS = 50;
 
 /** Team uses per-unit Stripe price × quantity; Pro is flat (quantity 1). */
 export function isPerSeatPlan(planId: string): boolean {

@@ -1,3 +1,4 @@
+import type { BillingProviderId } from './billing-provider.model';
 import type {
   AddPaymentMethodInput,
   BillingPlan,
@@ -47,6 +48,34 @@ export function seatsLimitFromStripeQuantity(
   const qty = Number.isFinite(quantity) ? Math.floor(quantity) : 1;
   const cap = Number.isFinite(planSeatCap) ? Math.floor(planSeatCap) : TEAM_PLAN_MAX_SEATS;
   return Math.min(Math.max(1, qty), Math.max(1, cap));
+}
+
+/** True when invite needs a Stripe quantity bump before `invite_organization_member`. */
+export function needsStripeSeatBumpBeforeInvite(
+  summary: BillingSummary,
+  providerId: BillingProviderId,
+): boolean {
+  if (providerId !== 'stripe') {
+    return false;
+  }
+  const planId = resolveCurrentPlanId(summary);
+  if (!isPerSeatBillingPlan(planId)) {
+    return false;
+  }
+  if (summary.seatsLimit === null) {
+    return false;
+  }
+  return summary.seatsUsed >= summary.seatsLimit;
+}
+
+/** Target Stripe quantity when adding one seat via invite (Team). */
+export function targetSeatQuantityForInvite(summary: BillingSummary): number {
+  const planId = resolveCurrentPlanId(summary);
+  return checkoutBillableSeatCount(
+    planId,
+    summary.seatsUsed + 1,
+    TEAM_PLAN_MAX_SEATS,
+  );
 }
 
 export const COMMERCIAL_PLAN_IDS: readonly CommercialPlanId[] = [

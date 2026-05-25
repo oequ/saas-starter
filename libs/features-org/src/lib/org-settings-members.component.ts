@@ -13,10 +13,14 @@ import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideEllipsis, lucideSearch, lucideUsers } from '@ng-icons/lucide';
 import {
   BILLING_PORT,
+  BILLING_PROVIDER_ID,
   countMembersTowardSeats,
   formatSeatUsageValue,
   isBillingSeatsExhausted,
+  needsStripeSeatBumpBeforeInvite,
   ORG_PORT,
+  targetSeatQuantityForInvite,
+  type BillingProviderId,
   type OrganizationMember,
   type OrgRole,
 } from '@oequ/ports';
@@ -274,6 +278,7 @@ type MemberRoleFilter = 'all' | OrgRole;
     <oequ-invite-member-dialog
       [open]="inviteDialogOpen()"
       [inviting]="inviting()"
+      [syncingSeats]="syncingSeats()"
       [seatsExhausted]="inviteSeatsExhausted()"
       [seatsUsageLabel]="inviteSeatsUsageLabel()"
       [submitError]="inviteSubmitError()"
@@ -306,6 +311,7 @@ export class OrgSettingsMembersComponent {
 
   private readonly orgPort = inject(ORG_PORT);
   private readonly billingPort = inject(BILLING_PORT);
+  private readonly billingProviderId = inject(BILLING_PROVIDER_ID);
   private readonly paywallDialog = inject(PaywallDialogService);
   private readonly transloco = inject(TranslocoService);
 
@@ -343,6 +349,7 @@ export class OrgSettingsMembersComponent {
 
   protected readonly inviteDialogOpen = signal(false);
   protected readonly inviting = signal(false);
+  protected readonly syncingSeats = signal(false);
   protected readonly inviteSubmitError = signal<string | null>(null);
 
   protected readonly billingResource = resource({
@@ -361,6 +368,15 @@ export class OrgSettingsMembersComponent {
 
   protected readonly inviteSeatsExhausted = computed(() => {
     const summary = this.billingResource.value();
+    if (
+      summary &&
+      needsStripeSeatBumpBeforeInvite(
+        summary,
+        this.billingProviderId as BillingProviderId,
+      )
+    ) {
+      return false;
+    }
     const members = this.members();
     if (members.length > 0) {
       const used = countMembersTowardSeats(members);
@@ -515,6 +531,34 @@ export class OrgSettingsMembersComponent {
     }
 
     this.inviting.set(true);
+    this.inviteSubmitError.set(null);
+
+    const summary = this.billingResource.value();
+    if (
+      summary &&
+      needsStripeSeatBumpBeforeInvite(
+        summary,
+        this.billingProviderId as BillingProviderId,
+      )
+    ) {
+      this.syncingSeats.set(true);
+      const syncResult = await this.billingPort.syncSubscriptionSeats(
+        this.organizationId(),
+        targetSeatQuantityForInvite(summary),
+      );
+      this.syncingSeats.set(false);
+
+      if (!syncResult.ok) {
+        this.inviting.set(false);
+        this.inviteSubmitError.set(
+          translatePortError(syncResult.error, this.transloco),
+        );
+        return;
+      }
+
+      this.billingResource.reload();
+    }
+
     const result = await this.orgPort.inviteMember(this.organizationId(), {
       email: input.email,
       role: input.role,
@@ -530,6 +574,7 @@ export class OrgSettingsMembersComponent {
 
     this.closeInviteDialog();
     this.dataRefresh.update((value) => value + 1);
+    this.billingResource.reload();
     toast.success(
       this.transloco.translate('org.members.toast.inviteSent', {
         email: input.email,

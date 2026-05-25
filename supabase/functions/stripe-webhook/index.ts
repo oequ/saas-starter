@@ -1,46 +1,12 @@
 import Stripe from 'npm:stripe@17.7.0';
 import {
-  applyBillingSubscription,
   BILLING_PROVIDER_STRIPE,
   deleteBillingEvent,
   recordBillingEvent,
 } from '../_shared/billing-rpc.ts';
-import {
-  getStripe,
-  mapSubscriptionStatus,
-  planIdFromSubscription,
-  seatsLimitOverrideForSubscription,
-  stripeCryptoProvider,
-} from '../_shared/stripe.ts';
+import { getStripe, stripeCryptoProvider } from '../_shared/stripe.ts';
+import { syncStripeSubscription } from '../_shared/stripe-sync.ts';
 import { createServiceClient } from '../_shared/supabase-clients.ts';
-
-async function applySubscription(
-  admin: ReturnType<typeof createServiceClient>,
-  organizationId: string,
-  customerId: string,
-  subscription: Stripe.Subscription,
-): Promise<void> {
-  const planId =
-    subscription.status === 'canceled' || subscription.status === 'incomplete_expired'
-      ? 'free'
-      : planIdFromSubscription(subscription);
-
-  const periodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000).toISOString()
-    : null;
-
-  await applyBillingSubscription(admin, {
-    organizationId,
-    planId,
-    provider: BILLING_PROVIDER_STRIPE,
-    externalCustomerId: customerId,
-    externalSubscriptionId: subscription.id,
-    subscriptionStatus: mapSubscriptionStatus(subscription.status),
-    currentPeriodEnd: periodEnd,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
-    seatsLimit: seatsLimitOverrideForSubscription(planId, subscription),
-  });
-}
 
 async function handleCheckoutCompleted(
   admin: ReturnType<typeof createServiceClient>,
@@ -60,7 +26,7 @@ async function handleCheckoutCompleted(
   }
 
   const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
-  await applySubscription(admin, organizationId, customerId, subscription);
+  await syncStripeSubscription(admin, organizationId, customerId, subscription);
 }
 
 async function handleSubscriptionEvent(
@@ -78,7 +44,7 @@ async function handleSubscriptionEvent(
     return;
   }
 
-  await applySubscription(admin, organizationId, customerId, subscription);
+  await syncStripeSubscription(admin, organizationId, customerId, subscription);
 }
 
 async function handleInvoicePaymentFailed(

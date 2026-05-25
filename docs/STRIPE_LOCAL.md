@@ -98,7 +98,18 @@ Create **Team** price as recurring **per unit** (not flat). Example test amounts
 3. Webhooks pass subscription **quantity** into `apply_billing_subscription(..., p_seats_limit)` for Team.
 4. **Pro** stays flat (`quantity: 1`, `seats_limit = 10`).
 
-Increasing seats after subscribe (invite more members than paid quantity) is blocked by Postgres seat enforcement until subscription quantity is updated (future: `billing-update-subscription`).
+## Auto seat bump on invite (Team)
+
+When **Team + Stripe** and `seats_used >= seats_limit`, **Members → Invite** calls `billing-update-subscription` automatically (prorated), then `invite_organization_member`. No extra confirmation dialog in v1.
+
+Manual smoke:
+
+1. Subscribe to **Team** with one member (`quantity = 1`, `seats_limit = 1`).
+2. **Members → Invite** a second email — button shows **Updating subscription…**, then **Sending…**.
+3. Stripe Dashboard: subscription `quantity = 2`; Billing: `seats_limit` 2.
+4. `stripe listen`: `customer.subscription.updated`.
+
+**Pro** at 10/10: invite stays blocked → paywall (flat price, no quantity bump).
 
 ## Downgrades
 
@@ -123,6 +134,7 @@ With Stripe enabled, paywall downgrades open **Customer Portal**. Seat limits up
 | `billing-create-checkout` | yes | Checkout Session (`quantity` per plan) |
 | `billing-create-portal` | yes | Customer Portal |
 | `billing-cancel-subscription` | yes | Cancel at period end |
+| `billing-update-subscription` | yes | Bump Team subscription quantity (invite flow) |
 | `billing-list-invoices` | yes | Invoice list |
 | `stripe-webhook` | no | Idempotent sync via `apply_billing_subscription` |
 
