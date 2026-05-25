@@ -288,6 +288,7 @@ import { CancelSubscriptionDialogComponent } from './cancel-subscription-dialog.
         }
       </section>
 
+      @if (!stripeBillingEnabled) {
       <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
         <div hlmCardContent class="!p-6">
           <h2 class="text-xl leading-8 font-semibold tracking-tight">
@@ -378,15 +379,19 @@ import { CancelSubscriptionDialogComponent } from './cancel-subscription-dialog.
           </button>
         </div>
       </section>
+      }
+
     </div>
 
-    <oequ-add-payment-method-dialog
-      [open]="addPaymentDialogOpen()"
-      [saving]="addPaymentSaving()"
-      [serverError]="addPaymentError()"
-      (submitted)="onAddPaymentMethodSubmitted($event)"
-      (cancelled)="closeAddPaymentMethodDialog()"
-    />
+    @if (!stripeBillingEnabled) {
+      <oequ-add-payment-method-dialog
+        [open]="addPaymentDialogOpen()"
+        [saving]="addPaymentSaving()"
+        [serverError]="addPaymentError()"
+        (submitted)="onAddPaymentMethodSubmitted($event)"
+        (cancelled)="closeAddPaymentMethodDialog()"
+      />
+    }
 
     <oequ-cancel-subscription-dialog
       [open]="cancelDialogOpen()"

@@ -9,7 +9,8 @@
     "mostPopular": "Most popular",
     "upgradeTo": "Upgrade to {{plan}}",
     "downgradeTo": "Downgrade to {{plan}}",
-    "freeFootnote": "Free workspaces may pause after inactivity. Limit of 2 active workspaces on Free."
+    "freeFootnote": "Free workspaces may pause after inactivity. Limit of 2 active workspaces on Free.",
+    "redirectingToCheckout": "Opening secure checkout…"
   },
   "upgradeDialog": {
     "title": "Upgrade to {{plan}}",
@@ -91,6 +92,7 @@
     "noWorkspace": "No active workspace.",
     "billingUnavailable": "Billing information is not available.",
     "downgradeSeats": "You have {{used}} members but {{plan}} allows {{limit}}. Remove members before downgrading.",
-    "portalUnavailable": "Could not open the billing portal. Try again from Billing settings."
+    "portalUnavailable": "Could not open the billing portal. Try again from Billing settings.",
+    "checkoutUnavailable": "Could not start checkout. Try again in a moment."
   }
 }

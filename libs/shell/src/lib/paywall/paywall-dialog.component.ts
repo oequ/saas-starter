@@ -106,6 +106,16 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
             } @else if (loadError(); as error) {
               <p class="text-destructive py-6 text-sm" role="alert">{{ error }}</p>
             } @else {
+              @if (upgradeCheckoutError(); as checkoutMessage) {
+                <p class="text-destructive mb-4 text-sm" role="alert">
+                  {{ checkoutMessage }}
+                </p>
+              }
+              @if (upgradeCheckoutLoading()) {
+                <p class="text-muted-foreground mb-4 text-sm" role="status">
+                  {{ 'paywall.dialog.redirectingToCheckout' | transloco }}
+                </p>
+              }
               @if (
                 !downgradeConfirmOpen() && downgradeError();
                 as downgradeMessage
@@ -185,6 +195,7 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
                             hlmBtn
                             type="button"
                             class="w-full"
+                            [disabled]="upgradeCheckoutLoading()"
                             (click)="startUpgrade(plan)"
                           >
                             {{
@@ -246,24 +257,28 @@ type PlanAction = 'current' | 'upgrade' | 'downgrade' | 'none';
       </ng-template>
     </hlm-dialog>
 
-    <oequ-plan-upgrade-checkout-dialog
-      [open]="checkoutConfirmOpen()"
-      [planId]="selectedPlanId() ?? 'free'"
-      [loading]="checkoutLoading()"
-      [confirming]="checkoutConfirming()"
-      [error]="checkoutConfirmError()"
-      (confirmed)="confirmMockCheckout()"
-      (cancelled)="closeCheckoutConfirm()"
-    />
+    @if (!stripeBillingEnabled) {
+      <oequ-plan-upgrade-checkout-dialog
+        [open]="checkoutConfirmOpen()"
+        [planId]="selectedPlanId() ?? 'free'"
+        [loading]="checkoutLoading()"
+        [confirming]="checkoutConfirming()"
+        [error]="checkoutConfirmError()"
+        (confirmed)="confirmMockCheckout()"
+        (cancelled)="closeCheckoutConfirm()"
+      />
+    }
 
-    <oequ-plan-downgrade-confirm-dialog
+    @if (!stripeBillingEnabled) {
+      <oequ-plan-downgrade-confirm-dialog
       [open]="downgradeConfirmOpen()"
       [planId]="selectedPlanId() ?? 'free'"
       [confirming]="downgradeConfirming()"
       [error]="downgradeConfirmError()"
-      (confirmed)="confirmDowngrade()"
-      (cancelled)="closeDowngradeConfirm()"
-    />
+        (confirmed)="confirmDowngrade()"
+        (cancelled)="closeDowngradeConfirm()"
+      />
+    }
   `,
 })
 export class PaywallDialogComponent {
@@ -271,7 +286,7 @@ export class PaywallDialogComponent {
   private readonly billingPort = inject(BILLING_PORT);
   private readonly orgPort = inject(ORG_PORT);
   private readonly transloco = inject(TranslocoService);
-  private readonly stripeBillingEnabled = inject(STRIPE_BILLING_ENABLED);
+  protected readonly stripeBillingEnabled = inject(STRIPE_BILLING_ENABLED);
 
   protected readonly planSkeletonSlots = [0, 1, 2] as const;
   protected readonly featureSkeletonSlots = [0, 1, 2, 3, 4] as const;
@@ -299,6 +314,8 @@ export class PaywallDialogComponent {
   protected readonly checkoutLoading = signal(false);
   protected readonly checkoutConfirming = signal(false);
   protected readonly checkoutConfirmError = signal<string | null>(null);
+  protected readonly upgradeCheckoutLoading = signal(false);
+  protected readonly upgradeCheckoutError = signal<string | null>(null);
   protected readonly downgradeConfirmOpen = signal(false);
   protected readonly downgradeError = signal<string | null>(null);
   protected readonly downgradeConfirmError = signal<string | null>(null);
@@ -364,9 +381,15 @@ export class PaywallDialogComponent {
 
     this.downgradeConfirmOpen.set(false);
     this.selectedPlanId.set(plan.id as CommercialPlanId);
-    this.checkoutConfirmOpen.set(true);
-    this.checkoutLoading.set(true);
     this.checkoutConfirmError.set(null);
+    this.upgradeCheckoutError.set(null);
+
+    if (this.stripeBillingEnabled) {
+      this.upgradeCheckoutLoading.set(true);
+    } else {
+      this.checkoutConfirmOpen.set(true);
+      this.checkoutLoading.set(true);
+    }
 
     const seatFeature = plan.features.find((feature) => feature.id === 'seats');
     const seatCap = seatFeature?.limit ?? 10;
@@ -376,6 +399,25 @@ export class PaywallDialogComponent {
       plan.id,
       checkoutBillableSeatCount(plan.id, seatsUsed, seatCap),
     );
+
+    if (this.stripeBillingEnabled) {
+      this.upgradeCheckoutLoading.set(false);
+      if (!result.ok) {
+        this.upgradeCheckoutError.set(
+          translatePortError(result.error, this.transloco),
+        );
+        return;
+      }
+      if (result.data.url) {
+        globalThis.location.assign(result.data.url);
+        return;
+      }
+      this.upgradeCheckoutError.set(
+        this.transloco.translate('paywall.errors.checkoutUnavailable'),
+      );
+      return;
+    }
+
     this.checkoutLoading.set(false);
 
     if (!result.ok) {
@@ -427,6 +469,12 @@ export class PaywallDialogComponent {
     this.downgradeError.set(null);
     this.downgradeConfirmError.set(null);
     this.selectedPlanId.set(plan.id as CommercialPlanId);
+
+    if (this.stripeBillingEnabled) {
+      void this.redirectToStripePortal();
+      return;
+    }
+
     this.downgradeConfirmOpen.set(true);
   }
 
@@ -450,18 +498,8 @@ export class PaywallDialogComponent {
     this.downgradeConfirmError.set(null);
 
     if (this.stripeBillingEnabled) {
-      const returnUrl = `${globalThis.location.origin}/workspace/settings/billing`;
-      const portal = await this.billingPort.createPortalSession(org.id, returnUrl);
+      await this.redirectToStripePortal();
       this.downgradeConfirming.set(false);
-      if (portal.ok && portal.data.url) {
-        globalThis.location.assign(portal.data.url);
-        return;
-      }
-      this.downgradeConfirmError.set(
-        portal.ok
-          ? this.transloco.translate('paywall.errors.portalUnavailable')
-          : translatePortError(portal.error, this.transloco),
-      );
       return;
     }
 
@@ -554,9 +592,34 @@ export class PaywallDialogComponent {
     this.checkoutLoading.set(false);
     this.checkoutConfirming.set(false);
     this.checkoutConfirmError.set(null);
+    this.upgradeCheckoutLoading.set(false);
+    this.upgradeCheckoutError.set(null);
     this.downgradeConfirmOpen.set(false);
     this.downgradeError.set(null);
     this.downgradeConfirmError.set(null);
     this.downgradeConfirming.set(false);
+  }
+
+  private async redirectToStripePortal(): Promise<void> {
+    const org = this.activeOrganization();
+    if (!org) {
+      this.downgradeError.set(
+        this.transloco.translate('paywall.errors.noWorkspace'),
+      );
+      return;
+    }
+
+    const returnUrl = `${globalThis.location.origin}/workspace/settings/billing`;
+    const portal = await this.billingPort.createPortalSession(org.id, returnUrl);
+    if (portal.ok && portal.data.url) {
+      globalThis.location.assign(portal.data.url);
+      return;
+    }
+
+    this.downgradeError.set(
+      portal.ok
+        ? this.transloco.translate('paywall.errors.portalUnavailable')
+        : translatePortError(portal.error, this.transloco),
+    );
   }
 }
