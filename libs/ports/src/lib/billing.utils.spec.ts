@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { BillingSummary } from './models/billing.model';
 import {
   billingStatusBanner,
+  isAllowedStripeRedirectUrl,
   isBillingPaymentBlocked,
   checkoutBillableSeatCount,
   effectiveTeamSeatsLimitFromSnapshot,
@@ -33,6 +34,40 @@ function summary(
     ...partial,
   };
 }
+
+describe('isAllowedStripeRedirectUrl', () => {
+  it('accepts checkout.stripe.com', () => {
+    expect(
+      isAllowedStripeRedirectUrl('https://checkout.stripe.com/c/pay_abc123'),
+    ).toBe(true);
+  });
+
+  it('accepts billing.stripe.com', () => {
+    expect(
+      isAllowedStripeRedirectUrl('https://billing.stripe.com/p/session_xyz'),
+    ).toBe(true);
+  });
+
+  it('rejects non-stripe domains', () => {
+    expect(isAllowedStripeRedirectUrl('https://evil.com/checkout')).toBe(false);
+    expect(isAllowedStripeRedirectUrl('https://stripe.com.evil.com')).toBe(false);
+  });
+
+  it('rejects http stripe URLs', () => {
+    expect(
+      isAllowedStripeRedirectUrl('http://checkout.stripe.com/pay'),
+    ).toBe(false);
+  });
+
+  it('rejects non-URL strings', () => {
+    expect(isAllowedStripeRedirectUrl('')).toBe(false);
+    expect(isAllowedStripeRedirectUrl('not a url')).toBe(false);
+  });
+
+  it('rejects javascript: protocol', () => {
+    expect(isAllowedStripeRedirectUrl('javascript:alert(1)')).toBe(false);
+  });
+});
 
 describe('checkoutBillableSeatCount', () => {
   it('returns 1 for Pro (flat price)', () => {
