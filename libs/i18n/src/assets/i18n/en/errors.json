@@ -17,6 +17,7 @@
     "invalidCredentials": "Invalid email or password.",
     "termsRequired": "You must accept the Terms of Service and Privacy Policy.",
     "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordUnchanged": "New password must be different from the current password.",
     "emailExists": "An account with this email already exists.",
     "cannotRevokeCurrentSession": "You cannot revoke your current session.",
     "orgNotFound": "Organization not found.",

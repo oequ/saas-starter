@@ -13,8 +13,14 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
+import { AUTH_PORT } from '@oequ/ports';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
+import { toast } from '@spartan-ng/brain/sonner';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
@@ -34,6 +40,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountSecurityPageComponent {
+  private readonly authPort = inject(AUTH_PORT);
   private readonly transloco = inject(TranslocoService);
 
   protected readonly fieldClass = SETTINGS_FORM_FIELD_CLASS;
@@ -54,6 +61,7 @@ export class AccountSecurityPageComponent {
   });
 
   protected readonly statusMessage = signal<string | null>(null);
+  protected readonly statusIsError = signal(false);
   protected readonly submitAttempted = signal(false);
   protected readonly saving = signal(false);
 
@@ -83,37 +91,67 @@ export class AccountSecurityPageComponent {
     return hasChanges && !this.saving();
   });
 
-  protected savePassword(): void {
+  protected savePassword(event: Event): void {
+    event.preventDefault();
+    void this.persistPassword();
+  }
+
+  private async persistPassword(): Promise<void> {
     this.submitAttempted.set(true);
     if (!this.canSavePassword()) {
       return;
     }
 
-    const { newPassword, confirmPassword } = this.passwordForm.getRawValue();
+    const { currentPassword, newPassword, confirmPassword } =
+      this.passwordForm.getRawValue();
+
     if (this.passwordForm.invalid) {
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      this.statusIsError.set(true);
+      this.statusMessage.set(
+        this.transloco.translate('account.security.passwordMismatch'),
+      );
       return;
     }
 
     this.saving.set(true);
     this.statusMessage.set(null);
+    this.statusIsError.set(false);
 
-    if (newPassword !== confirmPassword) {
-      this.statusMessage.set(
-        this.transloco.translate('account.security.passwordMismatch'),
+    try {
+      const result = await this.authPort.changePassword({
+        currentPassword,
+        newPassword,
+      });
+
+      if (!result.ok) {
+        this.statusIsError.set(true);
+        this.statusMessage.set(
+          translatePortError(result.error, this.transloco),
+        );
+        return;
+      }
+
+      this.passwordForm.reset();
+      this.submitAttempted.set(false);
+      toast.success(
+        this.transloco.translate('account.security.passwordChanged'),
       );
+    } catch {
+      this.statusIsError.set(true);
+      this.statusMessage.set(
+        this.transloco.translate('common.errorGeneric'),
+      );
+    } finally {
       this.saving.set(false);
-      return;
     }
-
-    this.statusMessage.set(
-      this.transloco.translate('account.security.passwordChangeSoon'),
-    );
-    this.passwordForm.reset();
-    this.submitAttempted.set(false);
-    this.saving.set(false);
   }
 
   protected enableTwoFactor(): void {
+    this.statusIsError.set(false);
     this.statusMessage.set(
       this.transloco.translate('account.security.twoFactorSoon'),
     );

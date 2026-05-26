@@ -281,6 +281,84 @@ export class SupabaseAuthAdapter implements AuthPort {
     return portOk(undefined);
   }
 
+  async changePassword(input: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<PortResult<void>> {
+    const currentPassword = input.currentPassword;
+    const newPassword = input.newPassword;
+
+    if (newPassword.length < 8) {
+      return supabaseErr('VALIDATION', 'passwordTooShort');
+    }
+    if (newPassword === currentPassword) {
+      return supabaseErr('VALIDATION', 'passwordUnchanged');
+    }
+
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const userResult = await this.getVerifiedUser();
+    if (userResult.ok === false) {
+      return { ok: false, error: userResult.error };
+    }
+    if (!userResult.data?.email) {
+      return supabaseErr('UNAUTHENTICATED', 'notSignedIn');
+    }
+
+    const orgBefore =
+      this.orgOverride !== undefined
+        ? this.orgOverride
+        : (this.sessionSubject.value?.claims.org ?? null);
+
+    const reauth = await this.signInWithPassword({
+      email: userResult.data.email,
+      password: currentPassword,
+    });
+    if (reauth.ok === false) {
+      return { ok: false, error: reauth.error };
+    }
+
+    if (orgBefore) {
+      this.orgOverride = orgBefore;
+      const current = this.sessionSubject.value;
+      if (current) {
+        this.sessionSubject.next({
+          user: current.user,
+          claims: { ...current.claims, org: orgBefore },
+        });
+      }
+    }
+
+    const { error } = await client.auth.updateUser({
+      password: newPassword,
+    });
+    if (error) {
+      return supabaseErrFromAuth(error);
+    }
+
+    const { data: sessionData, error: sessionError } =
+      await client.auth.getSession();
+    if (sessionError) {
+      return supabaseErrFromAuth(sessionError);
+    }
+    this.applySupabaseSession(sessionData.session);
+    if (orgBefore) {
+      this.orgOverride = orgBefore;
+      const current = this.sessionSubject.value;
+      if (current) {
+        this.sessionSubject.next({
+          user: current.user,
+          claims: { ...current.claims, org: orgBefore },
+        });
+      }
+    }
+
+    return portOk(undefined);
+  }
+
   async isPasswordRecoveryActive(): Promise<PortResult<boolean>> {
     const client = this.supabase.getClient();
     if (!client) {

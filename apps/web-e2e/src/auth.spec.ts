@@ -42,6 +42,26 @@ test.describe('auth (Supabase)', () => {
     ).toBeVisible();
   });
 
+  test('change password while signed in', async ({ page }) => {
+    const email = uniqueEmail('auth-chpass');
+    const oldPassword = 'password123';
+    const newPassword = 'newpassword456';
+    await registerUser(page, email, oldPassword);
+    await createWorkspaceViaOnboarding(page, `ChPass ${Date.now()}`);
+
+    await page.goto('/account/security');
+    await page.getByPlaceholder('Current password').fill(oldPassword);
+    await page.getByPlaceholder('New password').fill(newPassword);
+    await page.getByPlaceholder('Confirm new password').fill(newPassword);
+    await page.getByRole('button', { name: 'Save changes' }).click();
+
+    await expect(page.getByText('Password updated.')).toBeVisible();
+
+    await signOutViaMenu(page);
+    await signInUser(page, email, newPassword);
+    await expect(page).not.toHaveURL(/\/auth\/login$/);
+  });
+
   test('login rejects wrong password', async ({ page }) => {
     const email = uniqueEmail('auth-wrong-pass');
     await registerUser(page, email);

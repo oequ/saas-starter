@@ -1,7 +1,11 @@
 <div class="space-y-8">
   <section hlmCard variant="outline" class="gap-0 overflow-hidden py-0">
     <div hlmCardContent class="!p-6">
-      <form id="account-password-form" (ngSubmit)="savePassword()">
+      <form
+        id="account-password-form"
+        [formGroup]="passwordForm"
+        (ngSubmit)="savePassword($event)"
+      >
         <h2 class="text-xl leading-8 font-semibold tracking-tight">
           {{ 'account.security.passwordTitle' | transloco }}
         </h2>
@@ -41,7 +45,12 @@
       class="border-border text-foreground flex min-h-[57px] items-center justify-between gap-4 border-t !py-3 text-sm leading-relaxed"
     >
       @if (statusMessage(); as message) {
-        <p role="status">{{ message }}</p>
+        <p
+          [class.text-destructive]="statusIsError()"
+          [attr.role]="statusIsError() ? 'alert' : 'status'"
+        >
+          {{ message }}
+        </p>
       } @else if (submitAttempted() && passwordForm.invalid) {
         <p class="text-destructive text-sm" role="alert">
           {{ 'account.security.passwordInvalid' | transloco }}

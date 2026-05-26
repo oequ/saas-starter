@@ -46,6 +46,12 @@ export interface AuthPort {
   /** Set new password after recovery link; adapter may sign out on success. */
   updatePassword(newPassword: string): Promise<PortResult<void>>;
 
+  /** Change password while signed in (verifies current password first). */
+  changePassword(input: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<PortResult<void>>;
+
   /** Whether the user opened a valid password-recovery link in this browser. */
   isPasswordRecoveryActive(): Promise<PortResult<boolean>>;
 

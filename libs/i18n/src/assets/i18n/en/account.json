@@ -33,7 +33,7 @@
     "passwordMismatch": "New passwords do not match.",
     "passwordInvalid": "Complete all password fields (minimum 8 characters).",
     "passwordHint": "Minimum 8 characters.",
-    "passwordChangeSoon": "Password change will be available in v0.3.",
+    "passwordChanged": "Password updated.",
     "twoFactorTitle": "Two-factor authentication",
     "twoFactorLead": "Add an authenticator app for an extra layer of security.",
     "twoFactorDisabled": "Disabled",

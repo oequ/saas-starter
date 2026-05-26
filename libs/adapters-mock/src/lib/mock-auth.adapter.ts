@@ -294,6 +294,36 @@ export class MockAuthAdapter implements AuthPort {
     return portOk(undefined);
   }
 
+  async changePassword(input: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<PortResult<void>> {
+    const userResult = await this.getVerifiedUser();
+    if (userResult.ok === false) {
+      return { ok: false, error: userResult.error };
+    }
+    if (!userResult.data?.email) {
+      return mockErr('UNAUTHENTICATED', 'notSignedIn');
+    }
+
+    if (input.newPassword.length < 8) {
+      return mockErr('VALIDATION', 'passwordTooShort');
+    }
+    if (input.newPassword === input.currentPassword) {
+      return mockErr('VALIDATION', 'passwordUnchanged');
+    }
+
+    const reauth = await this.signInWithPassword({
+      email: userResult.data.email,
+      password: input.currentPassword,
+    });
+    if (reauth.ok === false) {
+      return { ok: false, error: reauth.error };
+    }
+
+    return portOk(undefined);
+  }
+
   async isPasswordRecoveryActive(): Promise<PortResult<boolean>> {
     return portOk(readMockPasswordRecoveryFlag() !== null);
   }

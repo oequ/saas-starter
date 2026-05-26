@@ -29,9 +29,9 @@ Highest impact: routes and forms exist; user hits dead ends.
 
 | Item | Current state | Target |
 |------|---------------|--------|
-| `/account/security` | Forms + “v0.3” toasts | `AuthPort`: `changePassword`, 2FA setup stub, connected accounts |
+| `/account/security` | Change password | **Done** — `AuthPort.changePassword`; 2FA / connected accounts still stub |
 | Account profile | Email change / delete account toasts only | Port + mock persistence + dialogs |
-| Forgot password | `setTimeout` only | `requestPasswordReset` on `AuthPort` + success UX |
+| Forgot password | **Done** | `requestPasswordReset` + `/auth/reset-password` |
 | Cancel subscription | `BillingPort.cancelSubscription` only | Billing UI: cancel at period end + confirm dialog |
 
 **Suggested order:** security + forgot password → cancel subscription → profile email/delete.
