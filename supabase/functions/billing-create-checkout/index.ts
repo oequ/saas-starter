@@ -80,6 +80,24 @@ Deno.serve(async (req) => {
       }
     }
 
+    const { data: billingRow } = await admin
+      .from('organization_billing')
+      .select('external_subscription_id, subscription_status')
+      .eq('organization_id', organizationId)
+      .eq('provider', 'stripe')
+      .maybeSingle();
+
+    const ACTIVE_STATUSES = new Set(['active', 'trialing', 'past_due']);
+    if (
+      billingRow?.external_subscription_id &&
+      ACTIVE_STATUSES.has(billingRow.subscription_status)
+    ) {
+      return jsonResponse(
+        { error: 'organization already has an active subscription' },
+        409,
+      );
+    }
+
     const { data: billingSnapshot, error: snapshotError } = await userClient.rpc(
       'get_organization_billing_snapshot',
       { p_organization_id: organizationId },
