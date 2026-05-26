@@ -19,6 +19,31 @@ interface CheckoutBody {
   seat_quantity?: number;
 }
 
+function isAllowedReturnUrl(url: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    return false;
+  }
+
+  const allowedCsv = Deno.env.get('ALLOWED_REDIRECT_ORIGINS');
+  if (allowedCsv) {
+    const origins = allowedCsv.split(',').map((o) => o.trim().toLowerCase());
+    return origins.includes(parsed.origin.toLowerCase());
+  }
+
+  if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+    return true;
+  }
+
+  return parsed.protocol === 'https:';
+}
+
 Deno.serve(async (req) => {
   const cors = handleCors(req);
   if (cors) return cors;
@@ -39,6 +64,10 @@ Deno.serve(async (req) => {
 
     if (planId !== 'pro' && planId !== 'team') {
       return jsonResponse({ error: 'invalid plan_id' }, 400);
+    }
+
+    if (!isAllowedReturnUrl(returnUrl)) {
+      return jsonResponse({ error: 'return_url origin not allowed' }, 400);
     }
 
     const userClient = createUserClient(req);
