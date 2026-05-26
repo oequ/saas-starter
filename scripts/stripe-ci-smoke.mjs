@@ -48,6 +48,70 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function pollUntil(predicate, { label, timeoutMs = 90_000, intervalMs = 2_000 }) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const value = await predicate();
+    if (value) {
+      return value;
+    }
+    await sleep(intervalMs);
+  }
+  fail(`${label}: timed out after ${timeoutMs}ms`);
+}
+
+function periodEndUnix(value) {
+  if (value == null) {
+    return null;
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  const parsed = Date.parse(String(value));
+  return Number.isNaN(parsed) ? null : Math.floor(parsed / 1000);
+}
+
+async function createClockCustomerWithTeamSub(
+  stripe,
+  { organizationId, priceTeam, paymentMethodToken },
+) {
+  const clock = await stripe.testHelpers.testClocks.create({
+    frozen_time: Math.floor(Date.now() / 1000),
+  });
+
+  const customer = await stripe.customers.create({
+    test_clock: clock.id,
+    metadata: { organization_id: organizationId },
+  });
+
+  let defaultPaymentMethodId;
+  try {
+    const attached = await stripe.paymentMethods.attach(paymentMethodToken, {
+      customer: customer.id,
+    });
+    defaultPaymentMethodId = attached.id;
+  } catch (err) {
+    fail(
+      `attach ${paymentMethodToken}: ${err instanceof Error ? err.message : err}`,
+    );
+  }
+
+  await stripe.customers.update(customer.id, {
+    invoice_settings: { default_payment_method: defaultPaymentMethodId },
+  });
+
+  const subscription = await stripe.subscriptions.create({
+    customer: customer.id,
+    items: [{ price: priceTeam, quantity: 1 }],
+    metadata: {
+      organization_id: organizationId,
+      plan_id: 'team',
+    },
+  });
+
+  return { clockId: clock.id, customerId: customer.id, subscription };
+}
+
 async function waitForFunctions(supabaseUrl, attempts = 45) {
   // stripe-webhook is POST-only (no CORS OPTIONS); probe a billing function instead.
   const healthUrl = `${supabaseUrl}/functions/v1/billing-create-checkout`;
@@ -197,6 +261,32 @@ async function postSubscriptionUpdated(
   return postSignedWebhook(stripe, webhookUrl, webhookSecret, event, {
     expectDuplicate: options.expectDuplicate ?? false,
   });
+}
+
+function buildInvoicePaymentFailedEvent(invoice, { eventId }) {
+  return buildStripeEvent({
+    id: eventId,
+    type: 'invoice.payment_failed',
+    dataObject: invoice,
+    apiVersion: invoice.api_version,
+  });
+}
+
+async function advanceTestClock(stripe, clockId, subscription) {
+  const targetTime = subscription.current_period_end + 3600;
+  await stripe.testHelpers.testClocks.advance(clockId, {
+    frozen_time: targetTime,
+  });
+}
+
+async function waitForTestClockReady(stripe, clockId) {
+  await pollUntil(
+    async () => {
+      const clock = await stripe.testHelpers.testClocks.retrieve(clockId);
+      return clock.status === 'ready' ? clock : null;
+    },
+    { label: `Test Clock ${clockId} ready`, timeoutMs: 120_000 },
+  );
 }
 
 async function fetchBillingSnapshot(userClient, organizationId) {
@@ -357,33 +447,13 @@ async function main() {
   );
   console.log('Cross-org billing-update-subscription forbidden OK.');
 
-  console.log('Creating Stripe customer + Team subscription…');
-  const customer = await stripe.customers.create({
-    metadata: { organization_id: organizationId },
-  });
-
-  let defaultPaymentMethodId;
-  try {
-    const attached = await stripe.paymentMethods.attach('pm_card_visa', {
-      customer: customer.id,
+  console.log('Creating Test Clock customer + Team subscription…');
+  const { clockId, customerId, subscription } =
+    await createClockCustomerWithTeamSub(stripe, {
+      organizationId,
+      priceTeam,
+      paymentMethodToken: 'pm_card_visa',
     });
-    defaultPaymentMethodId = attached.id;
-  } catch (err) {
-    fail(`attach pm_card_visa: ${err instanceof Error ? err.message : err}`);
-  }
-
-  await stripe.customers.update(customer.id, {
-    invoice_settings: { default_payment_method: defaultPaymentMethodId },
-  });
-
-  const subscription = await stripe.subscriptions.create({
-    customer: customer.id,
-    items: [{ price: priceTeam, quantity: 1 }],
-    metadata: {
-      organization_id: organizationId,
-      plan_id: 'team',
-    },
-  });
 
   console.log('Posting signed customer.subscription.updated webhook…');
   const subscriptionFresh = await stripe.subscriptions.retrieve(subscription.id);
@@ -466,24 +536,104 @@ async function main() {
 
   console.log('billing-update-subscription OK (seats_limit=2).');
 
-  console.log('Posting customer.subscription.updated (past_due)…');
-  await postSubscriptionUpdated(
-    stripe,
-    webhookUrl,
-    webhookSecret,
-    subscriptionFresh,
-    {
-      eventId: `evt_ci_smoke_past_due_${runId}`,
-      statusOverride: 'past_due',
-    },
-  );
-  await sleep(300);
-  const pastDueSnapshot = await fetchBillingSnapshot(userClient, organizationId);
-  assert(
-    String(pastDueSnapshot.subscription_status).toLowerCase() === 'past_due',
-    `expected subscription_status past_due, got ${pastDueSnapshot.subscription_status}`,
-  );
-  console.log('past_due webhook sync OK.');
+  const skipTestClock = envValue('STRIPE_SMOKE_SKIP_TEST_CLOCK') === 'true';
+
+  async function runTestClockRenewalAndDunning() {
+    let subscriptionLive = await stripe.subscriptions.retrieve(subscriptionFresh.id);
+    const periodEndBefore = subscriptionLive.current_period_end;
+    assert(periodEndBefore, 'subscription missing current_period_end before renewal');
+
+    console.log('Advancing Test Clock for renewal…');
+    await advanceTestClock(stripe, clockId, subscriptionLive);
+
+    subscriptionLive = await pollUntil(
+      async () => {
+        const sub = await stripe.subscriptions.retrieve(subscriptionFresh.id);
+        return sub.current_period_end > periodEndBefore ? sub : null;
+      },
+      { label: 'Test Clock renewal (current_period_end advanced)' },
+    );
+    await waitForTestClockReady(stripe, clockId);
+
+    console.log('Posting signed subscription.updated after renewal…');
+    await postSubscriptionUpdated(stripe, webhookUrl, webhookSecret, subscriptionLive, {
+      eventId: `evt_ci_smoke_renew_${runId}`,
+    });
+    await sleep(500);
+
+    const renewedSnapshot = await fetchBillingSnapshot(userClient, organizationId);
+    const pgPeriodAfter = periodEndUnix(renewedSnapshot.current_period_end);
+    assert(
+      pgPeriodAfter != null && pgPeriodAfter > periodEndBefore,
+      `expected current_period_end to advance (${periodEndBefore} -> ${pgPeriodAfter})`,
+    );
+    const renewedStatus = String(renewedSnapshot.subscription_status).toLowerCase();
+    assert(
+      renewedStatus === 'active' || renewedStatus === 'trialing',
+      `expected active/trialing after renewal, got ${renewedSnapshot.subscription_status}`,
+    );
+    console.log('Test Clock renewal sync OK (current_period_end advanced).');
+
+    console.log('Switching to declining payment method…');
+    await waitForTestClockReady(stripe, clockId);
+    const failPm = await stripe.paymentMethods.attach('pm_card_chargeCustomerFail', {
+      customer: customerId,
+    });
+    await stripe.customers.update(customerId, {
+      invoice_settings: { default_payment_method: failPm.id },
+    });
+
+    console.log('Advancing Test Clock for failed renewal…');
+    await advanceTestClock(stripe, clockId, subscriptionLive);
+    await waitForTestClockReady(stripe, clockId);
+
+    subscriptionLive = await pollUntil(
+      async () => {
+        const sub = await stripe.subscriptions.retrieve(subscriptionFresh.id);
+        return sub.status === 'past_due' ? sub : null;
+      },
+      { label: 'Test Clock failed renewal (past_due)' },
+    );
+
+    const invoiceList = await stripe.invoices.list({
+      subscription: subscriptionFresh.id,
+      limit: 1,
+    });
+    const invoice =
+      invoiceList.data[0] ??
+      ({
+        id: `in_ci_smoke_fail_${runId}`,
+        object: 'invoice',
+        subscription: subscriptionFresh.id,
+      });
+
+    console.log('Posting signed invoice.payment_failed…');
+    const failEvent = buildInvoicePaymentFailedEvent(invoice, {
+      eventId: `evt_ci_smoke_invoice_fail_${runId}`,
+    });
+    await postSignedWebhook(stripe, webhookUrl, webhookSecret, failEvent);
+    await sleep(500);
+
+    const pastDueSnapshot = await fetchBillingSnapshot(userClient, organizationId);
+    assert(
+      String(pastDueSnapshot.subscription_status).toLowerCase() === 'past_due',
+      `expected subscription_status past_due, got ${pastDueSnapshot.subscription_status}`,
+    );
+    console.log('invoice.payment_failed sync OK (past_due).');
+  }
+
+  try {
+    await runTestClockRenewalAndDunning();
+  } catch (err) {
+    if (skipTestClock) {
+      console.warn(
+        'Test Clock smoke skipped (STRIPE_SMOKE_SKIP_TEST_CLOCK=true):',
+        err instanceof Error ? err.message : err,
+      );
+    } else {
+      throw err;
+    }
+  }
 
   console.log('stripe-ci-smoke passed.');
 }

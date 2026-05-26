@@ -73,12 +73,13 @@ Priority for the next billing hardening work:
 
 | P | Item | Suggested work |
 |---|------|----------------|
-| **P0** | **Auto-renewal verified** | Manual: Stripe **Test Clock** advance +1 period → `current_period_end` + webhook in `stripe listen` → Billing UI / SQL. Optional: extend `stripe-ci-smoke` with Test Clock API. |
-| **P0** | **Failed payment / dunning** | **Partial (iter 1)** — smoke syncs `past_due` to Postgres; banner unit-tested. Still needed: grace policy, feature lock, real `invoice.payment_failed`. |
+| **P0** | **Auto-renewal verified** | **CI (iter 3):** Test Clock advance + signed `subscription.updated` → `current_period_end` in Postgres. Manual: Dashboard Test Clock + `stripe listen` for Billing UI. |
+| **P0** | **Failed payment / dunning** | **Partial (iter 3)** — smoke: Test Clock + `invoice.payment_failed` → `past_due`; policy doc [BILLING_DUNNING.md](./BILLING_DUNNING.md). Still needed: grace period, feature lock in app. |
 | **P1** | Webhook failure ops | Alert if webhook 5xx; Stripe Dashboard retry; runbook |
 | ~~P1 Duplicate webhook~~ | **Done (iter 1)** — `stripe-ci-smoke` replays same `event.id` |
 | ~~P1 Webhook / org integrity (CI)~~ | **Done (iter 2)** — unsigned + bad signature → 400; cross-org `billing-update-subscription` → 403 |
-| **P1** | `past_due` UX (product policy) | Banner exists; document what still works on Team/Pro when `past_due` |
+| ~~P1 `past_due` policy doc~~ | **Done (iter 3)** — [BILLING_DUNNING.md](./BILLING_DUNNING.md) (banner vs access gap) |
+| **P1** | `past_due` feature lock | Implement guards (invites, seat bump) per product decision in dunning doc |
 | **P2** | In-app payment methods | Only if not using Portal — SetupIntent + Elements; store `pm_` + last4 only |
 | **P2** | Browser Checkout in CI | Optional Playwright + test clock or Stripe test mode (heavy; keep nightly API-only) |
 
@@ -91,8 +92,8 @@ Run in **Stripe test mode** with [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) four-termi
 ### Revenue path
 
 - [ ] **Checkout** — Upgrade to Pro or Team; redirect `?checkout=success`; `plan_id` and `seats_limit` correct in app and `organization_billing`.
-- [ ] **Auto-renewal** — Test Clock on customer/subscription → advance one billing period → new invoice; `customer.subscription.updated` received; `current_period_end` moved forward in Postgres and Billing UI.
-- [ ] **Failed renewal (full)** — Decline test card → `invoice.payment_failed` webhook; document access policy. **CI (iter 1):** synthetic `past_due` via `stripe:smoke:ci` only.
+- [ ] **Auto-renewal (manual UI)** — Test Clock → advance one billing period → Billing UI shows new period. **CI (iter 3):** `stripe:smoke:ci` advances clock + signed webhook → `current_period_end` forward in Postgres.
+- [ ] **Failed renewal (full)** — Decline test card in Dashboard; confirm Portal + banner. **CI (iter 3):** Test Clock + `invoice.payment_failed` → `past_due`. Policy: [BILLING_DUNNING.md](./BILLING_DUNNING.md).
 
 ### Lifecycle
 
@@ -115,7 +116,7 @@ Run in **Stripe test mode** with [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) four-termi
 ### CI expectations (do not over-trust)
 
 - [ ] **`e2e:web:release`** passes — mock billing only.
-- [x] **`stripe:smoke:ci`** — webhook sync, idempotency, `past_due`, seat bump, unsigned webhook 400, cross-org 403 (iter 2); **does not** replace Test Clock renew or browser Checkout.
+- [x] **`stripe:smoke:ci`** — sync, idempotency, seat bump, integrity (iter 2), Test Clock renewal + `invoice.payment_failed` (iter 3); **does not** replace browser Checkout or manual Billing UI.
 - [ ] GitHub secrets set: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TEAM`, (`STRIPE_PRICE_PRO` optional).
 
 ---
@@ -131,13 +132,6 @@ Run in **Stripe test mode** with [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) four-termi
 
 ---
 
-## Future: CI renewal smoke (backlog)
+## Dunning policy
 
-Not implemented. Sketch for a follow-up PR:
-
-1. Create Test Clock + customer + subscription via Stripe API in `stripe-ci-smoke.mjs`.
-2. `testHelpers.testClocks.advance`.
-3. Poll webhook handler or Postgres until `current_period_end` > previous.
-4. Fail job if no update within timeout.
-
-Track under **P0** in [APPS_WEB_PLAN.md](./APPS_WEB_PLAN.md).
+See [BILLING_DUNNING.md](./BILLING_DUNNING.md) — `past_due` banner, access gaps, and pre-prod decisions (grace, feature lock).

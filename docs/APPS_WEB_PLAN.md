@@ -78,11 +78,12 @@ Before production Stripe: [BILLING_PRE_LAUNCH.md](./BILLING_PRE_LAUNCH.md) — a
 
 | P | Item | Status |
 |---|------|--------|
-| P0 | Auto-renewal verified (Test Clock manual; optional CI) | Planned — see checklist |
-| P0 | Failed payment / dunning UX | Partial — `past_due` in smoke + banner unit test ([iter 1](../scripts/stripe-ci-smoke.mjs)) |
+| ~~P0 Auto-renewal CI~~ | **Done (iter 3)** — Test Clock advance in `stripe:smoke:ci`; manual UI still on checklist |
+| P0 | Failed payment / dunning UX | Partial — iter 3 smoke + [BILLING_DUNNING.md](./BILLING_DUNNING.md); feature lock still planned |
 | ~~P1 Webhook idempotency~~ | **Done (iter 1)** — duplicate `event.id` in `stripe:smoke:ci` |
 | ~~P1 Billing integrity smoke~~ | **Done (iter 2)** — unsigned/bad-signature webhook 400; cross-org update 403 |
-| P1 | `past_due` product policy (grace, feature lock) | Planned |
+| ~~P1 Dunning policy doc~~ | **Done (iter 3)** — [BILLING_DUNNING.md](./BILLING_DUNNING.md) |
+| P1 | `past_due` feature lock (grace, block invites) | Planned — implement per dunning doc |
 
 ---
 

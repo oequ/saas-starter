@@ -162,14 +162,19 @@ Workflow: **Stripe smoke** (`workflow_dispatch` or cron). Not a required PR chec
 **What the job runs:** `supabase start` → `db reset` → `functions serve` → [`npm run stripe:smoke:ci`](../package.json) ([`scripts/stripe-ci-smoke.mjs`](../scripts/stripe-ci-smoke.mjs)):
 
 1. Create user + org in Postgres  
-2. Stripe Customer + Team subscription (`quantity: 1`)  
+2. Stripe **Test Clock** customer + Team subscription (`quantity: 1`)  
 3. Signed `customer.subscription.updated` → `stripe-webhook`  
 4. Assert `plan_id = team`, `seats_limit = 1`  
 5. Replay the **same** `event.id` → response `duplicate: true`; snapshot unchanged (idempotency)  
 6. `billing-update-subscription` → assert `seats_limit = 2`  
-7. Signed `customer.subscription.updated` with `status: past_due` → assert `subscription_status = past_due` in Postgres  
-8. POST `stripe-webhook` without signature (and with wrong secret) → `400`  
-9. Second user invokes `billing-update-subscription` for first user's `organization_id` → `403`  
+7. POST `stripe-webhook` without signature (and with wrong secret) → `400`  
+8. Second user invokes `billing-update-subscription` for first user's `organization_id` → `403`  
+9. **Test Clock** advance → signed `subscription.updated` → `current_period_end` advanced in Postgres  
+10. Declining PM + second advance → signed `invoice.payment_failed` → `subscription_status = past_due`  
+
+Optional: `STRIPE_SMOKE_SKIP_TEST_CLOCK=true` skips steps 9–10 (local fallback if Test Clock API fails).
+
+Dunning policy: [BILLING_DUNNING.md](./BILLING_DUNNING.md).
 
 **Local replay** (same as CI, with Terminal 1–2 from runbook above):
 
