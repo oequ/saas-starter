@@ -21,8 +21,9 @@ async function handleCheckoutCompleted(
       : session.subscription?.id;
 
   if (!organizationId || !customerId || !subscriptionId) {
-    console.warn('checkout.session.completed missing ids', session.id);
-    return;
+    throw new Error(
+      `checkout.session.completed missing required metadata (session ${session.id})`,
+    );
   }
 
   const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
@@ -40,8 +41,9 @@ async function handleSubscriptionEvent(
       : subscription.customer?.id;
 
   if (!organizationId || !customerId) {
-    console.warn('subscription event missing metadata', subscription.id);
-    return;
+    throw new Error(
+      `subscription event missing required metadata (subscription ${subscription.id})`,
+    );
   }
 
   await syncStripeSubscription(admin, organizationId, customerId, subscription);

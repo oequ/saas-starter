@@ -64,9 +64,15 @@ export async function deleteBillingEvent(
   provider: string,
   externalEventId: string,
 ): Promise<void> {
-  await admin
+  const { error } = await admin
     .from('billing_events')
     .delete()
     .eq('provider', provider)
     .eq('external_event_id', externalEventId);
+
+  if (error) {
+    console.error(
+      `deleteBillingEvent failed for ${provider}/${externalEventId}: ${error.message}`,
+    );
+  }
 }
