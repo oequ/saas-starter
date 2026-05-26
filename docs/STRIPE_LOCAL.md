@@ -133,6 +133,12 @@ With Stripe enabled, paywall downgrades open **Customer Portal**. Seat limits up
 
 **Settings → Billing → Past Invoices** → `billing-list-invoices` (Stripe API live for `billingProvider: 'stripe'`).
 
+## Pre-launch critical cases
+
+Operator checklist (auto-renewal, failed payments, webhooks, seats): **[BILLING_PRE_LAUNCH.md](./BILLING_PRE_LAUNCH.md)**.
+
+Nightly CI smoke does **not** replace Test Clock renewal testing.
+
 ## CI / E2E
 
 | Check | Billing | When |
@@ -159,7 +165,9 @@ Workflow: **Stripe smoke** (`workflow_dispatch` or cron). Not a required PR chec
 2. Stripe Customer + Team subscription (`quantity: 1`)  
 3. Signed `customer.subscription.updated` → `stripe-webhook`  
 4. Assert `plan_id = team`, `seats_limit = 1`  
-5. Invoke `billing-update-subscription` → assert `seats_limit = 2`  
+5. Replay the **same** `event.id` → response `duplicate: true`; snapshot unchanged (idempotency)  
+6. `billing-update-subscription` → assert `seats_limit = 2`  
+7. Signed `customer.subscription.updated` with `status: past_due` → assert `subscription_status = past_due` in Postgres  
 
 **Local replay** (same as CI, with Terminal 1–2 from runbook above):
 

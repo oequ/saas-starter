@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { BillingSummary } from './models/billing.model';
 import {
+  billingStatusBanner,
   checkoutBillableSeatCount,
   effectiveTeamSeatsLimitFromSnapshot,
   needsPerSeatSeatSyncAfterRemove,
@@ -180,5 +181,28 @@ describe('needsPerSeatSeatSyncAfterRemove', () => {
         'custom',
       ),
     ).toBe(false);
+  });
+});
+
+describe('billingStatusBanner', () => {
+  it('returns critical banner for past_due', () => {
+    const banner = billingStatusBanner(
+      summary({ status: 'past_due', seatsUsed: 1, seatsLimit: 3 }),
+    );
+    expect(banner).toEqual({
+      tone: 'critical',
+      messageKey: 'paywall.banner.past_due.message',
+      messageParams: undefined,
+      ctaLabelKey: 'paywall.banner.past_due.cta',
+      ctaPath: '/workspace/settings/billing',
+    });
+  });
+
+  it('returns null for active subscription', () => {
+    expect(
+      billingStatusBanner(
+        summary({ status: 'active', seatsUsed: 1, seatsLimit: 3 }),
+      ),
+    ).toBeNull();
   });
 });

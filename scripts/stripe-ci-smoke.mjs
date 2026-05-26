@@ -48,23 +48,28 @@ async function waitForFunctions(webhookUrl, attempts = 45) {
   );
 }
 
-function buildSubscriptionEvent(subscription) {
+function buildStripeEvent({ id, type, dataObject, apiVersion }) {
   const now = Math.floor(Date.now() / 1000);
   return {
-    id: `evt_ci_smoke_${now}`,
+    id,
     object: 'event',
-    api_version: subscription.api_version ?? '2024-11-20.acacia',
+    api_version: apiVersion ?? '2024-11-20.acacia',
     created: now,
-    data: { object: subscription },
+    data: { object: dataObject },
     livemode: false,
     pending_webhooks: 1,
     request: { id: `req_ci_${now}`, idempotency_key: null },
-    type: 'customer.subscription.updated',
+    type,
   };
 }
 
-async function postSignedWebhook(stripe, webhookUrl, webhookSecret, subscription) {
-  const event = buildSubscriptionEvent(subscription);
+async function postSignedWebhook(
+  stripe,
+  webhookUrl,
+  webhookSecret,
+  event,
+  { expectDuplicate = false } = {},
+) {
   const payload = JSON.stringify(event);
   const signature = stripe.webhooks.generateTestHeaderString({
     payload,
@@ -92,7 +97,45 @@ async function postSignedWebhook(stripe, webhookUrl, webhookSecret, subscription
     fail(`stripe-webhook response not JSON: ${text}`);
   }
 
-  assert(parsed.received === true, `unexpected webhook response: ${text}`);
+  if (expectDuplicate) {
+    assert(
+      parsed.received === true && parsed.duplicate === true,
+      `expected duplicate webhook response: ${text}`,
+    );
+  } else {
+    assert(parsed.received === true, `unexpected webhook response: ${text}`);
+    assert(
+      parsed.duplicate !== true,
+      `expected first delivery, got duplicate: ${text}`,
+    );
+  }
+
+  return parsed;
+}
+
+function buildSubscriptionUpdatedEvent(subscription, { eventId, statusOverride }) {
+  const dataObject = statusOverride
+    ? { ...subscription, status: statusOverride }
+    : subscription;
+  return buildStripeEvent({
+    id: eventId,
+    type: 'customer.subscription.updated',
+    dataObject,
+    apiVersion: subscription.api_version,
+  });
+}
+
+async function postSubscriptionUpdated(
+  stripe,
+  webhookUrl,
+  webhookSecret,
+  subscription,
+  options = {},
+) {
+  const event = buildSubscriptionUpdatedEvent(subscription, options);
+  return postSignedWebhook(stripe, webhookUrl, webhookSecret, event, {
+    expectDuplicate: options.expectDuplicate ?? false,
+  });
 }
 
 async function fetchBillingSnapshot(userClient, organizationId) {
@@ -198,7 +241,11 @@ async function main() {
 
   console.log('Posting signed customer.subscription.updated webhook…');
   const subscriptionFresh = await stripe.subscriptions.retrieve(subscription.id);
-  await postSignedWebhook(stripe, webhookUrl, webhookSecret, subscriptionFresh);
+  const syncEventId = `evt_ci_smoke_sync_${runId}`;
+  const syncEvent = buildSubscriptionUpdatedEvent(subscriptionFresh, {
+    eventId: syncEventId,
+  });
+  await postSignedWebhook(stripe, webhookUrl, webhookSecret, syncEvent);
 
   await sleep(500);
 
@@ -212,6 +259,21 @@ async function main() {
     `expected seats_limit 1 after webhook, got ${snapshot.seats_limit}`,
   );
   console.log('Webhook sync OK (Team, seats_limit=1).');
+
+  console.log('Replaying same webhook event id (idempotency)…');
+  await postSignedWebhook(stripe, webhookUrl, webhookSecret, syncEvent, {
+    expectDuplicate: true,
+  });
+  const afterDuplicate = await fetchBillingSnapshot(userClient, organizationId);
+  assert(
+    String(afterDuplicate.plan_id).toLowerCase() === 'team',
+    `idempotent replay changed plan_id: ${afterDuplicate.plan_id}`,
+  );
+  assert(
+    Number(afterDuplicate.seats_limit) === 1,
+    `idempotent replay changed seats_limit: ${afterDuplicate.seats_limit}`,
+  );
+  console.log('Webhook idempotency OK.');
 
   if (process.env.STRIPE_PRICE_PRO) {
     const { data: checkoutData, error: checkoutError } =
@@ -257,6 +319,26 @@ async function main() {
   );
 
   console.log('billing-update-subscription OK (seats_limit=2).');
+
+  console.log('Posting customer.subscription.updated (past_due)…');
+  await postSubscriptionUpdated(
+    stripe,
+    webhookUrl,
+    webhookSecret,
+    subscriptionFresh,
+    {
+      eventId: `evt_ci_smoke_past_due_${runId}`,
+      statusOverride: 'past_due',
+    },
+  );
+  await sleep(300);
+  const pastDueSnapshot = await fetchBillingSnapshot(userClient, organizationId);
+  assert(
+    String(pastDueSnapshot.subscription_status).toLowerCase() === 'past_due',
+    `expected subscription_status past_due, got ${pastDueSnapshot.subscription_status}`,
+  );
+  console.log('past_due webhook sync OK.');
+
   console.log('stripe-ci-smoke passed.');
 }
 

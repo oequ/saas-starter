@@ -72,13 +72,26 @@ YooKassa and others: implement as `provider = 'yookassa'` (or your slug); invoic
 
 ---
 
+## Billing pre-launch (critical cases)
+
+Before production Stripe: [BILLING_PRE_LAUNCH.md](./BILLING_PRE_LAUNCH.md) — auto-renewal (Test Clock), failed payments, webhook integrity, seat sync, and what nightly CI does **not** cover.
+
+| P | Item | Status |
+|---|------|--------|
+| P0 | Auto-renewal verified (Test Clock manual; optional CI) | Planned — see checklist |
+| P0 | Failed payment / dunning UX | Partial — `past_due` in smoke + banner unit test ([iter 1](../scripts/stripe-ci-smoke.mjs)) |
+| ~~P1 Webhook idempotency~~ | **Done (iter 1)** — duplicate `event.id` in `stripe:smoke:ci` |
+| P1 | `past_due` product policy (grace, feature lock) | Planned |
+
+---
+
 ## Explicitly later (not blocking starter)
 
 | Item | Notes |
 |------|--------|
 | **Prod deploy** | Supabase hosted project, Edge Function secrets (`STRIPE_*`), production Stripe webhook URL, env for `apps/web` — see deploy runbook when added |
 | **Stripe in PR CI** | `e2e:web:release` stays **mock** only |
-| **Stripe nightly CI** | API smoke — [stripe-smoke.yml](../.github/workflows/stripe-smoke.yml) (webhook + `billing-update-subscription`); not browser Checkout |
+| **Stripe nightly CI** | API smoke — [stripe-smoke.yml](../.github/workflows/stripe-smoke.yml) (webhook + `billing-update-subscription`); **not** calendar renewal — [BILLING_PRE_LAUNCH.md](./BILLING_PRE_LAUNCH.md) |
 | **Manual Stripe smoke (UI)** | Operator-run: `functions serve`, `stripe listen`, `BILLING_PROVIDER=stripe` — full Checkout + Members flows — [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) |
 | ~~**Cancel pending invite**~~ | **Done** — Members → Revoke invitation; per-seat seat sync on revoke (mock + Stripe) |
 | **`apps/demo` parity** | Demo stays mock-first; not full feature parity with `apps/web` |
@@ -87,8 +100,20 @@ YooKassa and others: implement as `provider = 'yookassa'` (or your slug); invoic
 
 ---
 
+## UI readiness
+
+Per-route control matrix for **`apps/web`** (what is wired vs stub/mock/UI-only): [UI_READINESS.md](./UI_READINESS.md). Update when shipping UI fixes.
+
+**Done:** Forgot password + `/auth/reset-password` (Supabase `resetPasswordForEmail`, Mailpit local) — [supabase/README.md](../supabase/README.md#password-reset-appsweb).
+
+**Done:** Workspace logo in General — `organizations.logo_url` (`0016`) + `SupabaseOrgAdapter.update`.
+
+**Done:** Change password on `/account/security` — `AuthPort.changePassword` (reauth + `updateUser`, session kept).
+
+---
+
 ## How to use
 
 1. Pick a row from **Explicitly later** or **Stripe v2** (only Embedded Checkout remains optional).  
 2. Open a PR with one vertical (migration + adapter + tests + docs).  
-3. Update this doc and [README.md](../README.md) capability table when shipped.
+3. Update this doc, [UI_READINESS.md](./UI_READINESS.md), and [README.md](../README.md) capability table when shipped.
