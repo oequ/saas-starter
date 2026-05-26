@@ -451,17 +451,21 @@ export class WebBillingAdapter implements BillingPort {
   ): BillingSummary {
     const planId = snapshot.plan_id === 'free' ? null : snapshot.plan_id;
     const status = this.mapSubscriptionStatus(snapshot.subscription_status);
+    const isStripe = this.isStripeEnabled();
     const meters = summary.meters.map((meter) => {
-      if (meter.metricId !== 'emails_sent') {
-        return meter;
+      if (meter.metricId === 'emails_sent') {
+        return {
+          ...meter,
+          consumed: snapshot.emails_used_month ?? meter.consumed,
+          limit: snapshot.emails_monthly_limit ?? meter.limit,
+          dailyLimit: snapshot.emails_daily_limit ?? meter.dailyLimit,
+          dailyConsumed: snapshot.emails_used_today ?? meter.dailyConsumed,
+        };
       }
-      return {
-        ...meter,
-        consumed: snapshot.emails_used_month ?? meter.consumed,
-        limit: snapshot.emails_monthly_limit ?? meter.limit,
-        dailyLimit: snapshot.emails_daily_limit ?? meter.dailyLimit,
-        dailyConsumed: snapshot.emails_used_today ?? meter.dailyConsumed,
-      };
+      if (isStripe) {
+        return { ...meter, consumed: 0, dailyConsumed: 0 };
+      }
+      return meter;
     });
 
     return {
