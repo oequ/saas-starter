@@ -1,4 +1,4 @@
--- 0016 · Optional seats_limit on update_organization_plan (Team per-seat mock / checkout)
+-- 0017 · Optional seats_limit on update_organization_plan (Team per-seat mock / checkout)
 
 drop function if exists public.update_organization_plan(uuid, text);
 

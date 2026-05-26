@@ -32,7 +32,33 @@ interface DbOrganization {
   id: string;
   slug: string;
   name: string;
+  logo_url: string | null;
   created_at: string;
+}
+
+const ORG_SELECT_COLUMNS = 'id, slug, name, logo_url, created_at' as const;
+
+const LOGO_DATA_URL_MAX_LENGTH = 2_800_000;
+
+const LOGO_DATA_URL_PREFIXES = [
+  'data:image/png;base64,',
+  'data:image/jpeg;base64,',
+  'data:image/webp;base64,',
+] as const;
+
+function validateLogoUrl(
+  logoUrl: string | null,
+): PortResult<string | null> {
+  if (logoUrl === null) {
+    return portOk(null);
+  }
+  if (
+    !LOGO_DATA_URL_PREFIXES.some((prefix) => logoUrl.startsWith(prefix)) ||
+    logoUrl.length > LOGO_DATA_URL_MAX_LENGTH
+  ) {
+    return supabaseErr('VALIDATION', 'workspaceLogoInvalid');
+  }
+  return portOk(logoUrl);
 }
 
 interface DbOrganizationMember {
@@ -63,7 +89,7 @@ function mapOrganization(row: DbOrganization): Organization {
     id: row.id,
     slug: row.slug,
     name: row.name,
-    logoUrl: null,
+    logoUrl: row.logo_url ?? null,
     createdAt: row.created_at,
   };
 }
@@ -141,7 +167,7 @@ export class SupabaseOrgAdapter implements OrgPort {
 
     const { data, error } = await client
       .from('organizations')
-      .select('id, slug, name, created_at')
+      .select(ORG_SELECT_COLUMNS)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -416,7 +442,7 @@ export class SupabaseOrgAdapter implements OrgPort {
       return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
     }
 
-    const patch: { name?: string } = {};
+    const patch: { name?: string; logo_url?: string | null } = {};
     if (input.name !== undefined) {
       const name = input.name.trim();
       if (name.length < 2 || name.length > 64) {
@@ -424,12 +450,29 @@ export class SupabaseOrgAdapter implements OrgPort {
       }
       patch.name = name;
     }
+    if (input.logoUrl !== undefined) {
+      const logoResult = validateLogoUrl(input.logoUrl);
+      if (logoResult.ok === false) {
+        return { ok: false, error: logoResult.error };
+      }
+      patch.logo_url = logoResult.data;
+    }
+
+    if (Object.keys(patch).length === 0) {
+      const existing = this.organizationsSubject.value.find(
+        (org) => org.id === organizationId,
+      );
+      if (!existing) {
+        return supabaseErr('NOT_FOUND', 'orgNotFound');
+      }
+      return portOk(existing);
+    }
 
     const { data, error } = await client
       .from('organizations')
       .update(patch)
       .eq('id', organizationId)
-      .select('id, slug, name, created_at')
+      .select(ORG_SELECT_COLUMNS)
       .single();
 
     if (error) {
