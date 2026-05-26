@@ -131,6 +131,16 @@ Local Auth is configured for **`http://localhost:4201`** in [`config.toml`](conf
 
 Recovery emails are not sent to a real inbox in local dev; they only appear in Mailpit.
 
+### Optional email confirmation (signup)
+
+Off by default in the starter (`requireEmailConfirmation: false` in `apps/web/src/app/supabase.settings.ts`). To test locally:
+
+1. Set `requireEmailConfirmation: true` in `supabase.settings.ts`.
+2. In [`config.toml`](config.toml): `enable_confirmations = true` and add `"http://localhost:4201/auth/confirm-email"` to `additional_redirect_urls`.
+3. Register → `/auth/confirm-email` → enter the 6-digit code from Mailpit or open the link in the email → onboarding.
+
+Keep `enable_confirmations = false` in the committed `config.toml` so clone-and-run stays frictionless.
+
 ### npm scripts
 
 | Script | Command |

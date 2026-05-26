@@ -16,6 +16,7 @@ import {
 } from '@oequ/ports';
 import { distinctUntilChanged, filter, map } from 'rxjs';
 
+import { AUTH_FEATURES } from '@oequ/ports';
 import {
   resolveBillingProvider,
   SUPABASE_CONFIG,
@@ -35,6 +36,12 @@ export function provideSupabaseAdapters(
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
     { provide: SUPABASE_CONFIG, useValue: config },
+    {
+      provide: AUTH_FEATURES,
+      useValue: {
+        requireEmailConfirmation: config.requireEmailConfirmation === true,
+      },
+    },
     SupabaseClientService,
     SupabaseAuthAdapter,
     SupabaseOrgAdapter,

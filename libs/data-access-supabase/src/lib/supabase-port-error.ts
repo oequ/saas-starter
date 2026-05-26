@@ -65,7 +65,11 @@ function mapAuthErrorReason(error: AuthError): string {
   if (message.includes('already registered')) {
     return 'emailExists';
   }
-  if (message.includes('rate limit') || error.status === 429) {
+  if (
+    message.includes('rate limit') ||
+    message.includes('over_email_send_rate_limit') ||
+    error.status === 429
+  ) {
     return 'rateLimited';
   }
   if (

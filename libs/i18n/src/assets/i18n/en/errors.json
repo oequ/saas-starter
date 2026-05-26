@@ -69,6 +69,8 @@
     "authFailed": "Authentication failed. Try again.",
     "passwordRecoveryInactive": "This reset link is invalid or has expired. Request a new link.",
     "emailConfirmationRequired": "Check your email to confirm your account before signing in.",
+    "emailConfirmationOtpInvalid": "That confirmation code is invalid or has expired.",
+    "rateLimited": "Too many attempts. Wait a moment and try again.",
     "sessionRevokeNotSupported": "Session management is not available in the local Supabase stack yet.",
     "forbidden": "You do not have permission to perform this action."
   }

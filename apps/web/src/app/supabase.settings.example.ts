@@ -6,4 +6,9 @@ export const webSupabaseSettings = {
   billingProvider: 'mock' as const,
   /** @deprecated Use billingProvider: 'stripe' */
   stripeEnabled: false,
+  /**
+   * When true, signup redirects to `/auth/confirm-email` (OTP or email link).
+   * Also set `enable_confirmations = true` in supabase/config.toml — see supabase/README.md.
+   */
+  requireEmailConfirmation: false,
 };

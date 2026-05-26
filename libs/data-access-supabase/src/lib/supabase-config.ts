@@ -11,6 +11,11 @@ export interface SupabaseConfig {
   readonly billingProvider?: BillingProviderId;
   /** @deprecated Prefer `billingProvider: 'stripe'`. */
   readonly stripeEnabled?: boolean;
+  /**
+   * When true, signup shows `/auth/confirm-email` (OTP or link) before onboarding.
+   * Requires Supabase Auth `enable_confirmations = true` when using full-stack.
+   */
+  readonly requireEmailConfirmation?: boolean;
 }
 
 export function resolveBillingProvider(

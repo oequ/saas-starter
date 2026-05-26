@@ -18,7 +18,7 @@ import {
   TranslocoService,
   translatePortError,
 } from '@oequ/i18n';
-import { AUTH_PORT } from '@oequ/ports';
+import { AUTH_PORT, isEmailConfirmationRequiredError } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
@@ -272,6 +272,12 @@ export class RegisterPageComponent {
     this.signingUp.set(false);
 
     if (!result.ok) {
+      if (isEmailConfirmationRequiredError(result.error)) {
+        await this.router.navigate(['/auth/confirm-email'], {
+          queryParams: { email },
+        });
+        return;
+      }
       this.errorMessage.set(
         translatePortError(result.error, this.transloco),
       );

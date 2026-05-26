@@ -16,6 +16,7 @@ import {
 import type { Session } from '@supabase/supabase-js';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
+import { SUPABASE_CONFIG } from './supabase-config';
 import { SupabaseClientService } from './supabase-client.service';
 import {
   mapSession,
@@ -27,6 +28,7 @@ import { supabaseErr, supabaseErrFromAuth } from './supabase-port-error';
 @Injectable()
 export class SupabaseAuthAdapter implements AuthPort {
   private readonly supabase = inject(SupabaseClientService);
+  private readonly config = inject(SUPABASE_CONFIG, { optional: true });
   private orgOverride: OrgContextClaim | null | undefined;
   private passwordRecoveryActive = false;
 
@@ -102,6 +104,33 @@ export class SupabaseAuthAdapter implements AuthPort {
       user: current.user,
       claims: { ...current.claims, org },
     });
+  }
+
+  private requireEmailConfirmation(): boolean {
+    return this.config?.requireEmailConfirmation === true;
+  }
+
+  private signUpRedirectOptions(): { emailRedirectTo: string } | undefined {
+    if (typeof globalThis.location === 'undefined') {
+      return undefined;
+    }
+    return {
+      emailRedirectTo: `${globalThis.location.origin}/auth/confirm-email`,
+    };
+  }
+
+  private async establishSessionFromSupabase(
+    session: Session,
+  ): Promise<PortResult<AuthSession>> {
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+    this.orgOverride = null;
+    await client.rpc('claim_my_invitations');
+    const mapped = mapSession(session, null);
+    this.sessionSubject.next(mapped);
+    return portOk(mapped);
   }
 
   private applySupabaseSession(session: Session | null): void {
@@ -199,21 +228,113 @@ export class SupabaseAuthAdapter implements AuthPort {
     if (!client) {
       return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
     }
+    const email = credentials.email.trim();
+    const requireConfirm = this.requireEmailConfirmation();
     const { data, error } = await client.auth.signUp({
-      email: credentials.email.trim(),
+      email,
       password: credentials.password,
+      options: requireConfirm ? this.signUpRedirectOptions() : undefined,
     });
     if (error) {
       return supabaseErrFromAuth(error);
     }
     if (!data.session) {
-      return supabaseErr('VALIDATION', 'emailConfirmationRequired');
+      if (requireConfirm) {
+        return supabaseErr('VALIDATION', 'emailConfirmationRequired');
+      }
+      return supabaseErr('UNKNOWN', 'authFailed');
     }
-    this.orgOverride = null;
-    await client.rpc('claim_my_invitations');
-    const session = mapSession(data.session, null);
-    this.sessionSubject.next(session);
-    return portOk(session);
+    return this.establishSessionFromSupabase(data.session);
+  }
+
+  async verifyEmailConfirmationOtp(
+    email: string,
+    token: string,
+  ): Promise<PortResult<AuthSession>> {
+    const trimmedEmail = email.trim();
+    const trimmedToken = token.trim();
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(trimmedEmail)) {
+      return supabaseErr('VALIDATION', 'invalidInviteEmail');
+    }
+    if (!/^\d{6}$/.test(trimmedToken)) {
+      return supabaseErr('VALIDATION', 'emailConfirmationOtpInvalid');
+    }
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+    const { data, error } = await client.auth.verifyOtp({
+      email: trimmedEmail,
+      token: trimmedToken,
+      type: 'signup',
+    });
+    if (error) {
+      return supabaseErrFromAuth(error);
+    }
+    if (!data.session) {
+      return supabaseErr('VALIDATION', 'emailConfirmationOtpInvalid');
+    }
+    return this.establishSessionFromSupabase(data.session);
+  }
+
+  async resendEmailConfirmation(email: string): Promise<PortResult<void>> {
+    const trimmed = email.trim();
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(trimmed)) {
+      return supabaseErr('VALIDATION', 'invalidInviteEmail');
+    }
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+    const { error } = await client.auth.resend({
+      type: 'signup',
+      email: trimmed,
+      options: this.signUpRedirectOptions(),
+    });
+    if (error) {
+      return supabaseErrFromAuth(error);
+    }
+    return portOk(undefined);
+  }
+
+  async completeEmailConfirmationFromRedirect(): Promise<
+    PortResult<AuthSession | null>
+  > {
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    if (typeof globalThis.location !== 'undefined') {
+      const hash = globalThis.location.hash;
+      const search = globalThis.location.search;
+      const hasConfirmationTokens =
+        hash.includes('access_token') ||
+        hash.includes('type=signup') ||
+        hash.includes('type=email') ||
+        search.includes('code=');
+      if (!hasConfirmationTokens) {
+        return portOk(null);
+      }
+    }
+
+    const { data, error } = await client.auth.getSession();
+    if (error) {
+      return supabaseErrFromAuth(error);
+    }
+    if (!data.session) {
+      return portOk(null);
+    }
+
+    if (typeof globalThis.location !== 'undefined' && globalThis.location.hash) {
+      globalThis.history.replaceState(
+        null,
+        '',
+        globalThis.location.pathname + globalThis.location.search,
+      );
+    }
+
+    return this.establishSessionFromSupabase(data.session);
   }
 
   async signOut(): Promise<PortResult<void>> {

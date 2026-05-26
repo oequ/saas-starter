@@ -9,7 +9,7 @@ import type {
   EmailPasswordCredentials,
   RegisterCredentials,
 } from './models/auth.model';
-import type { PortResult } from './models/common.model';
+import type { PortError, PortResult } from './models/common.model';
 
 /**
  * Authentication boundary. UI and guards depend on this port only — never on Supabase SDK.
@@ -37,6 +37,21 @@ export interface AuthPort {
   signUpWithPassword(
     credentials: RegisterCredentials,
   ): Promise<PortResult<AuthSession>>;
+
+  /** Confirm signup with 6-digit code from email (when email confirmation is enabled). */
+  verifyEmailConfirmationOtp(
+    email: string,
+    token: string,
+  ): Promise<PortResult<AuthSession>>;
+
+  /** Resend signup confirmation email. */
+  resendEmailConfirmation(email: string): Promise<PortResult<void>>;
+
+  /**
+   * After user opens the confirmation link: exchange URL tokens for a session.
+   * Returns session when confirmed; `null` when no confirmation tokens are present.
+   */
+  completeEmailConfirmationFromRedirect(): Promise<PortResult<AuthSession | null>>;
 
   signOut(): Promise<PortResult<void>>;
 
@@ -71,3 +86,16 @@ export interface AuthPort {
 }
 
 export const AUTH_PORT = new InjectionToken<AuthPort>('AUTH_PORT');
+
+/** UI/auth behavior flags (e.g. from `SupabaseConfig` in full-stack apps). */
+export interface AuthFeatures {
+  readonly requireEmailConfirmation?: boolean;
+}
+
+export const AUTH_FEATURES = new InjectionToken<AuthFeatures>('AUTH_FEATURES');
+
+export function isEmailConfirmationRequiredError(error: PortError): boolean {
+  return (
+    error.code === 'VALIDATION' && error.reason === 'emailConfirmationRequired'
+  );
+}

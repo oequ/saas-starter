@@ -23,6 +23,11 @@ export const appRoutes: Route[] = [
       import('@oequ/features-auth').then((m) => m.RegisterPageComponent),
   },
   {
+    path: 'auth/confirm-email',
+    loadComponent: () =>
+      import('@oequ/features-auth').then((m) => m.ConfirmEmailPageComponent),
+  },
+  {
     path: 'auth/forgot-password',
     canActivate: [guestGuard],
     loadComponent: () =>

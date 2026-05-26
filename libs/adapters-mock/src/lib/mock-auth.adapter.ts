@@ -1,5 +1,6 @@
 import { Injectable, Injector, inject } from '@angular/core';
 import {
+  AUTH_FEATURES,
   AUTH_PORT,
   type AuthClaims,
   type AuthPort,
@@ -27,6 +28,8 @@ import { MockOrgAdapter } from './mock-org.adapter';
 
 const DEMO_SIGNED_IN_STORAGE_KEY = 'oequ-demo-signed-in';
 const MOCK_PASSWORD_RECOVERY_KEY = 'oequ-mock-password-recovery';
+const MOCK_PENDING_SIGNUP_EMAIL_KEY = 'oequ-mock-pending-signup-email';
+const MOCK_EMAIL_CONFIRMATION_OTP = '000000';
 const DEMO_USER_DISPLAY_NAME_KEY = 'oequ-demo-user-display-name';
 const DEMO_IMPERSONATION_SESSION_KEY = 'oequ-demo-impersonation-session';
 
@@ -95,6 +98,27 @@ function clearMockPasswordRecoveryFlag(): void {
   sessionStorage.removeItem(MOCK_PASSWORD_RECOVERY_KEY);
 }
 
+function setMockPendingSignupEmail(email: string): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  sessionStorage.setItem(MOCK_PENDING_SIGNUP_EMAIL_KEY, email);
+}
+
+function readMockPendingSignupEmail(): string | null {
+  if (typeof sessionStorage === 'undefined') {
+    return null;
+  }
+  return sessionStorage.getItem(MOCK_PENDING_SIGNUP_EMAIL_KEY);
+}
+
+function clearMockPendingSignupEmail(): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  sessionStorage.removeItem(MOCK_PENDING_SIGNUP_EMAIL_KEY);
+}
+
 function writeImpersonationSession(session: AuthSession): void {
   if (typeof sessionStorage === 'undefined') {
     return;
@@ -150,6 +174,7 @@ export function orgClaimForOrganization(
 @Injectable()
 export class MockAuthAdapter implements AuthPort {
   private readonly injector = inject(Injector);
+  private readonly authFeatures = inject(AUTH_FEATURES, { optional: true });
   private sessions = [...MOCK_SESSION_DEVICES];
 
   private readonly sessionSubject = new BehaviorSubject<AuthSession | null>(
@@ -240,6 +265,11 @@ export class MockAuthAdapter implements AuthPort {
       return mockErr('VALIDATION', 'emailExists');
     }
 
+    if (this.requireEmailConfirmation()) {
+      setMockPendingSignupEmail(email);
+      return mockErr('VALIDATION', 'emailConfirmationRequired');
+    }
+
     clearImpersonationSession();
 
     const userId = crypto.randomUUID();
@@ -264,11 +294,75 @@ export class MockAuthAdapter implements AuthPort {
     return portOk(session);
   }
 
+  async verifyEmailConfirmationOtp(
+    email: string,
+    token: string,
+  ): Promise<PortResult<AuthSession>> {
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedToken = token.trim();
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(trimmedEmail)) {
+      return mockErr('VALIDATION', 'invalidInviteEmail');
+    }
+    if (!/^\d{6}$/.test(trimmedToken)) {
+      return mockErr('VALIDATION', 'emailConfirmationOtpInvalid');
+    }
+    const pending = readMockPendingSignupEmail();
+    if (
+      !pending ||
+      pending !== trimmedEmail ||
+      trimmedToken !== MOCK_EMAIL_CONFIRMATION_OTP
+    ) {
+      return mockErr('VALIDATION', 'emailConfirmationOtpInvalid');
+    }
+
+    clearImpersonationSession();
+    clearMockPendingSignupEmail();
+
+    const userId = crypto.randomUUID();
+    const session: AuthSession = {
+      user: {
+        id: userId,
+        email: trimmedEmail,
+        displayName: null,
+      },
+      claims: {
+        sub: userId,
+        email: trimmedEmail,
+        org: null,
+      },
+    };
+
+    setSignedInFlag(true);
+    this.sessions = [...MOCK_SESSION_DEVICES];
+    this.sessionSubject.next(session);
+    this.injector.get(MockOrgAdapter).setZeroOrganizations();
+
+    return portOk(session);
+  }
+
+  async resendEmailConfirmation(email: string): Promise<PortResult<void>> {
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(trimmed)) {
+      return mockErr('VALIDATION', 'invalidInviteEmail');
+    }
+    if (this.requireEmailConfirmation()) {
+      setMockPendingSignupEmail(trimmed);
+    }
+    return portOk(undefined);
+  }
+
+  async completeEmailConfirmationFromRedirect(): Promise<
+    PortResult<AuthSession | null>
+  > {
+    return portOk(null);
+  }
+
   async signOut(): Promise<PortResult<void>> {
     clearImpersonationSession();
     setSignedInFlag(false);
     writeStoredDisplayName(null);
     clearMockPasswordRecoveryFlag();
+    clearMockPendingSignupEmail();
     this.sessionSubject.next(null);
     return portOk(undefined);
   }
@@ -382,6 +476,10 @@ export class MockAuthAdapter implements AuthPort {
       return;
     }
     this.applySession(session);
+  }
+
+  private requireEmailConfirmation(): boolean {
+    return this.authFeatures?.requireEmailConfirmation === true;
   }
 
   private applySession(session: AuthSession): void {
