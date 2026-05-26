@@ -119,6 +119,16 @@ Run from the **repository root** (folder that contains `supabase/`), not from in
 
 5. Open Studio (optional): http://127.0.0.1:54323
 
+### Password reset (`apps/web`)
+
+Local Auth is configured for **`http://localhost:4201`** in [`config.toml`](config.toml) (`site_url` + `additional_redirect_urls`). Use the same host in the browser (`localhost`, not `127.0.0.1`) — on Windows the dev server may not answer on `127.0.0.1`. After changing that file, run `npm run db:stop` then `npm run db:start`.
+
+1. In the app: **Forgot password** → enter the email of a registered user.
+2. Open **Mailpit** (local mail UI): http://127.0.0.1:54324 — open the recovery message and click the link.
+3. You should land on `/auth/reset-password`, set a new password, then sign in.
+
+Recovery emails are not sent to a real inbox in local dev; they only appear in Mailpit.
+
 ### npm scripts
 
 | Script | Command |
@@ -161,7 +171,8 @@ Find your user id: Studio → **Authentication** → Users → copy UUID.
 | CLI / `npx supabase` errors on Windows | Use `npm run db:*` after `npm install`; or install CLI via Scoop |
 | Port already in use | `npm run db:stop`, or change ports in `supabase/config.toml` |
 | `supabase_analytics_*` unhealthy / `Analytics on Windows requires Docker daemon exposed on tcp://localhost:2375` | This repo sets `[analytics] enabled = false` in `config.toml` (not needed for auth/org). To use analytics anyway: Docker Desktop → Settings → General → **Expose daemon on tcp://localhost:2375 without TLS**, then set `enabled = true`. |
-| Several containers unhealthy after failed start | `npm run db:stop`, wait 10s, `npm run db:start` again |
+| Several containers unhealthy after failed start (`pg_meta`, `studio` starting) | `npm run db:stop`, wait 10s, `npm run db:start` again. `db:start` uses `--ignore-health-check` (Auth/Postgres/Mailpit still work). |
+| `db:reset` fails right after first `db:start` | Wait ~30s for Postgres, then `npm run db:reset` again |
 | `supabase_storage_*` unhealthy | This repo sets `[storage] enabled = false` (not required for auth/org). Re-enable when you need Storage buckets locally. |
 | Stack still flaky on slow Docker | `npx supabase start --ignore-health-check`, then `npm run db:status`; give Postgres ~1–2 min on first boot |
 | `23503` on `organization_members_user_id_fkey` when creating workspace | JWT `sub` is not in `auth.users` (usual: `db:reset` while browser still has old session). **Sign out** in the app (or clear site data), **sign in** again. Confirm `.env` `SUPABASE_URL` matches the running stack (`http://127.0.0.1:54321` for CLI). |

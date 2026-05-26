@@ -26,6 +26,7 @@ import {
 import { MockOrgAdapter } from './mock-org.adapter';
 
 const DEMO_SIGNED_IN_STORAGE_KEY = 'oequ-demo-signed-in';
+const MOCK_PASSWORD_RECOVERY_KEY = 'oequ-mock-password-recovery';
 const DEMO_USER_DISPLAY_NAME_KEY = 'oequ-demo-user-display-name';
 const DEMO_IMPERSONATION_SESSION_KEY = 'oequ-demo-impersonation-session';
 
@@ -71,6 +72,27 @@ function readImpersonationSession(): AuthSession | null {
   } catch {
     return null;
   }
+}
+
+function setMockPasswordRecoveryFlag(email: string): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  sessionStorage.setItem(MOCK_PASSWORD_RECOVERY_KEY, email);
+}
+
+function readMockPasswordRecoveryFlag(): string | null {
+  if (typeof sessionStorage === 'undefined') {
+    return null;
+  }
+  return sessionStorage.getItem(MOCK_PASSWORD_RECOVERY_KEY);
+}
+
+function clearMockPasswordRecoveryFlag(): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  sessionStorage.removeItem(MOCK_PASSWORD_RECOVERY_KEY);
 }
 
 function writeImpersonationSession(session: AuthSession): void {
@@ -246,8 +268,34 @@ export class MockAuthAdapter implements AuthPort {
     clearImpersonationSession();
     setSignedInFlag(false);
     writeStoredDisplayName(null);
+    clearMockPasswordRecoveryFlag();
     this.sessionSubject.next(null);
     return portOk(undefined);
+  }
+
+  async requestPasswordReset(email: string): Promise<PortResult<void>> {
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(trimmed)) {
+      return mockErr('VALIDATION', 'invalidInviteEmail');
+    }
+    setMockPasswordRecoveryFlag(trimmed);
+    return portOk(undefined);
+  }
+
+  async updatePassword(newPassword: string): Promise<PortResult<void>> {
+    if (newPassword.length < 8) {
+      return mockErr('VALIDATION', 'passwordTooShort');
+    }
+    if (!readMockPasswordRecoveryFlag()) {
+      return mockErr('UNAVAILABLE', 'passwordRecoveryInactive');
+    }
+    clearMockPasswordRecoveryFlag();
+    await this.signOut();
+    return portOk(undefined);
+  }
+
+  async isPasswordRecoveryActive(): Promise<PortResult<boolean>> {
+    return portOk(readMockPasswordRecoveryFlag() !== null);
   }
 
   async refreshSession(): Promise<PortResult<AuthSession | null>> {

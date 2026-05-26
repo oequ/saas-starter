@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -10,7 +11,12 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TranslocoPipe } from '@oequ/i18n';
+import {
+  TranslocoPipe,
+  TranslocoService,
+  translatePortError,
+} from '@oequ/i18n';
+import { AUTH_PORT } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -88,6 +94,12 @@ import {
                   }
                 </div>
 
+                @if (submitError()) {
+                  <p class="text-destructive text-sm" role="alert">
+                    {{ submitError() }}
+                  </p>
+                }
+
                 <button
                   hlmBtn
                   type="submit"
@@ -122,6 +134,9 @@ import {
   `,
 })
 export class ForgotPasswordPageComponent {
+  private readonly authPort = inject(AUTH_PORT);
+  private readonly transloco = inject(TranslocoService);
+
   protected readonly inputClass = AUTH_INPUT_CLASS;
 
   protected readonly form = new FormGroup({
@@ -135,17 +150,27 @@ export class ForgotPasswordPageComponent {
   protected readonly submitting = signal(false);
   protected readonly sent = signal(false);
   protected readonly submittedEmail = signal('');
+  protected readonly submitError = signal<string | null>(null);
 
   protected async submit(): Promise<void> {
     this.submitAttempted.set(true);
+    this.submitError.set(null);
+
     if (this.form.invalid) {
       return;
     }
 
+    const email = this.form.controls.email.value.trim();
     this.submitting.set(true);
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    this.submittedEmail.set(this.form.controls.email.value.trim());
+    const result = await this.authPort.requestPasswordReset(email);
     this.submitting.set(false);
+
+    if (!result.ok) {
+      this.submitError.set(translatePortError(result.error, this.transloco));
+      return;
+    }
+
+    this.submittedEmail.set(email);
     this.sent.set(true);
   }
 }

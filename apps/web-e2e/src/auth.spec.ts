@@ -25,6 +25,23 @@ test.describe('auth (Supabase)', () => {
     ).toBeVisible();
   });
 
+  test('forgot password shows success after submit', async ({ page }) => {
+    const email = uniqueEmail('auth-forgot');
+    await registerUser(page, email);
+    await createWorkspaceViaOnboarding(page, `Forgot ${Date.now()}`);
+    await signOutViaMenu(page);
+
+    await page.goto('/auth/forgot-password');
+    await page.getByLabel('Email').fill(email);
+    await page.getByRole('button', { name: 'Send reset link' }).click();
+
+    await expect(
+      page.getByText(
+        `If an account exists for ${email}, you will receive instructions shortly.`,
+      ),
+    ).toBeVisible();
+  });
+
   test('login rejects wrong password', async ({ page }) => {
     const email = uniqueEmail('auth-wrong-pass');
     await registerUser(page, email);

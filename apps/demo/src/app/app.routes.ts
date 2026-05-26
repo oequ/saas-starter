@@ -29,6 +29,11 @@ export const appRoutes: Route[] = [
       import('@oequ/features-auth').then((m) => m.ForgotPasswordPageComponent),
   },
   {
+    path: 'auth/reset-password',
+    loadComponent: () =>
+      import('@oequ/features-auth').then((m) => m.ResetPasswordPageComponent),
+  },
+  {
     path: 'auth/status',
     loadComponent: () =>
       import('@oequ/features-auth').then((m) => m.SystemStatusPageComponent),

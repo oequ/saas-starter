@@ -14,7 +14,7 @@
     "pre-release:web": "node scripts/pre-release-web.mjs",
     "screenshots": "nx e2e demo-e2e --grep \"README screenshots\"",
     "db:init": "supabase init",
-    "db:start": "supabase start",
+    "db:start": "supabase start --ignore-health-check",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:status": "supabase status",

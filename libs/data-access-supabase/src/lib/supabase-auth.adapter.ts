@@ -28,6 +28,7 @@ import { supabaseErr, supabaseErrFromAuth } from './supabase-port-error';
 export class SupabaseAuthAdapter implements AuthPort {
   private readonly supabase = inject(SupabaseClientService);
   private orgOverride: OrgContextClaim | null | undefined;
+  private passwordRecoveryActive = false;
 
   private readonly sessionSubject = new BehaviorSubject<AuthSession | null>(
     null,
@@ -56,7 +57,10 @@ export class SupabaseAuthAdapter implements AuthPort {
       this.applySupabaseSession(data.session);
     });
 
-    client.auth.onAuthStateChange((_event, session) => {
+    client.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        this.passwordRecoveryActive = true;
+      }
       this.applySupabaseSession(session);
     });
   }
@@ -222,8 +226,87 @@ export class SupabaseAuthAdapter implements AuthPort {
       return supabaseErrFromAuth(error);
     }
     this.orgOverride = undefined;
+    this.passwordRecoveryActive = false;
     this.sessionSubject.next(null);
     return portOk(undefined);
+  }
+
+  async requestPasswordReset(email: string): Promise<PortResult<void>> {
+    const trimmed = email.trim();
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(trimmed)) {
+      return supabaseErr('VALIDATION', 'invalidInviteEmail');
+    }
+
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    if (typeof globalThis.location === 'undefined') {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const redirectTo = `${globalThis.location.origin}/auth/reset-password`;
+    const { error } = await client.auth.resetPasswordForEmail(trimmed, {
+      redirectTo,
+    });
+    if (error) {
+      return supabaseErrFromAuth(error);
+    }
+    return portOk(undefined);
+  }
+
+  async updatePassword(newPassword: string): Promise<PortResult<void>> {
+    if (newPassword.length < 8) {
+      return supabaseErr('VALIDATION', 'passwordTooShort');
+    }
+
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    const { error } = await client.auth.updateUser({ password: newPassword });
+    if (error) {
+      return supabaseErrFromAuth(error);
+    }
+
+    this.passwordRecoveryActive = false;
+    const { error: signOutError } = await client.auth.signOut();
+    if (signOutError) {
+      return supabaseErrFromAuth(signOutError);
+    }
+    this.orgOverride = undefined;
+    this.sessionSubject.next(null);
+    return portOk(undefined);
+  }
+
+  async isPasswordRecoveryActive(): Promise<PortResult<boolean>> {
+    const client = this.supabase.getClient();
+    if (!client) {
+      return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
+    }
+
+    if (this.passwordRecoveryActive) {
+      return portOk(true);
+    }
+
+    if (typeof globalThis.location !== 'undefined') {
+      const hash = globalThis.location.hash;
+      if (hash.includes('type=recovery')) {
+        const { data, error } = await client.auth.getSession();
+        if (error) {
+          return supabaseErrFromAuth(error);
+        }
+        if (data.session) {
+          this.passwordRecoveryActive = true;
+          this.applySupabaseSession(data.session);
+          return portOk(true);
+        }
+      }
+    }
+
+    return portOk(false);
   }
 
   async refreshSession(): Promise<PortResult<AuthSession | null>> {

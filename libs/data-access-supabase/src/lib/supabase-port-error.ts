@@ -58,11 +58,23 @@ function mapAuthErrorCode(error: AuthError): PortErrorCode {
 }
 
 function mapAuthErrorReason(error: AuthError): string {
-  if (error.message.toLowerCase().includes('invalid login credentials')) {
+  const message = error.message.toLowerCase();
+  if (message.includes('invalid login credentials')) {
     return 'invalidCredentials';
   }
-  if (error.message.toLowerCase().includes('already registered')) {
+  if (message.includes('already registered')) {
     return 'emailExists';
+  }
+  if (message.includes('rate limit') || error.status === 429) {
+    return 'rateLimited';
+  }
+  if (
+    message.includes('password') &&
+    (message.includes('weak') ||
+      message.includes('short') ||
+      message.includes('at least'))
+  ) {
+    return 'passwordTooShort';
   }
   return 'authFailed';
 }

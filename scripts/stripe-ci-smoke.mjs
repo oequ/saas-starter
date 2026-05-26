@@ -219,7 +219,7 @@ async function main() {
         body: {
           organization_id: organizationId,
           plan_id: 'pro',
-          return_url: 'http://127.0.0.1:4201/workspace/settings/billing',
+          return_url: 'http://localhost:4201/workspace/settings/billing',
           seat_quantity: 1,
         },
       });

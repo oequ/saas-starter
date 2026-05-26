@@ -40,6 +40,15 @@ export interface AuthPort {
 
   signOut(): Promise<PortResult<void>>;
 
+  /** Send password reset email (Supabase `resetPasswordForEmail`). */
+  requestPasswordReset(email: string): Promise<PortResult<void>>;
+
+  /** Set new password after recovery link; adapter may sign out on success. */
+  updatePassword(newPassword: string): Promise<PortResult<void>>;
+
+  /** Whether the user opened a valid password-recovery link in this browser. */
+  isPasswordRecoveryActive(): Promise<PortResult<boolean>>;
+
   /** Re-fetch session/claims after org switch or token refresh. */
   refreshSession(): Promise<PortResult<AuthSession | null>>;
 
