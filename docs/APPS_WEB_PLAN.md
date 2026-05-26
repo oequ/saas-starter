@@ -81,6 +81,7 @@ Before production Stripe: [BILLING_PRE_LAUNCH.md](./BILLING_PRE_LAUNCH.md) — a
 | P0 | Auto-renewal verified (Test Clock manual; optional CI) | Planned — see checklist |
 | P0 | Failed payment / dunning UX | Partial — `past_due` in smoke + banner unit test ([iter 1](../scripts/stripe-ci-smoke.mjs)) |
 | ~~P1 Webhook idempotency~~ | **Done (iter 1)** — duplicate `event.id` in `stripe:smoke:ci` |
+| ~~P1 Billing integrity smoke~~ | **Done (iter 2)** — unsigned/bad-signature webhook 400; cross-org update 403 |
 | P1 | `past_due` product policy (grace, feature lock) | Planned |
 
 ---

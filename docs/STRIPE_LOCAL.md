@@ -168,6 +168,8 @@ Workflow: **Stripe smoke** (`workflow_dispatch` or cron). Not a required PR chec
 5. Replay the **same** `event.id` → response `duplicate: true`; snapshot unchanged (idempotency)  
 6. `billing-update-subscription` → assert `seats_limit = 2`  
 7. Signed `customer.subscription.updated` with `status: past_due` → assert `subscription_status = past_due` in Postgres  
+8. POST `stripe-webhook` without signature (and with wrong secret) → `400`  
+9. Second user invokes `billing-update-subscription` for first user's `organization_id` → `403`  
 
 **Local replay** (same as CI, with Terminal 1–2 from runbook above):
 

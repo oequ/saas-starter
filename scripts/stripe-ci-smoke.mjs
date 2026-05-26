@@ -82,6 +82,48 @@ function buildStripeEvent({ id, type, dataObject, apiVersion }) {
   };
 }
 
+async function postWebhookRaw(webhookUrl, { headers = {}, body }) {
+  const res = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+    body,
+  });
+  return { status: res.status, text: await res.text() };
+}
+
+function assertWebhookRejected({ status, text }, label) {
+  assert(status === 400, `${label}: expected 400, got ${status}: ${text}`);
+}
+
+async function invokeEdgeFunction(
+  supabaseUrl,
+  anonKey,
+  accessToken,
+  functionName,
+  body,
+) {
+  const res = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: anonKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  let json;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    json = null;
+  }
+  return { status: res.status, text, json };
+}
+
 async function postSignedWebhook(
   stripe,
   webhookUrl,
@@ -196,6 +238,30 @@ async function main() {
   console.log('Waiting for Edge Functions…');
   await waitForFunctions(supabaseUrl);
 
+  const probeEvent = buildStripeEvent({
+    id: `evt_ci_smoke_unsigned_${Date.now()}`,
+    type: 'customer.subscription.updated',
+    dataObject: { id: 'sub_ci_probe', object: 'subscription', status: 'active' },
+  });
+  const probePayload = JSON.stringify(probeEvent);
+
+  console.log('Posting unsigned stripe-webhook (expect 400)…');
+  const unsigned = await postWebhookRaw(webhookUrl, { body: probePayload });
+  assertWebhookRejected(unsigned, 'unsigned webhook');
+  console.log('Unsigned webhook rejected OK.');
+
+  const badSignature = stripe.webhooks.generateTestHeaderString({
+    payload: probePayload,
+    secret: 'whsec_ci_wrong_secret_for_smoke',
+  });
+  console.log('Posting stripe-webhook with invalid signature (expect 400)…');
+  const badSig = await postWebhookRaw(webhookUrl, {
+    headers: { 'Stripe-Signature': badSignature },
+    body: probePayload,
+  });
+  assertWebhookRejected(badSig, 'invalid signature webhook');
+  console.log('Invalid signature webhook rejected OK.');
+
   const admin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
@@ -239,6 +305,57 @@ async function main() {
   }
   const organizationId = org?.id;
   assert(organizationId, 'create_organization returned no id');
+
+  const emailB = `stripe-ci-b-${runId}@example.com`;
+  const { error: createUserBError } = await admin.auth.admin.createUser({
+    email: emailB,
+    password,
+    email_confirm: true,
+  });
+  if (createUserBError) {
+    fail(`createUser B: ${createUserBError.message}`);
+  }
+
+  const { data: signInB, error: signInBError } =
+    await anon.auth.signInWithPassword({ email: emailB, password });
+  if (signInBError || !signInB.session) {
+    fail(`signIn B: ${signInBError?.message ?? 'no session'}`);
+  }
+
+  const accessTokenB = signInB.session.access_token;
+  const userClientB = createClient(supabaseUrl, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { headers: { Authorization: `Bearer ${accessTokenB}` } },
+  });
+
+  const slugB = `stripe-ci-b-${runId}`;
+  const { error: orgBError } = await userClientB.rpc('create_organization', {
+    p_name: 'Stripe CI Smoke B',
+    p_slug: slugB,
+  });
+  if (orgBError) {
+    fail(`create_organization B: ${orgBError.message}`);
+  }
+
+  console.log(
+    'Invoking billing-update-subscription for foreign org (expect 403)…',
+  );
+  const crossOrg = await invokeEdgeFunction(
+    supabaseUrl,
+    anonKey,
+    accessTokenB,
+    'billing-update-subscription',
+    { organization_id: organizationId, seat_quantity: 2 },
+  );
+  assert(
+    crossOrg.status === 403,
+    `cross-org update: expected 403, got ${crossOrg.status}: ${crossOrg.text}`,
+  );
+  assert(
+    crossOrg.json?.error === 'forbidden',
+    `cross-org update: expected forbidden error: ${crossOrg.text}`,
+  );
+  console.log('Cross-org billing-update-subscription forbidden OK.');
 
   console.log('Creating Stripe customer + Team subscription…');
   const customer = await stripe.customers.create({

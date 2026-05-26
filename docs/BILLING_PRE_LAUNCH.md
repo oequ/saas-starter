@@ -77,6 +77,7 @@ Priority for the next billing hardening work:
 | **P0** | **Failed payment / dunning** | **Partial (iter 1)** — smoke syncs `past_due` to Postgres; banner unit-tested. Still needed: grace policy, feature lock, real `invoice.payment_failed`. |
 | **P1** | Webhook failure ops | Alert if webhook 5xx; Stripe Dashboard retry; runbook |
 | ~~P1 Duplicate webhook~~ | **Done (iter 1)** — `stripe-ci-smoke` replays same `event.id` |
+| ~~P1 Webhook / org integrity (CI)~~ | **Done (iter 2)** — unsigned + bad signature → 400; cross-org `billing-update-subscription` → 403 |
 | **P1** | `past_due` UX (product policy) | Banner exists; document what still works on Team/Pro when `past_due` |
 | **P2** | In-app payment methods | Only if not using Portal — SetupIntent + Elements; store `pm_` + last4 only |
 | **P2** | Browser Checkout in CI | Optional Playwright + test clock or Stripe test mode (heavy; keep nightly API-only) |
@@ -106,14 +107,15 @@ Run in **Stripe test mode** with [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) four-termi
 
 ### Integrity
 
-- [ ] **Webhook secret** — Prod endpoint + `STRIPE_WEBHOOK_SECRET`; reject unsigned payloads (`stripe-webhook`).
-- [ ] **Wrong org** — User cannot call billing Edge Functions for another `organization_id` (admin + JWT).
+- [ ] **Webhook secret** — Prod endpoint + `STRIPE_WEBHOOK_SECRET` configured in production.
+- [x] **Reject unsigned / bad signature** — **CI (iter 2):** `stripe:smoke:ci` POST without `Stripe-Signature` or wrong secret → `400`.
+- [x] **Wrong org** — **CI (iter 2):** non-admin JWT cannot `billing-update-subscription` on another `organization_id` → `403`. Manual: spot-check other billing functions.
 - [x] **Idempotency** — **CI:** `npm run stripe:smoke:ci` replays same `event.id`; Postgres unchanged.
 
 ### CI expectations (do not over-trust)
 
 - [ ] **`e2e:web:release`** passes — mock billing only.
-- [x] **`stripe:smoke:ci`** — webhook sync, idempotency, `past_due` status, seat bump; **does not** replace Test Clock renew or browser Checkout.
+- [x] **`stripe:smoke:ci`** — webhook sync, idempotency, `past_due`, seat bump, unsigned webhook 400, cross-org 403 (iter 2); **does not** replace Test Clock renew or browser Checkout.
 - [ ] GitHub secrets set: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TEAM`, (`STRIPE_PRICE_PRO` optional).
 
 ---
