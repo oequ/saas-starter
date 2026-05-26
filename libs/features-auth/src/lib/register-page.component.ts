@@ -24,6 +24,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';
 import { HlmInput } from '@spartan-ng/helm/input';
 
+import { markConfirmEmailResendCooldown } from './confirm-email-resend-cooldown';
 import { AuthPasswordInputComponent } from './auth-password-input.component';
 import {
   AUTH_CARD_CLASS,
@@ -273,6 +274,7 @@ export class RegisterPageComponent {
 
     if (!result.ok) {
       if (isEmailConfirmationRequiredError(result.error)) {
+        markConfirmEmailResendCooldown(email);
         await this.router.navigate(['/auth/confirm-email'], {
           queryParams: { email },
         });

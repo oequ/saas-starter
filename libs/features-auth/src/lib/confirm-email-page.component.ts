@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   inject,
   OnInit,
   signal,
@@ -32,6 +33,11 @@ import {
   AUTH_PAGE_LEAD_CLASS,
   AUTH_PAGE_SHELL_CLASS,
 } from './auth-form.tokens';
+import {
+  CONFIRM_EMAIL_RESEND_COOLDOWN_SECONDS,
+  markConfirmEmailResendCooldown,
+  readConfirmEmailResendUntil,
+} from './confirm-email-resend-cooldown';
 
 type ConfirmState = 'loading' | 'ready' | 'invalid';
 
@@ -67,9 +73,6 @@ type ConfirmState = 'loading' | 'ready' | 'invalid';
               'auth.confirmEmail.lead' | transloco: { email: displayEmail() }
             }}
           </p>
-          <p class="text-muted-foreground mb-6 text-sm">
-            {{ 'auth.confirmEmail.linkHint' | transloco }}
-          </p>
         }
 
         <section hlmCard class="${AUTH_CARD_CLASS}">
@@ -88,24 +91,6 @@ type ConfirmState = 'loading' | 'ready' | 'invalid';
               </a>
             } @else {
               <form class="space-y-5" [formGroup]="form" (ngSubmit)="submitOtp()">
-                <div>
-                  <label
-                    for="confirm-email"
-                    class="mb-1.5 block text-sm font-medium"
-                  >
-                    {{ 'common.email' | transloco }}
-                  </label>
-                  <input
-                    id="confirm-email"
-                    hlmInput
-                    type="email"
-                    autocomplete="email"
-                    readonly
-                    [class]="inputClass"
-                    formControlName="email"
-                  />
-                </div>
-
                 <div>
                   <label
                     for="confirm-otp"
@@ -158,15 +143,20 @@ type ConfirmState = 'loading' | 'ready' | 'invalid';
 
                 <button
                   type="button"
-                  class="text-muted-foreground hover:text-foreground w-full text-sm underline-offset-4 hover:underline"
-                  [disabled]="resending()"
+                  class="text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50 w-full text-sm underline-offset-4 hover:underline disabled:no-underline"
+                  [disabled]="resending() || resendCooldownSeconds() > 0"
                   (click)="resend()"
                 >
-                  {{
-                    resending()
-                      ? ('auth.confirmEmail.resending' | transloco)
-                      : ('auth.confirmEmail.resend' | transloco)
-                  }}
+                  @if (resendCooldownSeconds() > 0) {
+                    {{
+                      'auth.confirmEmail.resendCooldown'
+                        | transloco: { seconds: resendCooldownSeconds() }
+                    }}
+                  } @else if (resending()) {
+                    {{ 'auth.confirmEmail.resending' | transloco }}
+                  } @else {
+                    {{ 'auth.confirmEmail.resend' | transloco }}
+                  }
                 </button>
               </form>
             }
@@ -195,6 +185,9 @@ export class ConfirmEmailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly transloco = inject(TranslocoService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  private resendCooldownTimer: ReturnType<typeof setInterval> | null = null;
 
   protected readonly inputClass = AUTH_INPUT_CLASS;
   protected readonly confirmState = signal<ConfirmState>('loading');
@@ -202,14 +195,11 @@ export class ConfirmEmailPageComponent implements OnInit {
   protected readonly submitAttempted = signal(false);
   protected readonly submitting = signal(false);
   protected readonly resending = signal(false);
+  protected readonly resendCooldownSeconds = signal(0);
   protected readonly submitError = signal<string | null>(null);
   protected readonly resendStatus = signal<string | null>(null);
 
   protected readonly form = new FormGroup({
-    email: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.email],
-    }),
     otp: new FormControl('', {
       nonNullable: true,
       validators: [
@@ -220,9 +210,10 @@ export class ConfirmEmailPageComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => this.clearResendCooldownTimer());
+
     const emailParam = this.route.snapshot.queryParamMap.get('email')?.trim();
     if (emailParam) {
-      this.form.controls.email.setValue(emailParam);
       this.displayEmail.set(emailParam);
     }
     void this.resolveConfirmationState();
@@ -240,12 +231,12 @@ export class ConfirmEmailPageComponent implements OnInit {
       return;
     }
 
-    const email = this.form.controls.email.value.trim();
-    if (!email) {
+    if (!this.displayEmail().trim()) {
       this.confirmState.set('invalid');
       return;
     }
     this.confirmState.set('ready');
+    this.restoreResendCooldown();
   }
 
   protected async submitOtp(): Promise<void> {
@@ -256,8 +247,13 @@ export class ConfirmEmailPageComponent implements OnInit {
       return;
     }
 
+    const email = this.displayEmail().trim();
+    if (!email) {
+      return;
+    }
+
     this.submitting.set(true);
-    const { email, otp } = this.form.getRawValue();
+    const { otp } = this.form.getRawValue();
     const result = await this.authPort.verifyEmailConfirmationOtp(email, otp);
     this.submitting.set(false);
 
@@ -270,8 +266,8 @@ export class ConfirmEmailPageComponent implements OnInit {
   }
 
   protected async resend(): Promise<void> {
-    const email = this.form.controls.email.value.trim();
-    if (!email) {
+    const email = this.displayEmail().trim();
+    if (!email || this.resendCooldownSeconds() > 0) {
       return;
     }
 
@@ -283,6 +279,12 @@ export class ConfirmEmailPageComponent implements OnInit {
     this.resending.set(false);
 
     if (!result.ok) {
+      if (
+        result.error.code === 'RATE_LIMITED' ||
+        result.error.reason === 'rateLimited'
+      ) {
+        this.startResendCooldown(CONFIRM_EMAIL_RESEND_COOLDOWN_SECONDS);
+      }
       this.submitError.set(translatePortError(result.error, this.transloco));
       return;
     }
@@ -290,5 +292,50 @@ export class ConfirmEmailPageComponent implements OnInit {
     this.resendStatus.set(
       this.transloco.translate('auth.confirmEmail.resendSent'),
     );
+    this.startResendCooldown(CONFIRM_EMAIL_RESEND_COOLDOWN_SECONDS);
+  }
+
+  private restoreResendCooldown(): void {
+    const email = this.displayEmail().trim();
+    if (!email) {
+      return;
+    }
+    const until = readConfirmEmailResendUntil(email);
+    if (until && until > Date.now()) {
+      this.runResendCooldownTimer(until);
+    } else {
+      this.resendCooldownSeconds.set(0);
+    }
+  }
+
+  private startResendCooldown(seconds: number): void {
+    const email = this.displayEmail().trim();
+    if (!email) {
+      return;
+    }
+    const until = markConfirmEmailResendCooldown(email, seconds);
+    this.runResendCooldownTimer(until);
+  }
+
+  private runResendCooldownTimer(until: number): void {
+    this.clearResendCooldownTimer();
+
+    const tick = (): void => {
+      const remaining = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+      this.resendCooldownSeconds.set(remaining);
+      if (remaining === 0) {
+        this.clearResendCooldownTimer();
+      }
+    };
+
+    tick();
+    this.resendCooldownTimer = setInterval(tick, 1000);
+  }
+
+  private clearResendCooldownTimer(): void {
+    if (this.resendCooldownTimer !== null) {
+      clearInterval(this.resendCooldownTimer);
+      this.resendCooldownTimer = null;
+    }
   }
 }
