@@ -78,6 +78,9 @@ jobs:
       - name: Web Supabase settings
         run: node scripts/write-web-supabase-settings.mjs
 
+      - name: Build web
+        run: npx nx build web
+
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 

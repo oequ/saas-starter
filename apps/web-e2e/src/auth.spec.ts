@@ -8,7 +8,7 @@ import {
   uniqueEmail,
 } from './web.helpers';
 
-test.describe('auth (Supabase)', () => {
+test.describe('auth (Supabase) @web', () => {
   test('register shows validation errors on empty submit', async ({ page }) => {
     await page.goto('/auth/register');
     await page.getByRole('button', { name: 'Create account' }).click();
