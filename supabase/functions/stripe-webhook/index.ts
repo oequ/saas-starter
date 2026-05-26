@@ -49,7 +49,7 @@ async function handleSubscriptionEvent(
   await syncStripeSubscription(admin, organizationId, customerId, subscription);
 }
 
-async function handleInvoicePaymentFailed(
+async function handleInvoiceEvent(
   admin: ReturnType<typeof createServiceClient>,
   invoice: Stripe.Invoice,
 ): Promise<void> {
@@ -134,8 +134,9 @@ Deno.serve(async (req) => {
           event.data.object as Stripe.Subscription,
         );
         break;
+      case 'invoice.paid':
       case 'invoice.payment_failed':
-        await handleInvoicePaymentFailed(
+        await handleInvoiceEvent(
           admin,
           event.data.object as Stripe.Invoice,
         );
