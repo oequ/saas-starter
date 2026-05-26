@@ -1,4 +1,8 @@
-import { corsHeaders, handleCors, jsonResponse } from '../_shared/cors.ts';
+import {
+  corsHeadersForRequest,
+  handleCors,
+  jsonResponse,
+} from '../_shared/cors.ts';
 import { BILLING_PROVIDER_STRIPE } from '../_shared/billing-rpc.ts';
 import { getStripe } from '../_shared/stripe.ts';
 import { syncStripeSubscription } from '../_shared/stripe-sync.ts';
@@ -78,7 +82,7 @@ Deno.serve(async (req) => {
     if (err instanceof Response) {
       return new Response(err.body, {
         status: err.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeadersForRequest(req), 'Content-Type': 'application/json' },
       });
     }
     console.error(err);

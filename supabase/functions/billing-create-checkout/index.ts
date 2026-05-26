@@ -1,4 +1,8 @@
-import { corsHeaders, handleCors, jsonResponse } from '../_shared/cors.ts';
+import {
+  corsHeadersForRequest,
+  handleCors,
+  jsonResponse,
+} from '../_shared/cors.ts';
 import {
   checkoutQuantityForPlan,
   getStripe,
@@ -182,13 +186,14 @@ Deno.serve(async (req) => {
     if (err instanceof Response) {
       return new Response(err.body, {
         status: err.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeadersForRequest(req), 'Content-Type': 'application/json' },
       });
     }
     console.error(err);
     return jsonResponse(
       { error: err instanceof Error ? err.message : 'unknown error' },
       500,
+      req,
     );
   }
 });
