@@ -184,23 +184,30 @@ Deno.serve(async (req) => {
       proration_behavior: 'create_prorations',
     });
 
-    await syncStripeSubscription(
-      admin,
-      organizationId,
-      customerId,
-      updated,
-    );
-
     const seatsLimit = Math.min(
       TEAM_PLAN_MAX_SEATS,
       Math.max(1, subscriptionLineQuantity(updated)),
     );
+
+    let syncWarning: string | undefined;
+    try {
+      await syncStripeSubscription(
+        admin,
+        organizationId,
+        customerId,
+        updated,
+      );
+    } catch (syncErr) {
+      console.error('post-mutation sync failed (webhook will reconcile)', syncErr);
+      syncWarning = 'sync_pending';
+    }
 
     return jsonResponse({
       ok: true,
       unchanged: false,
       quantity: seatsLimit,
       seats_limit: seatsLimit,
+      ...(syncWarning ? { sync_warning: syncWarning } : {}),
     });
   } catch (err) {
     if (err instanceof Response) {
