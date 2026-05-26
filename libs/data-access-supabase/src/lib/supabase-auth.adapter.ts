@@ -45,19 +45,25 @@ export class SupabaseAuthAdapter implements AuthPort {
       return;
     }
 
-    void client.auth.getSession().then(async ({ data }) => {
-      if (data.session) {
-        const { data: userData, error: userError } =
-          await client.auth.getUser();
-        if (userError || !userData.user) {
-          await client.auth.signOut();
-          this.orgOverride = undefined;
-          this.sessionSubject.next(null);
-          return;
+    void client.auth
+      .getSession()
+      .then(async ({ data }) => {
+        if (data.session) {
+          const { data: userData, error: userError } =
+            await client.auth.getUser();
+          if (userError || !userData.user) {
+            await client.auth.signOut();
+            this.orgOverride = undefined;
+            this.sessionSubject.next(null);
+            return;
+          }
         }
-      }
-      this.applySupabaseSession(data.session);
-    });
+        this.applySupabaseSession(data.session);
+      })
+      .catch((err) => {
+        console.error('Failed to load initial session:', err);
+        this.sessionSubject.next(null);
+      });
 
     client.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
