@@ -33,6 +33,10 @@ import {
   MOCK_SUPPORT_PROVIDER,
   MockSupportAdapter,
 } from './mock-support.adapter';
+import {
+  MOCK_PROJECT_PROVIDER,
+  MockProjectAdapter,
+} from './mock-project.adapter';
 
 /** Billing, activation, and other ports — mock only (used by `apps/web`). */
 export function provideMockNonAuthAdapters(): EnvironmentProviders {
@@ -49,6 +53,7 @@ export function provideMockNonAuthAdapters(): EnvironmentProviders {
     MockIntegrationsAdapter,
     MockMetricsAdapter,
     MockSupportAdapter,
+    MockProjectAdapter,
     MOCK_BILLING_PROVIDER,
     MOCK_ACTIVATION_PROVIDER,
     MOCK_API_KEYS_PROVIDER,
@@ -56,5 +61,6 @@ export function provideMockNonAuthAdapters(): EnvironmentProviders {
     MOCK_INTEGRATIONS_PROVIDER,
     MOCK_METRICS_PROVIDER,
     MOCK_SUPPORT_PROVIDER,
+    MOCK_PROJECT_PROVIDER,
   ]);
 }

@@ -30,6 +30,7 @@ import {
   MOCK_ORG_PROVIDER,
   MockOrgAdapter,
 } from './mock-org.adapter';
+import { MockProjectAdapter } from './mock-project.adapter';
 
 declare global {
   interface Window {
@@ -62,6 +63,7 @@ export function provideDemoAdapters(): EnvironmentProviders {
       const emails = inject(MockEmailsAdapter);
       const integrations = inject(MockIntegrationsAdapter);
       const org = inject(MockOrgAdapter);
+      const projects = inject(MockProjectAdapter);
       window.__oequResetMock = () => {
         auth.resetMockState();
         billing.resetMockState();
@@ -70,6 +72,7 @@ export function provideDemoAdapters(): EnvironmentProviders {
         emails.resetMockState();
         integrations.resetMockState();
         org.resetMockState();
+        projects.resetMockState();
         void org.selectOrganization('parcel');
       };
       window.__oequSetZeroOrgs = () => {
