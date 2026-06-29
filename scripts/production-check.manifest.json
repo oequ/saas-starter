@@ -1,0 +1,25 @@
+{
+  "edgeFunctions": [
+    "billing-create-checkout",
+    "billing-create-portal",
+    "billing-cancel-subscription",
+    "billing-update-subscription",
+    "billing-list-invoices",
+    "stripe-webhook"
+  ],
+  "schemaProbes": [
+    {
+      "table": "organizations",
+      "description": "core org schema (0001+)"
+    },
+    {
+      "table": "organization_activation",
+      "description": "onboarding activation (0012+)"
+    },
+    {
+      "table": "organization_billing",
+      "description": "multi-provider billing (0013+)"
+    }
+  ],
+  "defaultSeedOrgSlug": "demo"
+}

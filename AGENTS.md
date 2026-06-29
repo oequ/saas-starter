@@ -13,6 +13,7 @@ Machine-readable context for AI coding assistants (Cursor, Copilot, etc.).
 - E2E (web, needs Supabase): `npm run e2e:web:release`
 - Build: `npx nx build web`
 - DB reset: `npm run db:reset`
+- Production pre-flight (hosted Supabase): `npm run production:check` — see [docs/DEPLOY.md](docs/DEPLOY.md)
 
 ## Repository layout
 
