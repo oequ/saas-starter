@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - **Public API (OSS):** usage units metering, `POST/GET /v1/demo-runs`, Edge Function `public-v1`, `UsageUnitsPort`, OpenAPI (`openapi/public-v1.yaml`), HTTP smoke (`npm run test:demo-runs-http`). See [ADR 0004](docs/adr/0004-public-api-usage-units.md) and [docs/PUBLIC_API.md](docs/PUBLIC_API.md).
+- **`apps/api-console`:** OSS developer console shell (overview, keys, settings, docs, account) on port 4202.
 
 ### Fixed
 

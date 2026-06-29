@@ -1,0 +1,54 @@
+<div hlmSidebarWrapper class="min-h-svh">
+  <hlm-sidebar>
+    <div hlmSidebarHeader class="px-4 py-3">
+      <span class="text-sm font-semibold tracking-tight">API Console</span>
+      <p class="text-muted-foreground mt-0.5 text-xs">OSS developer platform</p>
+    </div>
+    <div hlmSidebarContent>
+      @for (section of sections; track section.id) {
+        <div hlmSidebarGroup>
+          <div hlmSidebarGroupLabel class="px-4 text-xs font-medium uppercase tracking-wide">
+            {{ section.label }}
+          </div>
+          <div hlmSidebarGroupContent class="px-2">
+            <ul hlmSidebarMenu>
+              @for (item of section.items; track item.path) {
+                <li hlmSidebarMenuItem>
+                  <a
+                    hlmSidebarMenuButton
+                    [routerLink]="item.path"
+                    routerLinkActive
+                    #link="routerLinkActive"
+                    [isActive]="link.isActive"
+                    [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                  >
+                    <span class="text-sm font-normal">{{ item.label }}</span>
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div hlmSidebarFooter class="mt-auto border-border border-t p-2">
+      <oequ-user-menu />
+    </div>
+  </hlm-sidebar>
+
+  <main hlmSidebarInset class="flex min-h-svh flex-col">
+    <header
+      class="border-border bg-background sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b px-4"
+    >
+      <button hlmSidebarTrigger type="button" aria-label="Toggle sidebar">
+        <span class="sr-only">Toggle sidebar</span>
+      </button>
+    </header>
+    <section class="min-h-0 flex-1 overflow-y-auto p-6">
+      <div class="mx-auto w-full max-w-5xl">
+        <router-outlet />
+      </div>
+    </section>
+  </main>
+</div>

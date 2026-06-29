@@ -28,6 +28,7 @@ node_modules
 .env
 .env.local
 apps/web/src/app/supabase.settings.ts
+apps/api-console/src/app/supabase.settings.ts
 
 # Supabase Studio SQL snippets (local, may contain user UUIDs)
 supabase/snippets/

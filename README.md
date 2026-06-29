@@ -134,6 +134,7 @@ supabase/                 # Migrations, seed, local CLI config
 |-----|----------|
 | [docs/STRIPE_LOCAL.md](./docs/STRIPE_LOCAL.md) | Local Stripe + Edge Functions smoke |
 | [docs/PUBLIC_API.md](./docs/PUBLIC_API.md) | OSS public REST API (keys, demo-runs, local smoke) |
+| [apps/api-console/README.md](./apps/api-console/README.md) | API Developer Console (local :4202) |
 | [docs/DEPLOY.md](./docs/DEPLOY.md) | Hosted Supabase + Vercel launch runbook |
 | [docs/BILLING_CUSTOM_PROVIDER.md](./docs/BILLING_CUSTOM_PROVIDER.md) | Custom billing provider integration |
 | [docs/STACK.md](./docs/STACK.md) | Version pins before `npm install` anything |
@@ -152,6 +153,7 @@ supabase/                 # Migrations, seed, local CLI config
 |---------|-------------|
 | `npx nx serve demo` | Mock demo (:4200) |
 | `npm run start:web` | Supabase web (:4201) |
+| `npm run start:api-console` | OSS API Developer Console (:4202) |
 | `npm run db:start` / `db:reset` / `db:status` | Local Supabase stack |
 | `npx nx build demo` | Production build + service worker |
 | `npm run build:pages` | GitHub Pages (`baseHref` + PWA) |

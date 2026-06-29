@@ -1,0 +1,99 @@
+<div class="space-y-8">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Get started</h1>
+    <p class="text-muted-foreground mt-1 text-sm">
+      OSS Public API v1 — metered sandbox endpoints and OpenAPI contract.
+    </p>
+  </div>
+
+  <section hlmCard>
+    <div hlmCardHeader class="pb-2">
+      <h2 hlmCardTitle class="text-sm font-medium">1. Create an API key</h2>
+    </div>
+    <div hlmCardContent class="text-muted-foreground space-y-2 text-sm">
+      <p>
+        Go to
+        <a routerLink="/keys" class="text-primary underline-offset-4 hover:underline"
+          >API Keys</a
+        >
+        and create a key with read + write scopes.
+      </p>
+    </div>
+  </section>
+
+  <section hlmCard>
+    <div hlmCardHeader class="pb-2">
+      <h2 hlmCardTitle class="text-sm font-medium">2. Check account quota</h2>
+    </div>
+    <div hlmCardContent class="space-y-4">
+      <div class="space-y-2">
+        <p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">curl</p>
+        <pre
+          class="border-input bg-muted overflow-x-auto rounded-md border p-4 font-mono text-xs whitespace-pre-wrap"
+          >{{ accountSnippets.curl }}</pre
+        >
+      </div>
+      <div class="space-y-2">
+        <p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">TypeScript</p>
+        <pre
+          class="border-input bg-muted overflow-x-auto rounded-md border p-4 font-mono text-xs whitespace-pre-wrap"
+          >{{ accountSnippets.typescript }}</pre
+        >
+      </div>
+      <div class="space-y-2">
+        <p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">Python</p>
+        <pre
+          class="border-input bg-muted overflow-x-auto rounded-md border p-4 font-mono text-xs whitespace-pre-wrap"
+          >{{ accountSnippets.python }}</pre
+        >
+      </div>
+      <p class="text-muted-foreground text-xs">
+        Response includes <code>usage_units</code> (balance and monthly allowance).
+      </p>
+    </div>
+  </section>
+
+  <section hlmCard>
+    <div hlmCardHeader class="pb-2">
+      <h2 hlmCardTitle class="text-sm font-medium">3. Run a metered demo request</h2>
+    </div>
+    <div hlmCardContent class="space-y-4">
+      <div class="space-y-2">
+        <p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">curl</p>
+        <pre
+          class="border-input bg-muted overflow-x-auto rounded-md border p-4 font-mono text-xs whitespace-pre-wrap"
+          >{{ demoRunSnippets.curl }}</pre
+        >
+      </div>
+      <div class="space-y-2">
+        <p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">TypeScript</p>
+        <pre
+          class="border-input bg-muted overflow-x-auto rounded-md border p-4 font-mono text-xs whitespace-pre-wrap"
+          >{{ demoRunSnippets.typescript }}</pre
+        >
+      </div>
+      <div class="space-y-2">
+        <p class="text-muted-foreground text-xs font-medium uppercase tracking-wide">Python</p>
+        <pre
+          class="border-input bg-muted overflow-x-auto rounded-md border p-4 font-mono text-xs whitespace-pre-wrap"
+          >{{ demoRunSnippets.python }}</pre
+        >
+      </div>
+      <p class="text-muted-foreground text-xs">
+        Costs <strong>1 usage unit</strong>. See
+        <a href="https://github.com/oequ/saas-starter/blob/main/docs/PUBLIC_API.md" class="text-primary underline-offset-4 hover:underline" target="_blank" rel="noopener">docs/PUBLIC_API.md</a>
+        for local smoke (<code>npm run test:demo-runs-http</code>).
+      </p>
+    </div>
+  </section>
+
+  <section hlmCard>
+    <div hlmCardHeader class="pb-2">
+      <h2 hlmCardTitle class="text-sm font-medium">OpenAPI reference</h2>
+    </div>
+    <div hlmCardContent class="text-muted-foreground space-y-2 text-sm">
+      <p class="font-mono text-foreground text-sm">{{ openApiPath }}</p>
+      <p>OSS routes: <code>/account</code>, <code>/demo-runs</code>.</p>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,133 @@
+<div class="space-y-8">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Overview</h1>
+    <p class="text-muted-foreground mt-1 text-sm">
+      Sandbox quota, API keys, and metered usage for your project.
+    </p>
+  </div>
+
+  @if (bootstrapFailed()) {
+    <div
+      class="border-destructive/40 bg-destructive/10 text-destructive rounded-lg border px-4 py-3 text-sm"
+      role="alert"
+    >
+      We could not finish account setup. Refresh the page or contact support.
+    </div>
+  }
+
+  <section class="space-y-3">
+    <h2 class="text-sm font-medium">Get started</h2>
+    <ul class="space-y-2 text-sm">
+      <li class="flex items-center gap-2">
+        <span
+          class="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-xs"
+          [class.bg-primary]="hasApiKey()"
+          [class.text-primary-foreground]="hasApiKey()"
+          [class.bg-muted]="!hasApiKey()"
+        >
+          {{ hasApiKey() ? '✓' : '1' }}
+        </span>
+        @if (hasApiKey()) {
+          <span class="text-muted-foreground">API key created</span>
+        } @else {
+          <a routerLink="/keys" class="text-primary underline-offset-4 hover:underline"
+            >Create an API key</a
+          >
+        }
+      </li>
+      <li class="flex items-center gap-2">
+        <span
+          class="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-xs"
+          [class.bg-primary]="hasUsageUnits()"
+          [class.text-primary-foreground]="hasUsageUnits()"
+          [class.bg-muted]="!hasUsageUnits()"
+        >
+          {{ hasUsageUnits() ? '✓' : '2' }}
+        </span>
+        <a routerLink="/docs" class="text-primary underline-offset-4 hover:underline"
+          >Call POST /demo-runs from the docs snippets</a
+        >
+      </li>
+      <li class="flex items-center gap-2">
+        <span
+          class="bg-muted inline-flex size-5 shrink-0 items-center justify-center rounded-full text-xs"
+          >3</span
+        >
+        <a routerLink="/docs" class="text-primary underline-offset-4 hover:underline"
+          >Read API docs</a
+        >
+      </li>
+    </ul>
+  </section>
+
+  <section class="grid gap-4 sm:grid-cols-3">
+    <div hlmCard>
+      <div hlmCardHeader class="pb-2">
+        <h3 hlmCardTitle class="text-sm font-medium">Project ID</h3>
+      </div>
+      <div hlmCardContent class="space-y-2">
+        @if (projectPublicId(); as projId) {
+          <code class="block truncate font-mono text-sm">{{ projId }}</code>
+          <button
+            hlmBtn
+            type="button"
+            variant="outline"
+            size="sm"
+            title="Use this id for support; authenticate with API keys."
+            (click)="copyProjectId()"
+          >
+            {{ copyHint() || 'Copy' }}
+          </button>
+        } @else {
+          <span class="text-muted-foreground text-sm">Loading…</span>
+        }
+      </div>
+    </div>
+
+    <div hlmCard>
+      <div hlmCardHeader class="pb-2">
+        <h3 hlmCardTitle class="text-sm font-medium">Sandbox quota</h3>
+      </div>
+      <div hlmCardContent>
+        @if (usageBalance.isLoading()) {
+          <span class="text-muted-foreground text-sm">Loading…</span>
+        } @else {
+          <p class="text-2xl font-semibold tabular-nums">{{ availableUnits() }}</p>
+          <p class="text-muted-foreground text-xs">
+            usage units remaining
+            @if (monthlyAllowance() > 0) {
+              <span> ({{ monthlyAllowance() }} monthly allowance)</span>
+            }
+          </p>
+        }
+      </div>
+    </div>
+
+    <div hlmCard>
+      <div hlmCardHeader class="pb-2">
+        <h3 hlmCardTitle class="text-sm font-medium">API keys</h3>
+      </div>
+      <div hlmCardContent>
+        @if (apiKeys.isLoading()) {
+          <span class="text-muted-foreground text-sm">Loading…</span>
+        } @else {
+          <p class="text-2xl font-semibold tabular-nums">{{ apiKeyCount() }}</p>
+          <a
+            routerLink="/keys"
+            class="text-muted-foreground text-xs underline-offset-4 hover:underline"
+            >Manage keys</a
+          >
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="space-y-2">
+    <h2 class="text-sm font-medium">Rate limits</h2>
+    <p class="text-muted-foreground text-sm">
+      Default limits per API key: <strong>120</strong> read requests per minute and
+      <strong>20</strong> write requests per minute. Responses may include
+      <code>429</code> with <code>Retry-After</code> when exceeded.
+    </p>
+  </section>
+</div>

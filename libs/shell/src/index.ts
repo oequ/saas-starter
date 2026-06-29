@@ -3,6 +3,7 @@ export * from './lib/workspace-entry.component';
 export * from './lib/workspace-switcher.component';
 export * from './lib/user-menu.component';
 export * from './lib/shell.guards';
+export * from './lib/shell-config';
 export * from './lib/settings-layout.tokens';
 export * from './lib/theme.service';
 export * from './lib/create-workspace-dialog.service';

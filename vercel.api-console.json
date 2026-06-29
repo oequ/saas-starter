@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install -g npm@11.6.2 && npm install --no-audit --no-fund",
+  "buildCommand": "node scripts/vercel-build-api-console.mjs",
+  "outputDirectory": "dist/apps/api-console/browser",
+  "rewrites": [
+    {
+      "source": "/((?!.*\\.).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

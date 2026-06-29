@@ -5,6 +5,8 @@
   "scripts": {
     "start": "nx serve demo",
     "start:web": "nx serve web",
+    "start:api-console": "nx serve api-console",
+    "build:api-console:vercel": "node scripts/vercel-build-api-console.mjs",
     "build": "nx build demo",
     "build:pages": "nx build demo --configuration=github-pages",
     "lint": "nx run-many -t lint --all",
