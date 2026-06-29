@@ -5,7 +5,8 @@
     "billing-cancel-subscription",
     "billing-update-subscription",
     "billing-list-invoices",
-    "stripe-webhook"
+    "stripe-webhook",
+    "public-v1"
   ],
   "schemaProbes": [
     {

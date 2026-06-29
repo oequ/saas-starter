@@ -48,6 +48,22 @@ Register the Stripe webhook endpoint:
 
 See [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) for event types and local smoke.
 
+### Public API (`public-v1`)
+
+Deploy the OSS public API Edge Function (API-key auth; `verify_jwt = false` in `config.toml`):
+
+```bash
+supabase functions deploy public-v1
+```
+
+Smoke after deploy (with a workspace API key):
+
+```bash
+npm run test:demo-runs-http
+```
+
+See [PUBLIC_API.md](./PUBLIC_API.md) for routes and base URL.
+
 ---
 
 ## 3. Auth redirect URLs
@@ -74,6 +90,23 @@ Include auth callback paths your app uses: `/auth/callback`, `/auth/reset-passwo
    | `SUPABASE_ANON_KEY` | Publishable anon key |
 
 3. Deploy. SPA hosts need a fallback to `index.html` for client routes.
+
+### API Developer Console (`apps/api-console`)
+
+Separate Vercel project (or static host) using [`vercel.api-console.json`](../vercel.api-console.json):
+
+```bash
+npm run build:api-console:vercel
+```
+
+| Variable | Purpose |
+|----------|---------|
+| `SUPABASE_URL` | Hosted project URL |
+| `SUPABASE_ANON_KEY` | Publishable anon key |
+
+Auth redirect URLs must include the console origin (e.g. `https://api-console.your-domain.com/**`).
+
+Merge gate locally: `npm run pre-release:api-console`. CI: job `api-console-e2e` in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
 ---
 
@@ -131,7 +164,8 @@ Exit code `0` = no failures (warnings are OK). Exit code `1` = fix errors before
 |-----|----------|
 | [STRIPE_LOCAL.md](./STRIPE_LOCAL.md) | Stripe keys, webhook events, CI smoke |
 | [BILLING_CUSTOM_PROVIDER.md](./BILLING_CUSTOM_PROVIDER.md) | Non-Stripe billing |
-| [supabase/README.md](../supabase/README.md) | Local Docker stack, `db:*` scripts |
+| [PUBLIC_API.md](./PUBLIC_API.md) | Public API routes, keys, local smoke |
+| [apps/api-console/README.md](../apps/api-console/README.md) | API Developer Console dev + E2E |
 
 ---
 

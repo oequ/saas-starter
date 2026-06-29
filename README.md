@@ -48,6 +48,12 @@ Playwright smoke for auth, onboarding, tenant isolation (`@web` tag):
 npm run pre-release:web
 ```
 
+API Developer Console (public API + Playwright `@api-console`):
+
+```bash
+npm run pre-release:api-console
+```
+
 Or manually (Supabase already running):
 
 ```bash
@@ -69,6 +75,8 @@ Honest split — UI is largely shared; **adapters** decide what is real.
 | Tenant isolation + invite claim | N/A (mock) | RLS + `web-e2e` (`@web` smoke) |
 | Billing, paywall, cancel, invoices | Mock | `billingProvider`: `mock` (default), `stripe`, or `custom` — Team per-seat sync on invite/remove — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md), [BILLING_CUSTOM_PROVIDER.md](docs/BILLING_CUSTOM_PROVIDER.md) |
 | Metrics, API keys, emails, activation | Mock | Supabase (`0010`–`0012`) + adapters; mock integrations/support |
+| Public API (`public-v1`) + usage units | N/A | Edge + migrations `0028`–`0032`; smoke `test:demo-runs-http` |
+| API Developer Console (`apps/api-console`) | N/A | Supabase auth + keys + playground; `:4202`, `pre-release:api-console` |
 | i18n (English) | Yes | Yes |
 
 **Architecture rule:** features depend on `@oequ/ports` tokens only — never `@supabase/supabase-js` in `libs/features-*` or `libs/shell`.
