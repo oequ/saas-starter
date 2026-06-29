@@ -95,6 +95,9 @@ import { HlmSkeletonImports } from '@spartan-ng/helm/skeleton';
                 @for (member of members(); track member.userId) {
                   <label
                     role="option"
+                    [attr.aria-selected]="
+                      form.controls.memberId.value === member.userId
+                    "
                     class="border-input hover:bg-muted/40 flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors"
                     [class.border-primary]="
                       form.controls.memberId.value === member.userId

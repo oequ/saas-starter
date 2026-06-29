@@ -87,9 +87,9 @@ const PERIOD_LABEL_KEYS: Record<RetrospectiveSendPeriod, string> = {
             </div>
 
             <div class="w-full min-w-0">
-              <label class="mb-1.5 block text-sm font-medium">
+              <span class="mb-1.5 block text-sm font-medium">
                 {{ 'onboarding.retroDialog.timePeriod' | transloco }}
-              </label>
+              </span>
               <hlm-select
                 class="w-full"
                 [value]="form.controls.period.value"

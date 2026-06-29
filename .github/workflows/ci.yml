@@ -75,10 +75,11 @@ jobs:
       - name: Reset database
         run: supabase db reset
 
+      - name: Wait for Edge (public-v1)
+        run: node scripts/wait-edge-health.mjs
+
       - name: Public API smoke (demo-runs)
-        run: |
-          node scripts/edge-runtime-health.mjs
-          npm run test:demo-runs-http
+        run: npm run test:demo-runs-http
 
       - name: Web Supabase settings
         run: node scripts/write-web-supabase-settings.mjs
@@ -120,6 +121,9 @@ jobs:
 
       - name: Reset database
         run: supabase db reset
+
+      - name: Wait for Edge (public-v1)
+        run: node scripts/wait-edge-health.mjs
 
       - name: Supabase settings (web + api-console)
         run: node scripts/write-web-supabase-settings.mjs
