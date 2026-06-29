@@ -21,13 +21,14 @@ import {
   lucideUser,
 } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@oequ/i18n';
-import { AUTH_PORT, ORG_PORT } from '@oequ/ports';
+import { AUTH_PORT } from '@oequ/ports';
 import {
   HlmDropdownMenuImports,
   provideHlmDropdownMenuConfig,
 } from '@spartan-ng/helm/dropdown-menu';
 import { CookieConsentService } from './cookie-consent/cookie-consent.service';
 import { HelpPanelService } from './help/help-panel.service';
+import { isApiShell, SHELL_CONFIG } from './shell-config';
 import { SHELL_SIDEBAR_SELECT_TRIGGER_CLASS } from './settings-layout.tokens';
 import { ThemeService } from './theme.service';
 
@@ -92,22 +93,24 @@ import { ThemeService } from './theme.service';
           type="button"
           hlmDropdownMenuItem
           class="gap-2"
-          [class.bg-accent]="isAccountPath('/account/profile')"
-          (triggered)="navigateToAccount('/account/profile')"
+          [class.bg-accent]="isAccountRoute()"
+          (triggered)="navigateToAccount()"
         >
           <ng-icon name="lucideUser" class="size-4 shrink-0" aria-hidden="true" />
           <span>{{ 'shell.userMenu.accountSettings' | transloco }}</span>
         </button>
-        <button
-          type="button"
-          hlmDropdownMenuItem
-          class="gap-2"
-          [class.bg-accent]="isOnboardingRoute()"
-          (triggered)="navigateToOnboarding()"
-        >
-          <ng-icon name="lucideRocket" class="size-4 shrink-0" aria-hidden="true" />
-          <span>{{ 'shell.userMenu.onboarding' | transloco }}</span>
-        </button>
+        @if (showOnboardingLink()) {
+          <button
+            type="button"
+            hlmDropdownMenuItem
+            class="gap-2"
+            [class.bg-accent]="isOnboardingRoute()"
+            (triggered)="navigateToOnboarding()"
+          >
+            <ng-icon name="lucideRocket" class="size-4 shrink-0" aria-hidden="true" />
+            <span>{{ 'shell.userMenu.onboarding' | transloco }}</span>
+          </button>
+        }
         <button
           type="button"
           hlmDropdownMenuItem
@@ -170,7 +173,7 @@ export class UserMenuComponent {
   protected readonly menuWidthPx = signal<number | null>(null);
 
   private readonly authPort = inject(AUTH_PORT);
-  private readonly orgPort = inject(ORG_PORT);
+  private readonly shell = inject(SHELL_CONFIG);
   private readonly router = inject(Router);
   private readonly helpPanel = inject(HelpPanelService);
   private readonly cookieConsent = inject(CookieConsentService);
@@ -208,8 +211,13 @@ export class UserMenuComponent {
     return name ? name.charAt(0).toUpperCase() : '?';
   }
 
-  protected isAccountPath(path: string): boolean {
-    return (this.currentUrl() ?? '').startsWith(path);
+  protected isAccountRoute(): boolean {
+    const url = this.currentUrl() ?? '';
+    return url === '/account' || url.startsWith('/account/');
+  }
+
+  protected showOnboardingLink(): boolean {
+    return !isApiShell(this.shell);
   }
 
   protected isOnboardingRoute(): boolean {
@@ -234,8 +242,8 @@ export class UserMenuComponent {
     }
   }
 
-  protected async navigateToAccount(path: string): Promise<void> {
-    await this.orgPort.selectPersonal();
+  protected async navigateToAccount(): Promise<void> {
+    const path = isApiShell(this.shell) ? '/account' : '/account/profile';
     await this.router.navigateByUrl(path);
   }
 
