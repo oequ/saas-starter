@@ -75,8 +75,14 @@ jobs:
       - name: Reset database
         run: supabase db reset
 
+      - name: Export Supabase keys
+        run: |
+          JSON=$(npx supabase status -o json)
+          echo "SUPABASE_ANON_KEY=$(echo "$JSON" | jq -r '.ANON_KEY')" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(echo "$JSON" | jq -r '.SERVICE_ROLE_KEY')" >> "$GITHUB_ENV"
+
       - name: Wait for Edge (public-v1)
-        run: node scripts/wait-edge-health.mjs
+        run: node scripts/wait-edge-health.mjs 45
 
       - name: Public API smoke (demo-runs)
         run: npm run test:demo-runs-http
@@ -122,8 +128,14 @@ jobs:
       - name: Reset database
         run: supabase db reset
 
+      - name: Export Supabase keys
+        run: |
+          JSON=$(npx supabase status -o json)
+          echo "SUPABASE_ANON_KEY=$(echo "$JSON" | jq -r '.ANON_KEY')" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(echo "$JSON" | jq -r '.SERVICE_ROLE_KEY')" >> "$GITHUB_ENV"
+
       - name: Wait for Edge (public-v1)
-        run: node scripts/wait-edge-health.mjs
+        run: node scripts/wait-edge-health.mjs 45
 
       - name: Supabase settings (web + api-console)
         run: node scripts/write-web-supabase-settings.mjs

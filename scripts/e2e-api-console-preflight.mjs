@@ -72,7 +72,7 @@ function checkEdge() {
     console.log('  ⊘ Edge probe skipped (SKIP_EDGE_ENSURE=1)');
     return;
   }
-  const edge = spawnSync(process.execPath, ['scripts/wait-edge-health.mjs', '10'], {
+  const edge = spawnSync(process.execPath, ['scripts/wait-edge-health.mjs', '30'], {
     stdio: 'inherit',
   });
   if (edge.status !== 0) {

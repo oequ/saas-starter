@@ -4,11 +4,23 @@
  * Prerequisites: npm run db:reset && npm run functions:serve
  */
 import { createHash, randomBytes } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { createClient } from '@supabase/supabase-js';
 
 const DEMO_ORG_ID = '00000000-0000-4000-8000-000000000001';
 const SMOKE_OWNER_EMAIL = 'public-api-smoke@local.invalid';
+
+function readSupabaseStatus() {
+  try {
+    const out = execSync('npx supabase status -o json', {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return JSON.parse(out);
+  } catch {
+    return {};
+  }
+}
 
 function envValue(key) {
   const raw = process.env[key];
@@ -16,12 +28,17 @@ function envValue(key) {
   return raw.trim().replace(/^["']|["']$/g, '');
 }
 
-const url = (envValue('SUPABASE_URL') || 'http://127.0.0.1:54321').replace(/\/$/, '');
+const status = readSupabaseStatus();
+const url = (envValue('SUPABASE_URL') || status.API_URL || status.APIUrl || 'http://127.0.0.1:54321').replace(/\/$/, '');
 const serviceRoleKey =
   envValue('SUPABASE_SERVICE_ROLE_KEY') ||
+  status.SERVICE_ROLE_KEY ||
+  status.service_role_key ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
 const anonKey =
   envValue('SUPABASE_ANON_KEY') ||
+  status.ANON_KEY ||
+  status.anon_key ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
 
 const API_BASE = `${url}/functions/v1/public-v1`;
@@ -40,7 +57,7 @@ function hashSecret(secret) {
 }
 
 function ensureEdgeRuntime() {
-  const result = spawnSync(process.execPath, ['scripts/wait-edge-health.mjs', '10'], {
+  const result = spawnSync(process.execPath, ['scripts/wait-edge-health.mjs', '30'], {
     stdio: 'inherit',
   });
   if (result.status !== 0) process.exit(result.status ?? 1);
