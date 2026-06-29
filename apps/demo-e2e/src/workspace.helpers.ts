@@ -24,7 +24,7 @@ export async function resetMockDemoState(page: Page): Promise<void> {
   await signInAsDemo(page);
   await page.evaluate(() => window.__oequResetMock?.());
   await page.reload();
-  await page.goto('/workspace');
+  await page.goto('/workspace/settings/general');
   await expect(page).toHaveURL(/\/workspace\/settings\/general$/);
 }
 

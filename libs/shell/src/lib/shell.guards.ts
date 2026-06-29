@@ -154,15 +154,16 @@ export const workspaceContextGuard: CanActivateFn = async () => {
 
 /**
  * Admin-only workspace routes (settings, billing, members).
- * Requires an active org with role === 'admin'; redirects members to the workspace root.
+ * Requires an active org with role admin or owner; redirects members to the workspace root.
  */
 export const workspaceAdminGuard: CanActivateFn = async () => {
   const authPort = inject(AUTH_PORT);
   const router = inject(Router);
   const shell = inject(SHELL_CONFIG);
   const session = await firstValueFrom(authPort.session$);
+  const role = session?.claims.org?.role;
 
-  if (session?.claims.org?.role === 'admin') {
+  if (role === 'admin' || role === 'owner') {
     return true;
   }
 

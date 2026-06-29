@@ -40,7 +40,7 @@ function hashSecret(secret) {
 }
 
 function ensureEdgeRuntime() {
-  const result = spawnSync(process.execPath, ['scripts/edge-runtime-health.mjs'], {
+  const result = spawnSync(process.execPath, ['scripts/wait-edge-health.mjs', '10'], {
     stdio: 'inherit',
   });
   if (result.status !== 0) process.exit(result.status ?? 1);
