@@ -31,6 +31,7 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 | `0029_public_api_service_grants.sql` | Service role grants for public API |
 | `0030_public_api_rate_limits.sql` | Per-key rate limit windows |
 | `0031_oss_usage_units_and_demo_runs.sql` | Usage units, demo runs, public API RPCs |
+| `0032_oss_usage_units_org_bootstrap.sql` | Seed usage balance on `create_organization`; harden `ensure_api_project` |
 
 Edge Functions (Deno 2, see `config.toml`): `public-v1` (OSS REST API), `billing-create-checkout`, `billing-create-portal`, `billing-cancel-subscription`, `billing-update-subscription`, `billing-list-invoices`, `stripe-webhook`; example `billing-custom-webhook.example` for other providers. Public API: [docs/PUBLIC_API.md](../docs/PUBLIC_API.md). Stripe: [docs/STRIPE_LOCAL.md](../docs/STRIPE_LOCAL.md). Custom: [docs/BILLING_CUSTOM_PROVIDER.md](../docs/BILLING_CUSTOM_PROVIDER.md).
 

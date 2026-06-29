@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Public API (OSS):** usage units metering, `POST/GET /v1/demo-runs`, Edge Function `public-v1`, `UsageUnitsPort`, OpenAPI (`openapi/public-v1.yaml`), HTTP smoke (`npm run test:demo-runs-http`). See [ADR 0004](docs/adr/0004-public-api-usage-units.md) and [docs/PUBLIC_API.md](docs/PUBLIC_API.md).
 
+### Fixed
+
+- New workspaces receive starter `usage_unit_balances` (100 units) on `create_organization` (migration `0032`).
+- `ensure_api_project` tolerates concurrent `api-default` project creation.
+
 ## [0.4.0-ui] - 2026-05-19
 
 Billing payment methods, paywall UX, settings polish, PWA docs, and README alignment.
