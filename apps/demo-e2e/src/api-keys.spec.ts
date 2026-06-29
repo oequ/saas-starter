@@ -16,7 +16,10 @@ test.describe('api keys', () => {
     await expect(page.getByRole('heading', { name: 'API keys' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'No API keys yet' })).toBeVisible();
 
-    await page.getByRole('button', { name: '+ Create API key' }).click();
+    await page
+      .locator('hlm-empty')
+      .getByRole('button', { name: '+ Create API key' })
+      .click();
     await expect(page.getByRole('heading', { name: 'Add API Key' })).toBeVisible();
 
     await page.getByLabel('Name').fill('E2E Test Key');
@@ -25,7 +28,7 @@ test.describe('api keys', () => {
     await expect(
       page.getByRole('heading', { name: 'API key created' }),
     ).toBeVisible();
-    await expect(page.getByText(/^oeq_/)).toBeVisible();
+    await expect(page.locator('hlm-dialog-content .font-mono')).toContainText(/^oeq_/);
     await page.getByRole('button', { name: 'Done' }).click();
 
     await expect(page.getByText('E2E Test Key')).toBeVisible();
@@ -36,7 +39,10 @@ test.describe('api keys', () => {
     await page.goto('/onboarding');
     await createWorkspaceViaOnboarding(page, 'API Key Flow Co');
     await page.goto('/workspace/api-keys');
-    await page.getByRole('button', { name: '+ Create API key' }).click();
+    await page
+      .locator('hlm-empty')
+      .getByRole('button', { name: '+ Create API key' })
+      .click();
 
     await expect(page).toHaveURL(/\/workspace\/api-keys/);
     await expect(page.getByRole('heading', { name: 'Add API Key' })).toBeVisible();

@@ -67,7 +67,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.101.0
 
       - name: Start Supabase
         run: supabase start
@@ -78,8 +78,8 @@ jobs:
       - name: Export Supabase keys
         run: |
           JSON=$(npx supabase status -o json)
-          echo "SUPABASE_ANON_KEY=$(echo "$JSON" | jq -r '.ANON_KEY')" >> "$GITHUB_ENV"
-          echo "SUPABASE_SERVICE_ROLE_KEY=$(echo "$JSON" | jq -r '.SERVICE_ROLE_KEY')" >> "$GITHUB_ENV"
+          echo "SUPABASE_ANON_KEY=$(echo "$JSON" | jq -r '.ANON_KEY // .PUBLISHABLE_KEY // empty')" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(echo "$JSON" | jq -r '.SERVICE_ROLE_KEY // .SECRET_KEY // empty')" >> "$GITHUB_ENV"
 
       - name: Wait for Edge (public-v1)
         run: node scripts/wait-edge-health.mjs 45
@@ -120,7 +120,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.101.0
 
       - name: Start Supabase
         run: supabase start
@@ -131,8 +131,8 @@ jobs:
       - name: Export Supabase keys
         run: |
           JSON=$(npx supabase status -o json)
-          echo "SUPABASE_ANON_KEY=$(echo "$JSON" | jq -r '.ANON_KEY')" >> "$GITHUB_ENV"
-          echo "SUPABASE_SERVICE_ROLE_KEY=$(echo "$JSON" | jq -r '.SERVICE_ROLE_KEY')" >> "$GITHUB_ENV"
+          echo "SUPABASE_ANON_KEY=$(echo "$JSON" | jq -r '.ANON_KEY // .PUBLISHABLE_KEY // empty')" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(echo "$JSON" | jq -r '.SERVICE_ROLE_KEY // .SECRET_KEY // empty')" >> "$GITHUB_ENV"
 
       - name: Wait for Edge (public-v1)
         run: node scripts/wait-edge-health.mjs 45
