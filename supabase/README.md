@@ -199,8 +199,3 @@ npx nx e2e web-e2e --grep "tenant isolation"
 npx nx e2e web-e2e --grep "invite flow"
 npm run e2e:web:release
 ```
-
-## Next step (roadmap)
-
-- Seat limits backed by Postgres
-- Hosted Supabase project + CI migration pipeline

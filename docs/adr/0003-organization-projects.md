@@ -49,4 +49,6 @@ Products enable profiles by wiring adapters and running migrations; no separate 
 ## References
 
 - [ADR 0001 — Supabase tenant RLS](./0001-supabase-tenant-rls.md)
-- [WORKFLOW in product forks](../../ai-saas-starter/docs/WORKFLOW.md) (if synced)
+## References
+
+- [apps/docs/content/operations/workflow.mdx](https://github.com/oequ/ai-saas-starter/blob/main/apps/docs/content/operations/workflow.mdx) (downstream AI Starter)

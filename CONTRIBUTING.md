@@ -40,7 +40,7 @@ Use a short imperative subject line:
 ```
 fix(auth): handle expired session gracefully
 feat(billing): add invoice PDF download
-docs: update QUALITY.md after audit
+docs: update STRIPE_LOCAL runbook
 ```
 
 ## Code style

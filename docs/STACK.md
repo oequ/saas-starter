@@ -1,4 +1,4 @@
-# Locked stack (internal)
+# Locked stack
 
 > Single source of truth for dependency versions in this monorepo.  
 > Do not copy `package.json` from other repos. New packages: check peers, pin to this major.  

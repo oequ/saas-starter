@@ -63,7 +63,6 @@ Do **not** change `BillingPort` unless adding cross-provider capabilities (docum
 
 ## References
 
-- [APPS_WEB_PLAN.md](../APPS_WEB_PLAN.md)
 - [STRIPE_LOCAL.md](../STRIPE_LOCAL.md)
 - [BILLING_CUSTOM_PROVIDER.md](../BILLING_CUSTOM_PROVIDER.md)
 - `supabase/functions/billing-custom-webhook.example/`

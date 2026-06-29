@@ -135,7 +135,7 @@ With Stripe enabled, paywall downgrades open **Customer Portal**. Seat limits up
 
 ## Pre-launch critical cases
 
-Operator checklist (auto-renewal, failed payments, webhooks, seats): **[BILLING_PRE_LAUNCH.md](./BILLING_PRE_LAUNCH.md)**.
+Before production billing: verify auto-renewal (Stripe Test Clock), failed payment → `past_due` UX, webhook idempotency, and per-seat sync — see [BILLING_DUNNING.md](./BILLING_DUNNING.md).
 
 Nightly CI smoke does **not** replace Test Clock renewal testing.
 

@@ -65,7 +65,6 @@ supabase/                     # Migrations, seed, Edge Functions, config
 ## Quality
 
 - Rubric: [Quality Framework v1.0](https://github.com/oequ/quality-framework)
-- Self-assessment: [docs/QUALITY.md](./docs/QUALITY.md)
 
 ## Do not
 

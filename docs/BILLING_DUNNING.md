@@ -1,6 +1,6 @@
 # Billing — dunning and `past_due` policy
 
-Operator and product reference for **failed renewals** on the Stripe path in `apps/web`. Complements [BILLING_PRE_LAUNCH.md](./BILLING_PRE_LAUNCH.md) and [STRIPE_LOCAL.md](./STRIPE_LOCAL.md).
+Operator and product reference for **failed renewals** on the Stripe path in `apps/web`. See also [STRIPE_LOCAL.md](./STRIPE_LOCAL.md).
 
 Last updated: **2026-05-26**.
 
@@ -59,7 +59,7 @@ Implemented via [`isBillingPaymentBlocked`](../libs/ports/src/lib/billing.utils.
 1. **Grace period** — 0 / 3 / 7 days banner-only before restricting invites?
 2. **Entitlements** — keep Team/Pro features during `past_due` or downgrade to Free?
 3. **Emails** — Stripe dunning emails vs app transactional (outbound_emails)?
-4. **Manual verify** — [BILLING_PRE_LAUNCH.md](./BILLING_PRE_LAUNCH.md) Test Clock + decline card in Dashboard.
+4. **Manual verify** — Stripe Test Clock + declining test card in Dashboard ([STRIPE_LOCAL.md](./STRIPE_LOCAL.md)).
 
 ---
 

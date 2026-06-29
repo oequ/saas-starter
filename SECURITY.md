@@ -31,8 +31,6 @@ This repository is a **starter kit** — security posture depends on how you dep
 | Authorization | Supabase RLS | RLS + server-side validation |
 | Route guards | UX-only navigation | Backend enforces all access control |
 
-See [docs/QUALITY.md](./docs/QUALITY.md) for the full security self-assessment.
-
 ## Disclosure policy
 
 We follow coordinated disclosure. Reporters will be credited in the changelog unless they prefer anonymity.

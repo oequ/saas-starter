@@ -1,7 +1,5 @@
 # Oequ SaaS Starter
 
-[![Quality: 770/1000](https://img.shields.io/badge/Quality_Framework-770%2F1000-0ea5e9)](./docs/QUALITY.md)
-
 **Angular B2B SaaS control plane** in one Nx monorepo: workspace shell, org settings, billing UI, metrics, API keys — wired through **ports** so you swap mock, Supabase, or HTTP without rewriting features.
 
 | | **Demo** | **Web (full-stack)** |
@@ -11,7 +9,7 @@
 | **Needs** | `npm install` only | Docker + `npm run db:start` |
 | **Ship target** | GitHub Pages, BYO API | Local/prod Supabase project |
 
-Locked versions: [docs/STACK.md](./docs/STACK.md) · Backlog: [docs/ROADMAP.md](./docs/ROADMAP.md) · **Web plan:** [docs/APPS_WEB_PLAN.md](./docs/APPS_WEB_PLAN.md) · DB: [supabase/README.md](./supabase/README.md)
+Locked versions: [docs/STACK.md](./docs/STACK.md) · DB: [supabase/README.md](./supabase/README.md)
 
 ---
 
@@ -101,8 +99,6 @@ libs/data-access-supabase     →  Supabase auth/org adapters
 | **`apps/demo`** | Mock-first; not full parity with `apps/web` |
 | **Embedded Checkout** | Hosted redirect only (Elements later) |
 
-Full backlog: [docs/APPS_WEB_PLAN.md](./docs/APPS_WEB_PLAN.md).
-
 ---
 
 ## Stack
@@ -136,12 +132,11 @@ supabase/                 # Migrations, seed, local CLI config
 
 | Doc | Use when |
 |-----|----------|
-| [docs/APPS_WEB_PLAN.md](./docs/APPS_WEB_PLAN.md) | Web full-stack status, starter vs prod gaps |
 | [docs/STRIPE_LOCAL.md](./docs/STRIPE_LOCAL.md) | Local Stripe + Edge Functions smoke |
-| [docs/ROADMAP.md](./docs/ROADMAP.md) | What to build next (P0 demo gaps vs Supabase phase 3) |
+| [docs/BILLING_CUSTOM_PROVIDER.md](./docs/BILLING_CUSTOM_PROVIDER.md) | Custom billing provider integration |
 | [docs/STACK.md](./docs/STACK.md) | Version pins before `npm install` anything |
 | [docs/I18N.md](./docs/I18N.md) | Adding locales |
-| [docs/QUALITY.md](./docs/QUALITY.md) | [Quality Framework](https://github.com/oequ/quality-framework) self-assessment |
+| [docs/adr/](./docs/adr/) | Architecture decision records |
 | [supabase/README.md](./supabase/README.md) | Docker, `db:*` scripts, member SQL |
 
 **Live mock demo (Pages):** https://oequ.github.io/angular-saas-starter-ui/  
