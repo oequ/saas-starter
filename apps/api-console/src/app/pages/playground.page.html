@@ -1,0 +1,142 @@
+<div class="space-y-8">
+  <div>
+    <h1 class="text-2xl font-semibold tracking-tight">Playground</h1>
+    <p class="text-muted-foreground mt-1 text-sm">
+      Try the OSS Public API with your key. Each
+      <code>POST /demo-runs</code> costs one usage unit.
+    </p>
+  </div>
+
+  <section hlmCard>
+    <div hlmCardHeader class="pb-2">
+      <h2 hlmCardTitle class="text-sm font-medium">Connection</h2>
+    </div>
+    <div hlmCardContent class="space-y-4">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium" for="pg-base-url"
+          >Base URL</label
+        >
+        <input
+          id="pg-base-url"
+          hlmInput
+          class="border-input bg-muted h-9 w-full font-mono text-xs shadow-none"
+          [value]="baseUrl()"
+          readonly
+        />
+      </div>
+      <div>
+        <label class="mb-1.5 block text-sm font-medium" for="pg-api-key"
+          >API key</label
+        >
+        <input
+          id="pg-api-key"
+          hlmInput
+          type="password"
+          autocomplete="off"
+          class="border-input bg-background h-9 w-full font-mono text-sm shadow-none"
+          placeholder="oeq_…"
+          [ngModel]="apiSecret()"
+          (ngModelChange)="onSecretInput($event)"
+        />
+        <p class="text-muted-foreground mt-1.5 text-xs">
+          Create a key on the
+          <a routerLink="/keys" class="text-foreground underline-offset-4 hover:underline"
+            >API Keys</a
+          >
+          page.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section hlmCard>
+    <div hlmCardHeader class="pb-2">
+      <h2 hlmCardTitle class="text-sm font-medium">Request</h2>
+    </div>
+    <div hlmCardContent class="space-y-4">
+      <div>
+        <span class="mb-1.5 block text-sm font-medium">Preset</span>
+        <hlm-select
+          class="w-full sm:max-w-md"
+          [value]="presetId()"
+          (valueChange)="onPresetChange($event)"
+        >
+          <hlm-select-trigger class="h-9 w-full shadow-none">
+            <span class="truncate">{{ activePreset().label }}</span>
+          </hlm-select-trigger>
+          <hlm-select-content *hlmSelectPortal>
+            @for (preset of presets; track preset.id) {
+              <hlm-select-item [value]="preset.id">{{
+                preset.label
+              }}</hlm-select-item>
+            }
+          </hlm-select-content>
+        </hlm-select>
+      </div>
+
+      @if (showRunIdField()) {
+        <div>
+          <label class="mb-1.5 block text-sm font-medium" for="pg-run-id"
+            >Demo run id</label
+          >
+          <input
+            id="pg-run-id"
+            hlmInput
+            class="border-input bg-background h-9 w-full font-mono text-sm shadow-none"
+            placeholder="uuid from POST response"
+            [ngModel]="runId()"
+            (ngModelChange)="onRunIdInput($event)"
+          />
+        </div>
+      }
+
+      @if (activePreset().method === 'POST') {
+        <div>
+          <label class="mb-1.5 block text-sm font-medium" for="pg-body"
+            >JSON body</label
+          >
+          <textarea
+            id="pg-body"
+            hlmTextarea
+            class="border-input min-h-[140px] w-full font-mono text-xs shadow-none"
+            [ngModel]="requestBody()"
+            (ngModelChange)="requestBody.set($event)"
+          ></textarea>
+        </div>
+      }
+
+      <div class="flex flex-wrap gap-2">
+        <button hlmBtn type="button" variant="outline" (click)="copyCurl()">
+          {{ copyHint() || 'Copy as curl.exe' }}
+        </button>
+        <button
+          hlmBtn
+          type="button"
+          [disabled]="running()"
+          (click)="sendRequest()"
+        >
+          {{ running() ? 'Sending…' : 'Send request' }}
+        </button>
+      </div>
+    </div>
+  </section>
+
+  @if (responseText() !== null || responseStatus() !== null) {
+    <section hlmCard>
+      <div hlmCardHeader class="pb-2">
+        <h2 hlmCardTitle class="text-sm font-medium">
+          Response
+          @if (responseStatus(); as status) {
+            <span class="text-muted-foreground font-normal">({{ status }})</span>
+          }
+        </h2>
+      </div>
+      <div hlmCardContent>
+        <pre
+          class="border-input bg-muted max-h-96 overflow-auto rounded-md border p-4 font-mono text-xs whitespace-pre-wrap"
+          >{{ responseText() }}</pre
+        >
+      </div>
+    </section>
+  }
+</div>

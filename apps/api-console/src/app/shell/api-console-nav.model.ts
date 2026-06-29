@@ -10,7 +10,7 @@ export interface ApiConsoleNavSection {
   readonly items: readonly ApiConsoleNavItem[];
 }
 
-/** OSS API console navigation (PR2 — no playground / AI extension). */
+/** OSS API console navigation. */
 export const API_CONSOLE_NAV_SECTIONS: readonly ApiConsoleNavSection[] = [
   {
     id: 'console',
@@ -18,6 +18,8 @@ export const API_CONSOLE_NAV_SECTIONS: readonly ApiConsoleNavSection[] = [
     items: [
       { path: '/overview', label: 'Overview', exact: true },
       { path: '/keys', label: 'API Keys' },
+      { path: '/playground', label: 'Playground' },
+      { path: '/metered-usage', label: 'Metered usage' },
       { path: '/settings', label: 'Settings' },
     ],
   },

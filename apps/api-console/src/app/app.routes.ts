@@ -64,6 +64,20 @@ export const appRoutes: Route[] = [
         data: { title: 'API Keys' },
       },
       {
+        path: 'playground',
+        loadComponent: () =>
+          import('./pages/playground.page').then((m) => m.PlaygroundPageComponent),
+        data: { title: 'Playground' },
+      },
+      {
+        path: 'metered-usage',
+        loadComponent: () =>
+          import('./pages/metered-usage.page').then(
+            (m) => m.MeteredUsagePageComponent,
+          ),
+        data: { title: 'Metered usage' },
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./pages/settings.page').then((m) => m.SettingsPageComponent),
