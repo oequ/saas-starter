@@ -18,8 +18,7 @@ OSS developer console for the public REST API (`public-v1`). Port **4202**.
 | `/keys` | Workspace API keys (`@oequ/features-org`) |
 | `/playground` | OSS Public API presets (`/account`, `/demo-runs`) |
 | `/metered-usage` | API usage events table |
-| `/settings` | Theme + locale |
-| `/docs` | curl / TS / Python snippets for `/account` and `/demo-runs` |
+| `/docs` | curl / TS / Python snippets |
 | `/account` | Profile + project id |
 
 ## E2E / merge gate
@@ -31,6 +30,7 @@ npm run pre-release:api-console       # full gate (db reset, build, e2e, smoke)
 ```
 
 Requires local Supabase (Docker), Mailpit on `:54324` for signup OTP, and Edge `public-v1`.
+CI: GitHub Actions job `api-console-e2e` runs the same `@api-console` Playwright suite on PRs.
 On Windows if Edge in Docker fails DNS: `npm run functions:serve` in another terminal.
 
 ## Deploy (Vercel)

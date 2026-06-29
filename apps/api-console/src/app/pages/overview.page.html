@@ -2,7 +2,7 @@
   <div>
     <h1 class="text-2xl font-semibold tracking-tight">Overview</h1>
     <p class="text-muted-foreground mt-1 text-sm">
-      Sandbox quota, API keys, and metered usage for your project.
+      API keys, quota, and usage for your project.
     </p>
   </div>
 
@@ -45,7 +45,7 @@
           {{ hasUsageUnits() ? '✓' : '2' }}
         </span>
         <a routerLink="/playground" class="text-primary underline-offset-4 hover:underline"
-          >Run POST /demo-runs in the Playground</a
+          >Send a test request</a
         >
       </li>
       <li class="flex items-center gap-2">
@@ -54,7 +54,7 @@
           >3</span
         >
         <a routerLink="/metered-usage" class="text-primary underline-offset-4 hover:underline"
-          >Review metered usage</a
+          >View usage history</a
         >
       </li>
     </ul>
@@ -86,7 +86,7 @@
 
     <div hlmCard>
       <div hlmCardHeader class="pb-2">
-        <h3 hlmCardTitle class="text-sm font-medium">Sandbox quota</h3>
+        <h3 hlmCardTitle class="text-sm font-medium">Quota</h3>
       </div>
       <div hlmCardContent>
         @if (usageBalance.isLoading()) {
@@ -94,9 +94,9 @@
         } @else {
           <p class="text-2xl font-semibold tabular-nums">{{ availableUnits() }}</p>
           <p class="text-muted-foreground text-xs">
-            usage units remaining
+            remaining
             @if (monthlyAllowance() > 0) {
-              <span> ({{ monthlyAllowance() }} monthly allowance)</span>
+              <span> ({{ monthlyAllowance() }} per month)</span>
             }
           </p>
         }

@@ -2,7 +2,7 @@
   <div>
     <h1 class="text-2xl font-semibold tracking-tight">Get started</h1>
     <p class="text-muted-foreground mt-1 text-sm">
-      OSS Public API v1 — metered sandbox endpoints and OpenAPI contract.
+      Example requests you can run with an API key.
     </p>
   </div>
 
@@ -23,7 +23,7 @@
 
   <section hlmCard>
     <div hlmCardHeader class="pb-2">
-      <h2 hlmCardTitle class="text-sm font-medium">2. Check account quota</h2>
+      <h2 hlmCardTitle class="text-sm font-medium">2. Check quota</h2>
     </div>
     <div hlmCardContent class="space-y-4">
       <div class="space-y-2">
@@ -48,14 +48,14 @@
         >
       </div>
       <p class="text-muted-foreground text-xs">
-        Response includes <code>usage_units</code> (balance and monthly allowance).
+        Response includes your current balance.
       </p>
     </div>
   </section>
 
   <section hlmCard>
     <div hlmCardHeader class="pb-2">
-      <h2 hlmCardTitle class="text-sm font-medium">3. Run a metered demo request</h2>
+      <h2 hlmCardTitle class="text-sm font-medium">3. Send a write request</h2>
     </div>
     <div hlmCardContent class="space-y-4">
       <div class="space-y-2">
@@ -80,13 +80,10 @@
         >
       </div>
       <p class="text-muted-foreground text-xs">
-        Costs <strong>1 usage unit</strong>. Try it in the
+        Try it in the
         <a routerLink="/playground" class="text-primary underline-offset-4 hover:underline"
-          >Playground</a
-        >
-        or see
-        <a href="https://github.com/oequ/saas-starter/blob/main/docs/PUBLIC_API.md" class="text-primary underline-offset-4 hover:underline" target="_blank" rel="noopener">docs/PUBLIC_API.md</a>
-        for local smoke (<code>npm run test:demo-runs-http</code>).
+          >playground</a
+        >.
       </p>
     </div>
   </section>
@@ -97,7 +94,6 @@
     </div>
     <div hlmCardContent class="text-muted-foreground space-y-2 text-sm">
       <p class="font-mono text-foreground text-sm">{{ openApiPath }}</p>
-      <p>OSS routes: <code>/account</code>, <code>/demo-runs</code>.</p>
     </div>
   </section>
 </div>

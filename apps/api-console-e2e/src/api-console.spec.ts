@@ -19,7 +19,7 @@ test.describe('API Developer Console @api-console', () => {
     await registerApiConsoleUser(page, email);
 
     await expect(page.getByText(/proj_/)).toBeVisible();
-    await expect(page.getByText('usage units remaining')).toBeVisible();
+    await expect(page.getByText(/remaining/)).toBeVisible();
   });
 
   test('can open API keys and create a key', async ({ page }) => {
@@ -80,7 +80,7 @@ test.describe('API Developer Console @api-console', () => {
 
     await page.goto('/metered-usage');
     await expect(
-      page.getByRole('heading', { name: 'Metered usage', exact: true }),
+      page.getByRole('heading', { name: 'Usage', exact: true }),
     ).toBeVisible();
 
     const usageTable = page.locator('table tbody');

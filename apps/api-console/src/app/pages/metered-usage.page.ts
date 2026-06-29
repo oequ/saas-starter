@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, resource } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ORG_PORT, USAGE_UNITS_PORT } from '@oequ/ports';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 
 @Component({
   selector: 'ac-metered-usage-page',
-  imports: [HlmCardImports, DatePipe],
+  imports: [HlmCardImports, DatePipe, RouterLink],
   templateUrl: './metered-usage.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

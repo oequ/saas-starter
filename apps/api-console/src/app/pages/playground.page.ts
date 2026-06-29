@@ -185,15 +185,15 @@ export class PlaygroundPageComponent implements OnInit {
 
   protected async sendRequest(): Promise<void> {
     const secret = this.apiSecret().trim();
-    if (!secret.startsWith('oeq_')) {
-      this.responseText.set('Paste a valid API key (starts with oeq_).');
+    if (!secret) {
+      this.responseText.set('Paste your API key.');
       this.responseStatus.set(null);
       return;
     }
 
     const preset = this.activePreset();
     if (preset.needsRunId && !this.runId().trim()) {
-      this.responseText.set('Enter a demo run id.');
+      this.responseText.set('Enter a resource id.');
       this.responseStatus.set(null);
       return;
     }

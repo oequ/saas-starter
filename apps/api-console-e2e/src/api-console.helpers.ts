@@ -94,12 +94,10 @@ export async function createApiKeyViaUi(
     page.getByRole('heading', { name: 'API key created', exact: true }),
   ).toBeVisible();
 
-  const secretEl = page
-    .locator('hlm-dialog-content')
-    .getByText(/^oeq_[a-f0-9]+$/);
+  const secretEl = page.locator('hlm-dialog-content .font-mono').last();
   await expect(secretEl).toBeVisible();
   const secret = (await secretEl.textContent())?.trim() ?? '';
-  if (!secret.startsWith('oeq_')) {
+  if (!/^oeq_[a-f0-9]+$/.test(secret)) {
     throw new Error('API key secret not shown in create dialog');
   }
 

@@ -1,21 +1,22 @@
 <div class="space-y-8">
   <div>
-    <h1 class="text-2xl font-semibold tracking-tight">Metered usage</h1>
+    <h1 class="text-2xl font-semibold tracking-tight">Usage</h1>
     <p class="text-muted-foreground mt-1 text-sm">
-      Generic usage units spent via the Public API (API key requests). Each
-      <code>POST /v1/demo-runs</code> costs one unit in the OSS sandbox.
+      Recent API activity for this workspace.
     </p>
   </div>
 
   @if (events.isLoading()) {
-    <p class="text-muted-foreground text-sm">Loading usage events…</p>
+    <p class="text-muted-foreground text-sm">Loading…</p>
   } @else if ((events.value()?.length ?? 0) === 0) {
     <div hlmCard>
       <div hlmCardContent class="py-8 text-center">
-        <p class="text-muted-foreground text-sm">No metered API usage yet.</p>
+        <p class="text-muted-foreground text-sm">No usage yet.</p>
         <p class="text-muted-foreground mt-2 text-xs">
-          Create an API key and run
-          <code>POST /v1/demo-runs</code> from the Playground.
+          Create an API key, then send a request from the
+          <a routerLink="/playground" class="text-primary underline-offset-4 hover:underline"
+            >playground</a
+          >.
         </p>
       </div>
     </div>

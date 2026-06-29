@@ -7,7 +7,6 @@ import {
   output,
 } from '@angular/core';
 import { TranslocoPipe, TranslocoService } from '@oequ/i18n';
-import { SETTINGS_DIALOG_CONTENT_CLASS } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -28,21 +27,20 @@ import { HlmDialogImports } from '@spartan-ng/helm/dialog';
           </hlm-dialog-header>
 
           <div
-            class="bg-muted/50 border-input flex items-center justify-between gap-3 rounded-md border px-3 py-2 font-mono text-sm"
+            class="bg-muted/50 border-input max-h-28 overflow-x-auto rounded-md border px-3 py-2 font-mono text-xs break-all"
           >
-            <span class="min-w-0 truncate">{{ secret() }}</span>
+            {{ secret() }}
+          </div>
+
+          <hlm-dialog-footer class="gap-2 sm:justify-end">
             <button
               hlmBtn
               type="button"
-              variant="secondary"
-              size="sm"
+              variant="outline"
               (click)="copySecret()"
             >
               {{ 'org.apiKeys.secretDialog.copy' | transloco }}
             </button>
-          </div>
-
-          <hlm-dialog-footer>
             <button hlmBtn type="button" hlmDialogClose>
               {{ 'org.apiKeys.secretDialog.done' | transloco }}
             </button>
@@ -60,7 +58,8 @@ export class ApiKeySecretDialogComponent {
 
   private readonly transloco = inject(TranslocoService);
 
-  protected readonly dialogContentClass = SETTINGS_DIALOG_CONTENT_CLASS;
+  protected readonly dialogContentClass =
+    'w-[calc(100%-2rem)] sm:!max-w-md overflow-hidden';
 
   protected readonly dialogState = computed(() =>
     this.open() ? 'open' : 'closed',

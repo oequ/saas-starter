@@ -4,6 +4,7 @@
   "loading": "Loading API keys…",
   "emptyTitle": "No API keys yet",
   "emptyDescription": "Generate an API key to authenticate requests and send emails through the API.",
+  "emptyDescriptionApi": "Create a key to authenticate API requests.",
   "noFilterMatch": "No keys match your filters.",
   "columnName": "Name",
   "columnToken": "Token",

@@ -75,13 +75,7 @@ export const appRoutes: Route[] = [
           import('./pages/metered-usage.page').then(
             (m) => m.MeteredUsagePageComponent,
           ),
-        data: { title: 'Metered usage' },
-      },
-      {
-        path: 'settings',
-        loadComponent: () =>
-          import('./pages/settings.page').then((m) => m.SettingsPageComponent),
-        data: { title: 'Settings' },
+        data: { title: 'Usage' },
       },
       {
         path: 'docs',

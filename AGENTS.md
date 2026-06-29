@@ -8,7 +8,7 @@ Machine-readable context for AI coding assistants (Cursor, Copilot, etc.).
 - Dev server (demo): `npx nx serve demo`
 - Dev server (web): `npm run start:web` (requires Docker + `npm run db:start`)
 - API console: `npm run start:api-console` → http://localhost:4202 — see [apps/api-console/README.md](apps/api-console/README.md)
-- API console merge gate: `npm run pre-release:api-console` (local, Docker)
+- API console merge gate: `npm run pre-release:api-console` (local, Docker); CI job `api-console-e2e` runs `@api-console` Playwright on PRs
 - Lint: `npx nx run-many -t lint`
 - Test: `npx nx run-many -t test --projects=ports`
 - E2E (demo): `npm run e2e`

@@ -19,8 +19,7 @@ export const API_CONSOLE_NAV_SECTIONS: readonly ApiConsoleNavSection[] = [
       { path: '/overview', label: 'Overview', exact: true },
       { path: '/keys', label: 'API Keys' },
       { path: '/playground', label: 'Playground' },
-      { path: '/metered-usage', label: 'Metered usage' },
-      { path: '/settings', label: 'Settings' },
+      { path: '/metered-usage', label: 'Usage' },
     ],
   },
   {

@@ -10,9 +10,10 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
+  lucideCodeXml,
   lucideEllipsis,
   lucideKeyRound,
   lucideSearch,
@@ -32,6 +33,7 @@ import {
   formatCreatedRelativeTime,
   formatRelativeTime,
 } from '@oequ/ports';
+import { isApiShell, SHELL_CONFIG } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
@@ -57,6 +59,7 @@ const API_KEYS_PAGE_SIZE = 10;
   imports: [
     ReactiveFormsModule,
     NgIcon,
+    RouterLink,
     HlmButtonImports,
     HlmInput,
     HlmSelectImports,
@@ -72,6 +75,7 @@ const API_KEYS_PAGE_SIZE = 10;
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     provideIcons({
+      lucideCodeXml,
       lucideKeyRound,
       lucideSearch,
       lucideEllipsis,
@@ -120,7 +124,21 @@ const API_KEYS_PAGE_SIZE = 10;
           </hlm-select-content>
         </hlm-select>
         <div class="flex shrink-0 items-center gap-2 sm:ms-auto">
-          <oequ-api-keys-docs-sheet />
+          @if (isApiConsole()) {
+            <a
+              routerLink="/docs"
+              hlmBtn
+              type="button"
+              variant="outline"
+              size="icon"
+              class="size-9 shrink-0"
+              [attr.aria-label]="'org.apiKeys.docs.triggerAria' | transloco"
+            >
+              <ng-icon name="lucideCodeXml" class="size-4" aria-hidden="true" />
+            </a>
+          } @else {
+            <oequ-api-keys-docs-sheet />
+          }
           <button hlmBtn type="button" (click)="openCreateDialog()">
             {{ 'org.apiKeys.createButton' | transloco }}
           </button>
@@ -141,7 +159,12 @@ const API_KEYS_PAGE_SIZE = 10;
             </hlm-empty-media>
             <h2 hlmEmptyTitle>{{ 'org.apiKeys.emptyTitle' | transloco }}</h2>
             <p hlmEmptyDescription>
-              {{ 'org.apiKeys.emptyDescription' | transloco }}
+              {{
+                (isApiConsole()
+                  ? 'org.apiKeys.emptyDescriptionApi'
+                  : 'org.apiKeys.emptyDescription'
+                ) | transloco
+              }}
             </p>
           </hlm-empty-header>
           <hlm-empty-content>
@@ -309,6 +332,9 @@ export class OrgApiKeysComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly transloco = inject(TranslocoService);
+  private readonly shell = inject(SHELL_CONFIG);
+
+  protected readonly isApiConsole = computed(() => isApiShell(this.shell));
 
   protected readonly searchControl = new FormControl('', { nonNullable: true });
   private readonly searchQuery = toSignal(
