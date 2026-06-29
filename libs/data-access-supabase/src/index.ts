@@ -13,3 +13,4 @@ export { SupabaseEmailsAdapter } from './lib/supabase-emails.adapter';
 export { SupabaseActivationAdapter } from './lib/supabase-activation.adapter';
 export { WebMetricsAdapter } from './lib/web-metrics.adapter';
 export { SupabaseProjectAdapter } from './lib/supabase-project.adapter';
+export { SupabaseUsageUnitsAdapter } from './lib/supabase-usage-units.adapter';

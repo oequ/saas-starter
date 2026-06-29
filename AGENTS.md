@@ -14,6 +14,7 @@ Machine-readable context for AI coding assistants (Cursor, Copilot, etc.).
 - Build: `npx nx build web`
 - DB reset: `npm run db:reset`
 - Production pre-flight (hosted Supabase): `npm run production:check` — see [docs/DEPLOY.md](docs/DEPLOY.md)
+- Public API local smoke: `npm run test:demo-runs-http` — see [docs/PUBLIC_API.md](docs/PUBLIC_API.md)
 
 ## Repository layout
 

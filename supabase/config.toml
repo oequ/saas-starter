@@ -404,6 +404,9 @@ verify_jwt = true
 [functions.billing-update-subscription]
 verify_jwt = true
 
+[functions.public-v1]
+verify_jwt = false
+
 [analytics]
 # Logflare/analytics often fails health checks on Windows unless Docker exposes
 # tcp://localhost:2375 (see supabase/README.md). Auth + Postgres work without it.

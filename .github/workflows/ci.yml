@@ -75,6 +75,11 @@ jobs:
       - name: Reset database
         run: supabase db reset
 
+      - name: Public API smoke (demo-runs)
+        run: |
+          node scripts/edge-runtime-health.mjs
+          npm run test:demo-runs-http
+
       - name: Web Supabase settings
         run: node scripts/write-web-supabase-settings.mjs
 

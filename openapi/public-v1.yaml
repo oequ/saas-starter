@@ -1,0 +1,222 @@
+openapi: 3.1.0
+info:
+  title: SaaS Starter Public API
+  version: 1.0.0
+  description: |
+    Workspace-scoped REST API (OSS baseline).
+
+    Authenticate with `Authorization: Bearer oeq_…` (create keys in Studio → API keys).
+
+    The organization is inferred from the key — do not send `organization_id`.
+
+    **Local Supabase:** `http://127.0.0.1:54321/functions/v1/public-v1/v1`
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production (map your host to the `public-v1` Edge function)
+  - url: http://127.0.0.1:54321/functions/v1/public-v1/v1
+    description: Local Supabase
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Account
+    description: Sandbox usage unit balance
+  - name: Demo runs
+    description: Metered sandbox endpoint (costs 1 usage unit per call)
+
+paths:
+  /account:
+    get:
+      tags: [Account]
+      summary: Account usage units
+      operationId: getAccount
+      responses:
+        '200':
+          description: Usage unit balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /demo-runs:
+    post:
+      tags: [Demo runs]
+      summary: Create a metered demo run
+      operationId: createDemoRun
+      description: Charges **1 usage unit** per call. Requires write-capable API key.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDemoRunRequest'
+      responses:
+        '200':
+          description: Demo run completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDemoRunResponse'
+        '402':
+          description: Insufficient usage units
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /demo-runs/{id}:
+    get:
+      tags: [Demo runs]
+      summary: Get demo run by id
+      operationId: getDemoRun
+      parameters:
+        - $ref: '#/components/parameters/DemoRunId'
+      responses:
+        '200':
+          description: Demo run
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoRunResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Workspace API key (`oeq_…`)
+
+  parameters:
+    DemoRunId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [error, request_id]
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorBody'
+        request_id:
+          type: string
+
+    UsageUnits:
+      type: object
+      required: [balance, currency]
+      properties:
+        balance:
+          type: integer
+        monthly_allowance:
+          type: integer
+        reset_at:
+          type: string
+          format: date-time
+          nullable: true
+        currency:
+          type: string
+          enum: [usage_units]
+
+    AccountResponse:
+      type: object
+      required: [usage_units, request_id]
+      properties:
+        usage_units:
+          $ref: '#/components/schemas/UsageUnits'
+        request_id:
+          type: string
+
+    CreateDemoRunRequest:
+      type: object
+      properties:
+        message:
+          type: string
+
+    CreateDemoRunResponse:
+      type: object
+      required: [id, status, units_charged, request_id]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        output:
+          type: object
+          additionalProperties: true
+          nullable: true
+        units_charged:
+          type: integer
+        request_id:
+          type: string
+
+    DemoRunResponse:
+      type: object
+      required: [run, request_id]
+      properties:
+        run:
+          type: object
+          additionalProperties: true
+        request_id:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Invalid or missing API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Insufficient key scope
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RateLimited:
+      description: Per-key rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

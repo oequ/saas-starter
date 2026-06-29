@@ -19,3 +19,14 @@ values (
 on conflict (organization_id) do update
   set status = 'complete',
       completed_at = coalesce(organization_activation.completed_at, now());
+
+-- OSS public API sandbox quota (see docs/PUBLIC_API.md, ADR 0004)
+insert into public.usage_unit_balances (org_id, available, monthly_allowance)
+values (
+  '00000000-0000-4000-8000-000000000001',
+  100,
+  100
+)
+on conflict (org_id) do update
+  set available = excluded.available,
+      monthly_allowance = excluded.monthly_allowance;

@@ -20,6 +20,7 @@
     "db:reset": "supabase db reset",
     "db:status": "supabase status",
     "functions:serve": "supabase functions serve --env-file supabase/.env",
+    "test:demo-runs-http": "node scripts/demo-runs-http-smoke.mjs",
     "stripe:smoke:ci": "node scripts/stripe-ci-smoke.mjs"
   },
   "private": true,

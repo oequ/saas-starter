@@ -133,6 +133,7 @@ supabase/                 # Migrations, seed, local CLI config
 | Doc | Use when |
 |-----|----------|
 | [docs/STRIPE_LOCAL.md](./docs/STRIPE_LOCAL.md) | Local Stripe + Edge Functions smoke |
+| [docs/PUBLIC_API.md](./docs/PUBLIC_API.md) | OSS public REST API (keys, demo-runs, local smoke) |
 | [docs/DEPLOY.md](./docs/DEPLOY.md) | Hosted Supabase + Vercel launch runbook |
 | [docs/BILLING_CUSTOM_PROVIDER.md](./docs/BILLING_CUSTOM_PROVIDER.md) | Custom billing provider integration |
 | [docs/STACK.md](./docs/STACK.md) | Version pins before `npm install` anything |
@@ -158,6 +159,7 @@ supabase/                 # Migrations, seed, local CLI config
 | `npm run e2e:web:release` | Playwright smoke for `apps/web` (`@web`, needs Supabase) |
 | `npm run pre-release:web` | `db:start` + `db:reset` + `e2e:web:release` |
 | `npm run production:check` | Hosted Supabase pre-flight (migrations, Edge Functions, keys) |
+| `npm run test:demo-runs-http` | Public API smoke (needs `db:reset` + `functions:serve`) |
 | `UPDATE_SCREENSHOTS=1 npm run screenshots` | Regenerate `docs/assets/*.png` |
 | `npx nx run-many -t lint --all` | Lint |
 
