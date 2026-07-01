@@ -51,7 +51,7 @@ export function emailListPeriodLabel(period: EmailListPeriod): string {
 export function formatEmailSentRelative(iso: string): string {
   const then = new Date(iso).getTime();
   if (Number.isNaN(then)) {
-    return '—';
+    return 'вЂ”';
   }
   const diffMs = then - Date.now();
   const absSec = Math.abs(diffMs) / 1000;
@@ -136,7 +136,7 @@ export function formatEmailListPaginationRange(
   }
   const start = pageIndex * pageSize + 1;
   const end = Math.min((pageIndex + 1) * pageSize, total);
-  return `${start}–${end} of ${total.toLocaleString()} emails`;
+  return `${start}вЂ“${end} of ${total.toLocaleString()} emails`;
 }
 
 export function buildRetrospectiveEmailRecords(
@@ -161,7 +161,7 @@ export function buildRetrospectiveEmailRecords(
       sentAt: new Date(t).toISOString(),
       status: retrospectiveStatusForIndex(index, safeCount),
       subject: 'Simulated campaign',
-      to: `user${(index % 97) + 1}@example.com`,
+      to: `user${(index % 97) + 1}@oequ.io`,
     };
   });
 }

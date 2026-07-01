@@ -99,7 +99,7 @@ export class MockProjectAdapter implements ProjectPort {
     this.seed.members.push({
       projectId: project.id,
       userId: project.createdBy,
-      email: 'demo@example.com',
+      email: 'demo@oequ.io',
       displayName: 'Demo User',
       role: 'owner',
       createdAt: now,

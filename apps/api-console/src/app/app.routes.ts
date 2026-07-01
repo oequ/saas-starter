@@ -43,6 +43,11 @@ export const appRoutes: Route[] = [
       import('@oequ/features-auth').then((m) => m.SystemStatusPageComponent),
   },
   {
+    path: 'showcase',
+    loadComponent: () =>
+      import('./showcase/showcase.page').then((m) => m.ShowcasePageComponent),
+  },
+  {
     path: '',
     component: ApiConsoleShellComponent,
     canActivate: [authGuard, workspaceContextGuard],

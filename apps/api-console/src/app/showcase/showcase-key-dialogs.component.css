@@ -1,0 +1,100 @@
+.showcase-dialog-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.showcase-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  animation: showcase-dialog-backdrop-in 200ms ease;
+}
+
+.showcase-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 300px);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--background);
+  padding: 1rem 1.125rem;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.18);
+}
+
+.showcase-dialog-enter {
+  animation: showcase-dialog-in 280ms ease;
+}
+
+.showcase-dialog-exit {
+  animation: showcase-dialog-out 260ms ease forwards;
+}
+
+.showcase-dialog-backdrop--exit {
+  animation: showcase-dialog-backdrop-out 260ms ease forwards;
+}
+
+@keyframes showcase-dialog-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes showcase-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes showcase-dialog-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+}
+
+@keyframes showcase-dialog-backdrop-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.showcase-tour-target {
+  position: relative;
+  overflow: hidden;
+}
+
+.showcase-tour-target--highlight {
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 80%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase-dialog-enter,
+  .showcase-dialog-exit,
+  .showcase-dialog-backdrop,
+  .showcase-dialog-backdrop--exit {
+    animation: none;
+  }
+}

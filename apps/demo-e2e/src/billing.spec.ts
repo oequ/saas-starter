@@ -13,7 +13,7 @@ test.describe('Billing v0.3 (mock demo)', () => {
   test.beforeEach(async ({ page }) => {
     await resetMockDemoState(page);
   });
-  test('upgrade funnel: trialing workspace → mock checkout → active plan', async ({
+  test('upgrade funnel: trialing workspace в†’ mock checkout в†’ active plan', async ({
     page,
   }) => {
     await page.goto('/workspace/settings/billing');
@@ -71,7 +71,7 @@ test.describe('Billing v0.3 (mock demo)', () => {
     ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Send invite' })).toBeDisabled();
 
-    await page.getByLabel('Email address').fill('over.limit@example.com');
+    await page.getByLabel('Email address').fill('over.limit@oequ.io');
     await page.getByRole('button', { name: 'Send invite' }).click();
     await expect(page.getByRole('button', { name: 'Send invite' })).toBeDisabled();
   });

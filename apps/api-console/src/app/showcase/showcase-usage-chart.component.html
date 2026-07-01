@@ -1,0 +1,70 @@
+<div class="showcase-usage-charts">
+  @for (panel of panels(); track panel.id) {
+    <section hlmCard class="showcase-usage-metric-card">
+      <div class="showcase-usage-metric-header">
+        <button type="button" class="showcase-usage-metric-title" tabindex="-1">
+          <span>{{ panel.chart.title }}</span>
+          <svg
+            class="showcase-usage-metric-chevron"
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+          >
+            <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </button>
+        <p class="showcase-usage-metric-value">{{ panel.formattedTotal }}</p>
+      </div>
+
+      <div class="showcase-usage-metric-chart">
+        <svg
+          class="showcase-usage-chart-svg"
+          [class.showcase-usage-chart-svg--animate]="animate()"
+          [attr.viewBox]="'0 0 ' + panel.width + ' ' + panel.height"
+          role="img"
+          [attr.aria-label]="panel.chart.title"
+        >
+          @for (tick of panel.yTicks; track tick.label) {
+            <line
+              class="showcase-usage-chart-grid"
+              [attr.x1]="34"
+              [attr.x2]="panel.width - 10"
+              [attr.y1]="tick.y"
+              [attr.y2]="tick.y"
+            />
+            <text
+              class="showcase-usage-chart-y-label"
+              [attr.x]="30"
+              [attr.y]="tick.y + 3"
+              text-anchor="end"
+            >
+              {{ tick.label }}
+            </text>
+          }
+
+          <path
+            class="showcase-usage-chart-line"
+            [attr.d]="panel.linePath"
+            [attr.stroke]="panel.chart.color"
+          />
+
+          <text
+            class="showcase-usage-chart-x-label"
+            [attr.x]="34"
+            [attr.y]="panel.height - 6"
+            text-anchor="start"
+          >
+            {{ panel.xStartLabel }}
+          </text>
+          <text
+            class="showcase-usage-chart-x-label"
+            [attr.x]="panel.width - 10"
+            [attr.y]="panel.height - 6"
+            text-anchor="end"
+          >
+            {{ panel.xEndLabel }}
+          </text>
+        </svg>
+      </div>
+    </section>
+  }
+</div>

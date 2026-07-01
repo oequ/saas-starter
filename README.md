@@ -179,6 +179,10 @@ supabase/                 # Migrations, seed, local CLI config
 
 Screenshots: [`docs/assets/`](./docs/assets/) · regenerate: `UPDATE_SCREENSHOTS=1 npm run screenshots`
 
+### API Developer Console
+
+<video src="docs/assets/api-console-showcase.mp4" autoplay loop muted playsinline></video>
+
 | Area | Notes |
 |------|--------|
 | Onboarding | Pluggable `ActivationPort` — demo: send first email |

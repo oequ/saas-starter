@@ -11,7 +11,7 @@ export async function dismissCookieConsentIfVisible(page: Page): Promise<void> {
 }
 
 export function uniqueEmail(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@oequ.io`;
 }
 
 export async function registerUser(
@@ -203,7 +203,7 @@ export async function goToBillingPage(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Billing', level: 1 })).toBeVisible();
 }
 
-/** Opens paywall from the invite dialog “Upgrade your plan” action. */
+/** Opens paywall from the invite dialog вЂњUpgrade your planвЂќ action. */
 export async function upgradeViaPaywallFromInviteDialog(
   page: Page,
   planName: 'Pro' | 'Team',

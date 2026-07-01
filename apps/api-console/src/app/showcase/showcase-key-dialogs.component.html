@@ -1,0 +1,106 @@
+@if (createOpen() || secretOpen() || secretClosing()) {
+  <div class="showcase-dialog-overlay" aria-hidden="true">
+    <div
+      class="showcase-dialog-backdrop bg-black/50 backdrop-blur-sm"
+      [class.showcase-dialog-backdrop--exit]="secretClosing() && !createOpen()"
+    ></div>
+
+    @if (createOpen()) {
+      <div class="showcase-dialog showcase-dialog-enter">
+        <h3 class="text-sm font-semibold tracking-tight">Add API Key</h3>
+
+        <div class="space-y-3 pt-3">
+          <div>
+            <label class="mb-1 block text-xs font-medium" for="showcase-key-name">Name</label>
+            <input
+              id="showcase-key-name"
+              hlmInput
+              readonly
+              class="showcase-tour-target border-input bg-background h-8 w-full text-xs shadow-none"
+              data-tour="dialog-key-name"
+              [value]="keyName()"
+              placeholder="Your API Key name"
+              [class.showcase-tour-target--highlight]="isHighlighted('dialog-key-name')"
+            />
+          </div>
+
+          <div>
+            <span class="mb-1 block text-xs font-medium">Permission</span>
+            <div
+              class="border-input bg-background flex h-8 items-center rounded-md border px-3 text-xs"
+            >
+              Full access
+            </div>
+          </div>
+
+          <div>
+            <span class="mb-1 block text-xs font-medium">Domain</span>
+            <div
+              class="border-input bg-background flex h-8 items-center rounded-md border px-3 text-xs"
+            >
+              All domains
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex justify-end gap-2">
+          <button
+            hlmBtn
+            type="button"
+            variant="secondary"
+            size="sm"
+            class="h-8 text-xs"
+            data-tour="dialog-cancel"
+          >
+            Cancel
+          </button>
+          <button
+            hlmBtn
+            type="button"
+            size="sm"
+            class="showcase-tour-target h-8 text-xs"
+            data-tour="dialog-add-key"
+            [class.showcase-tour-target--highlight]="isHighlighted('dialog-add-key')"
+          >
+            {{ submitting() ? 'Adding…' : 'Add' }}
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (secretOpen() || secretClosing()) {
+      <div
+        class="showcase-dialog"
+        [class.showcase-dialog-enter]="secretOpen() && !secretClosing()"
+        [class.showcase-dialog-exit]="secretClosing()"
+      >
+        <h3 class="text-sm font-semibold tracking-tight">API key created</h3>
+        <p class="text-muted-foreground mt-1 text-xs leading-relaxed">
+          Copy your API key now. You will not be able to see it again.
+        </p>
+
+        <div
+          class="bg-muted/50 border-input mt-3 max-h-20 overflow-x-auto rounded-md border px-3 py-2 font-mono text-[10px] break-all"
+        >
+          {{ secret() }}
+        </div>
+
+        <div class="mt-4 flex justify-end gap-2">
+          <button hlmBtn type="button" variant="outline" size="sm" class="h-8 text-xs">
+            Copy
+          </button>
+          <button
+            hlmBtn
+            type="button"
+            size="sm"
+            class="showcase-tour-target h-8 text-xs"
+            data-tour="dialog-secret-done"
+            [class.showcase-tour-target--highlight]="isHighlighted('dialog-secret-done')"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}

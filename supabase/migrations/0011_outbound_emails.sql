@@ -1,4 +1,4 @@
--- 0011 · Outbound emails + quota enforcement + billing snapshot email usage
+-- 0011 В· Outbound emails + quota enforcement + billing snapshot email usage
 
 -- Align with libs/ports EMAIL_QUOTA_BY_PLAN
 create or replace function private.email_quota_for_plan(p_plan_id text)
@@ -236,8 +236,8 @@ declare
   v_allowed jsonb := '[]'::jsonb;
   v_created jsonb := '[]'::jsonb;
   v_row public.outbound_emails;
-  v_default_subject text := coalesce(nullif(trim(p_input->>'subject'), ''), 'Welcome — your account is ready');
-  v_default_to text := coalesce(nullif(trim(p_input->>'to'), ''), 'customer@example.com');
+  v_default_subject text := coalesce(nullif(trim(p_input->>'subject'), ''), 'Welcome вЂ” your account is ready');
+  v_default_to text := coalesce(nullif(trim(p_input->>'to'), ''), 'customer@oequ.io');
   v_count integer;
   v_api_key_id uuid;
   v_api_key_label text;

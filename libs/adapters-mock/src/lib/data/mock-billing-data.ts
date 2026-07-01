@@ -331,8 +331,8 @@ const MOCK_INVOICES_BY_ORG: Readonly<Record<string, readonly Invoice[]>> = {
       currency: 'USD',
       status: 'paid',
       created: addDaysIso(-30),
-      hostedInvoiceUrl: 'https://example.com/invoices/parcel-1001',
-      invoicePdf: 'https://example.com/invoices/parcel-1001.pdf',
+      hostedInvoiceUrl: 'https://oequ.io/invoices/parcel-1001',
+      invoicePdf: 'https://oequ.io/invoices/parcel-1001.pdf',
     },
     {
       id: 'inv_parcel_2',
@@ -342,8 +342,8 @@ const MOCK_INVOICES_BY_ORG: Readonly<Record<string, readonly Invoice[]>> = {
       currency: 'USD',
       status: 'paid',
       created: addDaysIso(-60),
-      hostedInvoiceUrl: 'https://example.com/invoices/parcel-1002',
-      invoicePdf: 'https://example.com/invoices/parcel-1002.pdf',
+      hostedInvoiceUrl: 'https://oequ.io/invoices/parcel-1002',
+      invoicePdf: 'https://oequ.io/invoices/parcel-1002.pdf',
     },
   ],
   [NOVA_ID]: [
@@ -355,8 +355,8 @@ const MOCK_INVOICES_BY_ORG: Readonly<Record<string, readonly Invoice[]>> = {
       currency: 'USD',
       status: 'paid',
       created: addDaysIso(-7),
-      hostedInvoiceUrl: 'https://example.com/invoices/nova-2001',
-      invoicePdf: 'https://example.com/invoices/nova-2001.pdf',
+      hostedInvoiceUrl: 'https://oequ.io/invoices/nova-2001',
+      invoicePdf: 'https://oequ.io/invoices/nova-2001.pdf',
     },
   ],
 };

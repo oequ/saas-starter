@@ -70,7 +70,7 @@ test.describe('register', () => {
       page.getByRole('heading', { name: 'Sign up', level: 1 }),
     ).toBeVisible();
 
-    const email = `new-${Date.now()}@example.com`;
+    const email = `new-${Date.now()}@oequ.io`;
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password', { exact: true }).fill('password123');
     await page.getByLabel('Confirm password').fill('password123');

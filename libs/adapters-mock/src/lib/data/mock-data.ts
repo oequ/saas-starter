@@ -68,7 +68,7 @@ function membersForOrg(
     {
       organizationId,
       userId: '00000000-0000-4000-8000-000000000099',
-      email: 'demo@example.com',
+      email: 'demo@oequ.io',
       displayName: 'Demo User',
       role: 'owner',
       status: 'active',
@@ -76,7 +76,7 @@ function membersForOrg(
     {
       organizationId,
       userId: '00000000-0000-4000-8000-000000000101',
-      email: 'alex@example.com',
+      email: 'alex@oequ.io',
       displayName: 'Alex Rivera',
       role: 'admin',
       status: 'active',
@@ -84,7 +84,7 @@ function membersForOrg(
     {
       organizationId,
       userId: '00000000-0000-4000-8000-000000000102',
-      email: 'sam@example.com',
+      email: 'sam@oequ.io',
       displayName: 'Sam Chen',
       role: 'member',
       status: 'active',
@@ -92,7 +92,7 @@ function membersForOrg(
     {
       organizationId,
       userId: '00000000-0000-4000-8000-000000000103',
-      email: 'jordan@example.com',
+      email: 'jordan@oequ.io',
       displayName: null,
       role: 'member',
       status: 'invited',
@@ -100,7 +100,7 @@ function membersForOrg(
     {
       organizationId,
       userId: '00000000-0000-4000-8000-000000000104',
-      email: `billing+${orgName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+      email: `billing+${orgName.toLowerCase().replace(/\s+/g, '')}@oequ.io`,
       displayName: 'Billing Contact',
       role: 'member',
       status: 'suspended',
@@ -128,12 +128,12 @@ export const MOCK_MEMBERS_BY_ORG_ID: Readonly<
 export const MOCK_AUTH_SESSION: AuthSession = {
   user: {
     id: '00000000-0000-4000-8000-000000000099',
-    email: 'demo@example.com',
+    email: 'demo@oequ.io',
     displayName: 'Demo User',
   },
   claims: {
     sub: '00000000-0000-4000-8000-000000000099',
-    email: 'demo@example.com',
+    email: 'demo@oequ.io',
     org: {
       organizationId: MOCK_ORGANIZATIONS[0].id,
       role: 'owner',

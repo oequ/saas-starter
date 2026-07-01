@@ -2,7 +2,7 @@
 /**
  * API-only Stripe smoke (no Playwright).
  * Requires: Supabase local, `npm run functions:serve`, Stripe test keys in env.
- * See docs/STRIPE_LOCAL.md — CI (nightly).
+ * See docs/STRIPE_LOCAL.md вЂ” CI (nightly).
  */
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
@@ -325,7 +325,7 @@ async function main() {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   const priceTeam = process.env.STRIPE_PRICE_TEAM;
 
-  console.log('Waiting for Edge Functions…');
+  console.log('Waiting for Edge FunctionsвЂ¦');
   await waitForFunctions(supabaseUrl);
 
   const probeEvent = buildStripeEvent({
@@ -335,7 +335,7 @@ async function main() {
   });
   const probePayload = JSON.stringify(probeEvent);
 
-  console.log('Posting unsigned stripe-webhook (expect 400)…');
+  console.log('Posting unsigned stripe-webhook (expect 400)вЂ¦');
   const unsigned = await postWebhookRaw(webhookUrl, { body: probePayload });
   assertWebhookRejected(unsigned, 'unsigned webhook');
   console.log('Unsigned webhook rejected OK.');
@@ -344,7 +344,7 @@ async function main() {
     payload: probePayload,
     secret: 'whsec_ci_wrong_secret_for_smoke',
   });
-  console.log('Posting stripe-webhook with invalid signature (expect 400)…');
+  console.log('Posting stripe-webhook with invalid signature (expect 400)вЂ¦');
   const badSig = await postWebhookRaw(webhookUrl, {
     headers: { 'Stripe-Signature': badSignature },
     body: probePayload,
@@ -357,7 +357,7 @@ async function main() {
   });
 
   const runId = Date.now();
-  const email = `stripe-ci-${runId}@example.com`;
+  const email = `stripe-ci-${runId}@oequ.io`;
   const password = 'StripeCiSmoke2026!';
 
   const { data: createdUser, error: createUserError } =
@@ -396,7 +396,7 @@ async function main() {
   const organizationId = org?.id;
   assert(organizationId, 'create_organization returned no id');
 
-  const emailB = `stripe-ci-b-${runId}@example.com`;
+  const emailB = `stripe-ci-b-${runId}@oequ.io`;
   const { error: createUserBError } = await admin.auth.admin.createUser({
     email: emailB,
     password,
@@ -428,7 +428,7 @@ async function main() {
   }
 
   console.log(
-    'Invoking billing-update-subscription for foreign org (expect 403)…',
+    'Invoking billing-update-subscription for foreign org (expect 403)вЂ¦',
   );
   const crossOrg = await invokeEdgeFunction(
     supabaseUrl,
@@ -447,7 +447,7 @@ async function main() {
   );
   console.log('Cross-org billing-update-subscription forbidden OK.');
 
-  console.log('Creating Test Clock customer + Team subscription…');
+  console.log('Creating Test Clock customer + Team subscriptionвЂ¦');
   const { clockId, customerId, subscription } =
     await createClockCustomerWithTeamSub(stripe, {
       organizationId,
@@ -455,7 +455,7 @@ async function main() {
       paymentMethodToken: 'pm_card_visa',
     });
 
-  console.log('Posting signed customer.subscription.updated webhook…');
+  console.log('Posting signed customer.subscription.updated webhookвЂ¦');
   const subscriptionFresh = await stripe.subscriptions.retrieve(subscription.id);
   const syncEventId = `evt_ci_smoke_sync_${runId}`;
   const syncEvent = buildSubscriptionUpdatedEvent(subscriptionFresh, {
@@ -476,7 +476,7 @@ async function main() {
   );
   console.log('Webhook sync OK (Team, seats_limit=1).');
 
-  console.log('Replaying same webhook event id (idempotency)…');
+  console.log('Replaying same webhook event id (idempotency)вЂ¦');
   await postSignedWebhook(stripe, webhookUrl, webhookSecret, syncEvent, {
     expectDuplicate: true,
   });
@@ -512,7 +512,7 @@ async function main() {
     console.log('billing-create-checkout returned Checkout URL.');
   }
 
-  console.log('Invoking billing-update-subscription (quantity 2)…');
+  console.log('Invoking billing-update-subscription (quantity 2)вЂ¦');
   const { data: bumpData, error: bumpError } = await userClient.functions.invoke(
     'billing-update-subscription',
     {
@@ -543,7 +543,7 @@ async function main() {
     const periodEndBefore = subscriptionLive.current_period_end;
     assert(periodEndBefore, 'subscription missing current_period_end before renewal');
 
-    console.log('Advancing Test Clock for renewal…');
+    console.log('Advancing Test Clock for renewalвЂ¦');
     await advanceTestClock(stripe, clockId, subscriptionLive);
 
     subscriptionLive = await pollUntil(
@@ -555,7 +555,7 @@ async function main() {
     );
     await waitForTestClockReady(stripe, clockId);
 
-    console.log('Posting signed subscription.updated after renewal…');
+    console.log('Posting signed subscription.updated after renewalвЂ¦');
     await postSubscriptionUpdated(stripe, webhookUrl, webhookSecret, subscriptionLive, {
       eventId: `evt_ci_smoke_renew_${runId}`,
     });
@@ -574,7 +574,7 @@ async function main() {
     );
     console.log('Test Clock renewal sync OK (current_period_end advanced).');
 
-    console.log('Switching to declining payment method…');
+    console.log('Switching to declining payment methodвЂ¦');
     await waitForTestClockReady(stripe, clockId);
     const failPm = await stripe.paymentMethods.attach('pm_card_chargeCustomerFail', {
       customer: customerId,
@@ -583,7 +583,7 @@ async function main() {
       invoice_settings: { default_payment_method: failPm.id },
     });
 
-    console.log('Advancing Test Clock for failed renewal…');
+    console.log('Advancing Test Clock for failed renewalвЂ¦');
     await advanceTestClock(stripe, clockId, subscriptionLive);
     await waitForTestClockReady(stripe, clockId);
 
@@ -607,7 +607,7 @@ async function main() {
         subscription: subscriptionFresh.id,
       });
 
-    console.log('Posting signed invoice.payment_failed…');
+    console.log('Posting signed invoice.payment_failedвЂ¦');
     const failEvent = buildInvoicePaymentFailedEvent(invoice, {
       eventId: `evt_ci_smoke_invoice_fail_${runId}`,
     });
@@ -622,7 +622,7 @@ async function main() {
     console.log('invoice.payment_failed sync OK (past_due).');
 
     console.log(
-      'Invoking billing-update-subscription while past_due (expect 409)…',
+      'Invoking billing-update-subscription while past_due (expect 409)вЂ¦',
     );
     const bumpPastDue = await invokeEdgeFunction(
       supabaseUrl,
@@ -642,7 +642,7 @@ async function main() {
     );
     console.log('past_due blocks seat bump OK.');
 
-    const inviteEmail = `stripe-ci-pastdue-${runId}@example.com`;
+    const inviteEmail = `stripe-ci-pastdue-${runId}@oequ.io`;
     const { error: invitePastDueError } = await userClient.rpc(
       'invite_organization_member',
       {

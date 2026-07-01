@@ -58,7 +58,7 @@ export const MOCK_OUTBOUND_EMAILS_BY_ORG: Readonly<
     ),
     seedEmail(
       PARCEL_ID,
-      'user@example.com',
+      'user@oequ.io',
       'Password reset requested',
       21.5,
       'Staging',
@@ -80,7 +80,7 @@ export const MOCK_OUTBOUND_EMAILS_BY_ORG: Readonly<
     seedEmail(
       PARCEL_ID,
       'alerts@acme.co',
-      'Delivery failed — address not found',
+      'Delivery failed вЂ” address not found',
       18,
       'Production',
       'bounced',
@@ -88,7 +88,7 @@ export const MOCK_OUTBOUND_EMAILS_BY_ORG: Readonly<
     seedEmail(
       PARCEL_ID,
       'ops@company.com',
-      'Send failed — provider timeout',
+      'Send failed вЂ” provider timeout',
       22,
       'Production',
       'failed',

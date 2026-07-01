@@ -1,0 +1,128 @@
+<div
+  #tourLayer
+  class="showcase-frame-window relative overflow-hidden"
+  [class.showcase-frame-window--capture]="captureMode()"
+  role="img"
+  aria-label="API console preview"
+>
+  <div class="showcase-frame-chrome">
+    <div class="showcase-frame-chrome-lights" aria-hidden="true">
+      <span class="showcase-chrome-dot"></span>
+      <span class="showcase-chrome-dot"></span>
+      <span class="showcase-chrome-dot"></span>
+    </div>
+    <div class="showcase-frame-chrome-url" aria-hidden="true">
+      <svg
+        class="showcase-chrome-lock"
+        width="10"
+        height="12"
+        viewBox="0 0 10 12"
+        fill="none"
+        aria-hidden="true"
+      >
+        <rect x="1" y="5" width="8" height="6" rx="1.5" stroke="currentColor" />
+        <path
+          d="M3 5V3.5C3 2.4 3.9 1.5 5 1.5C6.1 1.5 7 2.4 7 3.5V5"
+          stroke="currentColor"
+        />
+      </svg>
+      <span class="truncate">{{ chromeUrl() }}</span>
+    </div>
+  </div>
+
+  <div class="showcase-frame-body bg-background flex min-h-0 flex-1">
+    <aside
+      class="showcase-frame-sidebar border-border bg-sidebar flex w-36 shrink-0 flex-col border-r sm:w-44"
+      aria-hidden="true"
+    >
+      @for (section of navSections; track section.id) {
+        <div class="px-2 py-3">
+          <p
+            class="text-muted-foreground mb-1.5 px-2 text-[10px] font-medium tracking-wide uppercase"
+          >
+            {{ section.label }}
+          </p>
+          <ul class="space-y-0.5">
+            @for (item of section.items; track item.path) {
+              <li>
+                <span
+                  class="showcase-sidebar-nav-item flex items-center gap-1 rounded-md py-1.5 pl-1 pr-2 text-xs transition-colors"
+                  [class.showcase-tour-target]="!!navTourId(item.path)"
+                  [attr.data-tour]="navTourId(item.path)"
+                  [class.bg-sidebar-accent]="isNavActive(item.path)"
+                  [class.text-sidebar-accent-foreground]="isNavActive(item.path)"
+                  [class.font-medium]="isNavActive(item.path)"
+                  [class.text-muted-foreground]="!isNavActive(item.path)"
+                  [class.showcase-tour-target--highlight]="
+                    navTourId(item.path) && isTargetHighlighted(navTourId(item.path)!)
+                  "
+                >
+                  <span class="showcase-sidebar-nav-icon grid size-5 shrink-0 place-items-center">
+                    <ng-icon
+                      [name]="item.icon"
+                      class="size-3.5 text-current"
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
+                </span>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="border-border mt-auto border-t p-2">
+        <div class="bg-muted flex items-center gap-2 rounded-md px-2 py-1.5">
+          <span
+            class="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-medium"
+            >D</span
+          >
+          <span class="truncate text-[10px]">demo@oequ.io</span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="showcase-frame-main relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <div
+        #scrollContainer
+        class="showcase-frame-scroll relative p-4 sm:p-5"
+        [class.showcase-frame-scroll--playground]="activeScene() === 2"
+      >
+        <ac-showcase-scenes
+          [activeScene]="activeScene()"
+          [showResponse]="showResponse()"
+          [copyHint]="copyHint()"
+          [stagingKeyCreated]="stagingKeyCreated()"
+          [playgroundRequestSent]="playgroundRequestSent()"
+          [tourUsageOccurredAt]="tourUsageOccurredAt()"
+          [usageViewed]="usageViewed()"
+          [playgroundApiKey]="playgroundApiKey()"
+          [highlightTarget]="highlightTarget()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <ac-showcase-key-dialogs
+    [createOpen]="createDialogOpen()"
+    [secretOpen]="secretDialogOpen()"
+    [secretClosing]="secretDialogClosing()"
+    [keyName]="dialogKeyName()"
+    [submitting]="dialogSubmitting()"
+    [highlightTarget]="highlightTarget()"
+  />
+
+  <div
+    class="showcase-cursor-layer"
+    [class.showcase-cursor-layer--visible]="cursorVisible()"
+    [style.transform]="'translate(' + cursorX() + 'px, ' + cursorY() + 'px)'"
+    aria-hidden="true"
+  >
+    <span class="showcase-cursor"></span>
+    @if (clickRipple()) {
+      <span class="showcase-click-ripple showcase-click-ripple--a"></span>
+      <span class="showcase-click-ripple showcase-click-ripple--b"></span>
+    }
+  </div>
+</div>

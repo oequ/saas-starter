@@ -45,7 +45,7 @@ export const MOCK_PROJECT_MEMBERS: readonly ProjectMember[] = [
   {
     projectId: '00000000-0000-4000-8000-000000000101',
     userId: '00000000-0000-4000-8000-000000000099',
-    email: 'demo@example.com',
+    email: 'demo@oequ.io',
     displayName: 'Demo User',
     role: 'owner',
     createdAt: '2026-02-01T00:00:00.000Z',
@@ -53,7 +53,7 @@ export const MOCK_PROJECT_MEMBERS: readonly ProjectMember[] = [
   {
     projectId: '00000000-0000-4000-8000-000000000102',
     userId: '00000000-0000-4000-8000-000000000099',
-    email: 'demo@example.com',
+    email: 'demo@oequ.io',
     displayName: 'Demo User',
     role: 'owner',
     createdAt: '2026-02-10T00:00:00.000Z',
@@ -61,7 +61,7 @@ export const MOCK_PROJECT_MEMBERS: readonly ProjectMember[] = [
   {
     projectId: '00000000-0000-4000-8000-000000000201',
     userId: '00000000-0000-4000-8000-000000000099',
-    email: 'demo@example.com',
+    email: 'demo@oequ.io',
     displayName: 'Demo User',
     role: 'owner',
     createdAt: '2026-03-01T00:00:00.000Z',

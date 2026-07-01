@@ -183,8 +183,8 @@ export class MockEmailsAdapter implements EmailsPort {
     const apiKey = keys.ok && keys.data.length > 0 ? keys.data[0] : null;
 
     const defaultSubject =
-      input?.subject?.trim() || 'Welcome — your account is ready';
-    const defaultTo = input?.to?.trim() || 'customer@example.com';
+      input?.subject?.trim() || 'Welcome вЂ” your account is ready';
+    const defaultTo = input?.to?.trim() || 'customer@oequ.io';
 
     const requestedRecords = input?.records;
     const requestedCount = requestedRecords?.length

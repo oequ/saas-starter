@@ -1,6 +1,7 @@
 export interface ApiConsoleNavItem {
   readonly path: string;
   readonly label: string;
+  readonly icon: string;
   readonly exact?: boolean;
 }
 
@@ -16,15 +17,15 @@ export const API_CONSOLE_NAV_SECTIONS: readonly ApiConsoleNavSection[] = [
     id: 'console',
     label: 'Console',
     items: [
-      { path: '/overview', label: 'Overview', exact: true },
-      { path: '/keys', label: 'API Keys' },
-      { path: '/playground', label: 'Playground' },
-      { path: '/metered-usage', label: 'Usage' },
+      { path: '/overview', label: 'Overview', icon: 'lucideLayoutDashboard', exact: true },
+      { path: '/keys', label: 'API Keys', icon: 'lucideKeyRound' },
+      { path: '/playground', label: 'Playground', icon: 'lucideTerminal' },
+      { path: '/metered-usage', label: 'Usage', icon: 'lucideActivity' },
     ],
   },
   {
     id: 'documents',
     label: 'Documents',
-    items: [{ path: '/docs', label: 'Get started', exact: true }],
+    items: [{ path: '/docs', label: 'Get started', icon: 'lucideBookOpen', exact: true }],
   },
 ];

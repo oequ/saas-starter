@@ -7,12 +7,12 @@ import { HlmSheetImports } from '@spartan-ng/helm/sheet';
 
 import { OnboardingCodeBlockComponent } from './onboarding/onboarding-code-block.component';
 
-const AUTHENTICATION_SNIPPET = `curl https://api.example.com/v1/emails \\
+const AUTHENTICATION_SNIPPET = `curl https://api.oequ.io/v1/emails \\
   -H "Authorization: Bearer oeq_your_api_key" \\
   -H "Content-Type: application/json" \\
   -d '{
     "from": "hello@your-domain.com",
-    "to": "you@example.com",
+    "to": "you@oequ.io",
     "subject": "Hello from Parcel",
     "html": "<p>Sent with your workspace API key.</p>"
   }'`;
@@ -25,7 +25,7 @@ const client = new EmailClient({
 
 await client.send({
   from: 'hello@your-domain.com',
-  to: 'you@example.com',
+  to: 'you@oequ.io',
   subject: 'Hello from Parcel',
   html: '<p>Sent with your workspace API key.</p>',
 });`;

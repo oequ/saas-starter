@@ -7,8 +7,8 @@
   },
   "relatedAria": "Related legal documents",
   "layout": {
-    "backToSignIn": "← Back to sign in",
-    "demoLabel": "Oequ · Demo"
+    "backToSignIn": "в†ђ Back to sign in",
+    "demoLabel": "Oequ В· Demo"
   },
   "links": {
     "terms": "Terms of Service",
@@ -103,13 +103,13 @@
       {
         "heading": "6. Your rights",
         "paragraphs": [
-          "Depending on your location, you may have rights to access, correct, delete, or export personal data, and to object to certain processing. Contact privacy@example.com for requests (replace in production)."
+          "Depending on your location, you may have rights to access, correct, delete, or export personal data, and to object to certain processing. Contact privacy@oequ.io for requests (replace in production)."
         ]
       },
       {
         "heading": "7. Contact",
         "paragraphs": [
-          "Questions about this policy: privacy@example.com. For security issues, see our Security page."
+          "Questions about this policy: privacy@oequ.io. For security issues, see our Security page."
         ]
       }
     ]
@@ -140,7 +140,7 @@
       {
         "heading": "Reporting vulnerabilities",
         "paragraphs": [
-          "If you discover a security issue in the starter kit, report it responsibly to security@example.com with reproduction steps. Do not disclose publicly before coordination."
+          "If you discover a security issue in the starter kit, report it responsibly to security@oequ.io with reproduction steps. Do not disclose publicly before coordination."
         ]
       }
     ]
@@ -153,9 +153,9 @@
       {
         "heading": "1. Categories",
         "paragraphs": [
-          "Strictly necessary — session, security, and UI preferences required to run the app (always active).",
-          "Analytics — optional usage measurement (only after consent).",
-          "Marketing — optional campaign and outreach measurement (only after consent; disabled in the default demo scripts)."
+          "Strictly necessary вЂ” session, security, and UI preferences required to run the app (always active).",
+          "Analytics вЂ” optional usage measurement (only after consent).",
+          "Marketing вЂ” optional campaign and outreach measurement (only after consent; disabled in the default demo scripts)."
         ]
       },
       {

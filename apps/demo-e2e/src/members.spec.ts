@@ -17,12 +17,12 @@ test.describe('members', () => {
     await waitForMembersPageLoaded(page);
 
     await page.getByRole('button', { name: '+ Invite member' }).click();
-    await page.getByLabel('Email address').fill('new.teammate@example.com');
+    await page.getByLabel('Email address').fill('new.teammate@oequ.io');
     await page.getByRole('button', { name: 'Send invite' }).click();
 
-    await expect(page.getByText('Invitation sent to new.teammate@example.com.')).toBeVisible();
+    await expect(page.getByText('Invitation sent to new.teammate@oequ.io.')).toBeVisible();
     await expect(
-      page.locator('tbody').getByText('new.teammate@example.com'),
+      page.locator('tbody').getByText('new.teammate@oequ.io'),
     ).toBeVisible();
   });
 

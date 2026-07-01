@@ -1,0 +1,94 @@
+.showcase-scene-stack {
+  position: relative;
+}
+
+.showcase-scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.showcase-scene--active {
+  position: relative;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.showcase-tour-target {
+  position: relative;
+  overflow: hidden;
+}
+
+.showcase-tour-target--highlight {
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 80%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase-scene {
+    transition: none;
+  }
+
+  .showcase-key-row-enter {
+    animation: none;
+  }
+
+  .showcase-usage-row-enter {
+    animation: none;
+  }
+}
+
+.showcase-key-row-enter {
+  animation: showcase-key-row-in 360ms ease;
+}
+
+.showcase-usage-row-enter {
+  animation: showcase-usage-row-in 360ms ease;
+}
+
+@keyframes showcase-usage-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes showcase-key-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.showcase-response-enter {
+  animation: showcase-response-in 400ms ease;
+}
+
+@keyframes showcase-response-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase-response-enter {
+    animation: none;
+  }
+}
