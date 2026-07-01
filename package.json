@@ -21,7 +21,6 @@
     "production:check": "node scripts/production-check.mjs",
     "screenshots": "nx e2e demo-e2e --grep \"README screenshots\"",
     "record:api-console-showcase": "node scripts/record-api-console-showcase.mjs",
-    "upload:api-console-showcase-release": "node scripts/upload-api-console-showcase-release.mjs",
     "db:init": "supabase init",
     "db:start": "supabase start --ignore-health-check",
     "db:stop": "supabase stop",

@@ -179,22 +179,6 @@ supabase/                 # Migrations, seed, local CLI config
 
 Screenshots: [`docs/assets/`](./docs/assets/) · regenerate: `UPDATE_SCREENSHOTS=1 npm run screenshots`
 
-### API Developer Console
-
-<p align="center">
-  <a href="https://github.com/oequ/saas-starter/releases/download/showcase-assets/api-console-showcase.mp4">
-    <img
-      src="docs/assets/api-console-showcase.gif"
-      alt="API Developer Console — overview, API keys, playground, usage"
-      width="900"
-    />
-  </a>
-  <br />
-  <sub>
-    <a href="https://github.com/oequ/saas-starter/releases/download/showcase-assets/api-console-showcase.mp4">Full video (MP4, 36s)</a>
-  </sub>
-</p>
-
 | Area | Notes |
 |------|--------|
 | Onboarding | Pluggable `ActivationPort` — demo: send first email |

@@ -26,31 +26,16 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 | `demo-paywall.png` | Nova — Billing → **Change subscription plan** → paywall open (Free / Pro / Team cards visible) |
 | `demo-cookie-consent.png` | Login — `/auth/login` with bottom cookie banner visible (Reject all / Accept all / Manage preferences) |
 | `demo-help-panel.png` | Parcel — `/workspace/metrics` → **Need help?** → help sheet open (hub: *For this page* + *Browse topics*) |
-| `api-console-showcase.gif` | API Console — `/showcase` tour preview for README (15s loop, generated from MP4) |
-| `api-console-showcase.mp4` | Full recording (36s) — also on [Release `showcase-assets`](https://github.com/oequ/saas-starter/releases/tag/showcase-assets) |
-| `api-console-showcase.webm` | Playwright source (WebM) |
+| `api-console-showcase.mp4` | API Console — `/showcase` auto-play tour (36s, H.264) |
+| `api-console-showcase.webm` | Same recording (Playwright VP8 source) |
 
-### API Console showcase video
+### API Console showcase video (feat branch — not in README until reviewed)
 
 ```bash
 npm run record:api-console-showcase
 ```
 
-Writes `api-console-showcase.webm` (Playwright native VP8 ~25fps) and `.mp4` (H.264 25fps) to this folder. Records `/showcase?capture=1` at **1075×648**, 2× DPR. **36s**, one tour loop.
-
-Regenerate README preview GIF (15s loop from MP4):
-
-```bash
-ffmpeg -y -i docs/assets/api-console-showcase.mp4 -t 15 -lavfi "fps=8,scale=720:-1:flags=lanczos[x];[x]split[a][b];[a]palettegen=stats_mode=single:max_colors=128[p];[b][p]paletteuse=dither=bayer" -loop 0 docs/assets/api-console-showcase.gif
-```
-
-Publish MP4 for README links:
-
-```bash
-npm run upload:api-console-showcase-release
-```
-
-GitHub README: use a **repo-relative GIF/PNG** (`![](docs/assets/....gif)`). Inline `<video>` needs a `https://github.com/user-attachments/assets/...` URL from drag-and-drop in the GitHub `.md` editor ([docs](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#uploading-assets)) — relative paths and Release URLs are not reliable.
+Records `/showcase?capture=1` at **1075×648**, 2× DPR, **36s**. Do not add to root `README.md` until embed approach is reviewed.
 
 ### Paywall capture tips
 
