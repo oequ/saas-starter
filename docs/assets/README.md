@@ -26,6 +26,22 @@ You can replace any file below with your own capture (same filename, PNG, ~1280p
 | `demo-paywall.png` | Nova — Billing → **Change subscription plan** → paywall open (Free / Pro / Team cards visible) |
 | `demo-cookie-consent.png` | Login — `/auth/login` with bottom cookie banner visible (Reject all / Accept all / Manage preferences) |
 | `demo-help-panel.png` | Parcel — `/workspace/metrics` → **Need help?** → help sheet open (hub: *For this page* + *Browse topics*) |
+| `api-console-showcase.mp4` | API Console — `/showcase` auto-play tour (full flow) |
+| `api-console-showcase.webm` | Same recording (WebM source from Playwright) |
+
+### API Console showcase video
+
+```bash
+npm run record:api-console-showcase
+```
+
+Writes `api-console-showcase.webm` (Playwright native VP8 ~25fps) and `.mp4` (H.264 25fps) to this folder. Records `/showcase?capture=1` at **1075×648**, 2× DPR. **36s**, one tour loop.
+
+GitHub README embed:
+
+```html
+<video src="docs/assets/api-console-showcase.mp4" autoplay loop muted playsinline></video>
+```
 
 ### Paywall capture tips
 
