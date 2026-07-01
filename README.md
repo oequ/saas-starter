@@ -50,6 +50,8 @@ npm run pre-release:web
 
 API Developer Console (public API + Playwright `@api-console`):
 
+![API Console showcase — auto-play tour](./docs/assets/api-console-showcase.gif)
+
 ```bash
 npm run pre-release:api-console
 ```
