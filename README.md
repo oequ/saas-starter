@@ -181,7 +181,29 @@ Screenshots: [`docs/assets/`](./docs/assets/) · regenerate: `UPDATE_SCREENSHOTS
 
 ### API Developer Console
 
-<video src="docs/assets/api-console-showcase.mp4" autoplay loop muted playsinline></video>
+<!-- GitHub strips relative paths in <video>; host MP4 on a Release (see docs/assets/README.md). -->
+<p align="center">
+  <video
+    src="https://github.com/oequ/saas-starter/releases/download/showcase-assets/api-console-showcase.mp4"
+    width="900"
+    autoplay
+    loop
+    muted
+    playsinline
+  >
+    <a href="https://github.com/oequ/saas-starter/blob/main/docs/assets/api-console-showcase.mp4">
+      <img
+        src="docs/assets/api-console-showcase-poster.png"
+        alt="API Developer Console — overview, API keys, playground, usage"
+        width="900"
+      />
+    </a>
+  </video>
+  <br />
+  <sub>
+    <a href="https://github.com/oequ/saas-starter/blob/main/docs/assets/api-console-showcase.mp4">Open MP4</a>
+  </sub>
+</p>
 
 | Area | Notes |
 |------|--------|

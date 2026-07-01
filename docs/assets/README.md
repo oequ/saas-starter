@@ -37,10 +37,23 @@ npm run record:api-console-showcase
 
 Writes `api-console-showcase.webm` (Playwright native VP8 ~25fps) and `.mp4` (H.264 25fps) to this folder. Records `/showcase?capture=1` at **1075×648**, 2× DPR. **36s**, one tour loop.
 
-GitHub README embed:
+GitHub README embed (relative `src` is stripped — use Release CDN URL):
 
 ```html
-<video src="docs/assets/api-console-showcase.mp4" autoplay loop muted playsinline></video>
+<video
+  src="https://github.com/oequ/saas-starter/releases/download/showcase-assets/api-console-showcase.mp4"
+  width="900"
+  autoplay
+  loop
+  muted
+  playsinline
+></video>
+```
+
+Upload / refresh Release asset after re-recording:
+
+```bash
+npm run upload:api-console-showcase-release
 ```
 
 ### Paywall capture tips

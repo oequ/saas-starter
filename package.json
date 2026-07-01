@@ -20,6 +20,7 @@
     "verify:api-console": "node scripts/e2e-api-console-preflight.mjs && nx e2e api-console-e2e --grep @api-console",
     "production:check": "node scripts/production-check.mjs",
     "screenshots": "nx e2e demo-e2e --grep \"README screenshots\"",
+    "upload:api-console-showcase-release": "node scripts/upload-api-console-showcase-release.mjs",
     "db:init": "supabase init",
     "db:start": "supabase start --ignore-health-check",
     "db:stop": "supabase stop",
