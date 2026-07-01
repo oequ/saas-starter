@@ -22,14 +22,23 @@ if (!existsSync(asset)) {
 }
 
 function gh(args) {
-  const result = spawnSync('gh', args, { stdio: 'inherit', shell: true });
+  const result = spawnSync('gh', args, {
+    stdio: 'inherit',
+    cwd: root,
+    shell: false,
+  });
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
 }
 
-const list = spawnSync('gh', ['release', 'view', tag], { encoding: 'utf8', shell: true });
-if (list.status !== 0) {
+const view = spawnSync('gh', ['release', 'view', tag], {
+  encoding: 'utf8',
+  cwd: root,
+  shell: false,
+});
+
+if (view.status !== 0) {
   gh([
     'release',
     'create',
