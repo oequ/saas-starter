@@ -46,6 +46,8 @@ import {
 } from './email-usage-stats';
 import { MockEmailsAdapter } from './mock-emails.adapter';
 
+const DEMO_BILLING_SUMMARIES_KEY = 'oequ-demo-billing-summaries';
+
 function delay(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) {
@@ -64,14 +66,8 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
-@Injectable()
-export class MockBillingAdapter implements BillingPort {
-  private readonly injector = inject(Injector);
-
-  private pendingCheckout: { organizationId: string; planId: string } | null =
-    null;
-
-  private readonly summaries = new Map<string, BillingSummary>(
+function seedSummaries(): Map<string, BillingSummary> {
+  return new Map(
     MOCK_ORGANIZATIONS.map((org) => {
       const summary = alignBillingSummarySeats(
         { ...mockBillingSummaryForOrg(org.id) },
@@ -80,6 +76,48 @@ export class MockBillingAdapter implements BillingPort {
       return [org.id, summary] as const;
     }),
   );
+}
+
+function readSummariesSnapshot(): Map<string, BillingSummary> | null {
+  if (typeof sessionStorage === 'undefined') {
+    return null;
+  }
+  const raw = sessionStorage.getItem(DEMO_BILLING_SUMMARIES_KEY);
+  if (!raw) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(raw) as Record<string, BillingSummary>;
+    return new Map(
+      Object.entries(parsed).map(([orgId, summary]) => [
+        orgId,
+        { ...summary, meters: [...(summary.meters ?? [])] },
+      ]),
+    );
+  } catch {
+    return null;
+  }
+}
+
+function writeSummariesSnapshot(summaries: Map<string, BillingSummary>): void {
+  if (typeof sessionStorage === 'undefined') {
+    return;
+  }
+  const record: Record<string, BillingSummary> = {};
+  for (const [orgId, summary] of summaries) {
+    record[orgId] = summary;
+  }
+  sessionStorage.setItem(DEMO_BILLING_SUMMARIES_KEY, JSON.stringify(record));
+}
+
+@Injectable()
+export class MockBillingAdapter implements BillingPort {
+  private readonly injector = inject(Injector);
+
+  private pendingCheckout: { organizationId: string; planId: string } | null =
+    null;
+
+  private readonly summaries = readSummariesSnapshot() ?? seedSummaries();
 
   private readonly paymentMethods = new Map<string, PaymentMethod[]>(
     MOCK_ORGANIZATIONS.map((org) => [
@@ -355,6 +393,7 @@ export class MockBillingAdapter implements BillingPort {
   removeOrganization(organizationId: OrganizationId): void {
     this.summaries.delete(organizationId);
     this.paymentMethods.delete(organizationId);
+    writeSummariesSnapshot(this.summaries);
     if (this.summarySubject.value?.organizationId === organizationId) {
       this.summarySubject.next(null);
     }
@@ -395,6 +434,9 @@ export class MockBillingAdapter implements BillingPort {
   /** Restores fixture billing data (E2E / screenshot runs). */
   resetMockState(): void {
     this.pendingCheckout = null;
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(DEMO_BILLING_SUMMARIES_KEY);
+    }
     this.summaries.clear();
     this.paymentMethods.clear();
     for (const org of MOCK_ORGANIZATIONS) {
@@ -490,6 +532,7 @@ export class MockBillingAdapter implements BillingPort {
   private persistSummary(summary: BillingSummary): BillingSummary {
     const next = this.normalizeSummary(summary);
     this.summaries.set(summary.organizationId, next);
+    writeSummariesSnapshot(this.summaries);
     if (this.summarySubject.value?.organizationId === summary.organizationId) {
       this.summarySubject.next(next);
     }
