@@ -80,17 +80,20 @@ if (!res.ok) {
   fail(`GoTrue signup HTTP ${res.status} against ${url}`, bodyText);
 }
 
-if (!body?.user?.id) {
+// GoTrue may return `{ user, session }` or (when session is null) the user object
+// at the top level — both are success for enable_confirmations=true.
+const user = body?.user ?? body;
+const session = body?.session ?? null;
+if (!user?.id || typeof user.email !== 'string') {
   fail('GoTrue signup returned no user', bodyText);
 }
 
-// enable_confirmations=true → user exists, session is null until OTP/link.
-if (body.session != null) {
+if (session != null) {
   console.warn(
     'auth-signup-smoke: WARN — session returned (enable_confirmations may be false)',
   );
 }
 
 console.log(
-  `auth-signup-smoke: OK — user=${body.user.id} confirmed=${body.user.email_confirmed_at ?? 'null'} session=${body.session ? 'yes' : 'null'} url=${url}`,
+  `auth-signup-smoke: OK — user=${user.id} confirmed=${user.email_confirmed_at ?? 'null'} session=${session ? 'yes' : 'null'} url=${url}`,
 );
