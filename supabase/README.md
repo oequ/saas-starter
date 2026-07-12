@@ -129,7 +129,7 @@ Run from the **repository root** (folder that contains `supabase/`), not from in
 
 ### Password reset (`apps/web`)
 
-Local Auth is configured for **`http://localhost:4201`** in [`config.toml`](config.toml) (`site_url` + `additional_redirect_urls`). Use the same host in the browser (`localhost`, not `127.0.0.1`) — on Windows the dev server may not answer on `127.0.0.1`. After changing that file, run `npm run db:stop` then `npm run db:start`.
+Local Auth is configured for **`http://localhost:4201`** in [`config.toml`](config.toml) (`site_url` + `additional_redirect_urls`). Open the **app** on `localhost` (not `127.0.0.1`) — on Windows the dev server may not answer on `127.0.0.1`. Keep the **Supabase API URL** in `supabase.settings.ts` as `http://127.0.0.1:54321` (CI writer enforces this): Chromium often resolves `localhost` to `::1` while Kong listens on IPv4 only. After changing `config.toml`, run `npm run db:stop` then `npm run db:start`.
 
 1. In the app: **Forgot password** → enter the email of a registered user.
 2. Open **Mailpit** (local mail UI): http://127.0.0.1:54324 — open the recovery message and click the link.
@@ -137,15 +137,24 @@ Local Auth is configured for **`http://localhost:4201`** in [`config.toml`](conf
 
 Recovery emails are not sent to a real inbox in local dev; they only appear in Mailpit.
 
-### Optional email confirmation (signup)
+### Email confirmation (signup)
 
-Off by default in the starter (`requireEmailConfirmation: false` in `apps/web/src/app/supabase.settings.ts`). To test locally:
+Local GoTrue has **`enable_confirmations = true`** in the committed [`config.toml`](config.toml). Keep app settings in sync:
 
-1. Set `requireEmailConfirmation: true` in `supabase.settings.ts`.
-2. In [`config.toml`](config.toml): `enable_confirmations = true` and add `"http://localhost:4201/auth/confirm-email"` to `additional_redirect_urls`.
-3. Register → `/auth/confirm-email` → enter the 6-digit code from Mailpit or open the link in the email → onboarding.
+| App | `requireEmailConfirmation` |
+|-----|----------------------------|
+| `apps/web` | `true` (see `supabase.settings.example.ts` / CI `write-web-supabase-settings.mjs`) |
+| `apps/api-console` | `true` |
 
-Keep `enable_confirmations = false` in the committed `config.toml` so clone-and-run stays frictionless.
+Flow: Register → `/auth/confirm-email` → 6-digit code from **Mailpit** (http://127.0.0.1:54324) or the email link → onboarding / overview.
+
+To disable confirmations for a frictionless local experiment:
+
+1. Set `enable_confirmations = false` in `config.toml`.
+2. Set `requireEmailConfirmation: false` in the app `supabase.settings.ts`.
+3. Restart Auth: `npm run db:stop` then `npm run db:start`.
+
+Do not leave GoTrue confirmations on while the app flag is off — signup creates a user with no session and the UI shows a generic auth error.
 
 ### npm scripts
 

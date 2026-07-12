@@ -24,6 +24,19 @@ test.describe('tenant isolation (Supabase RLS) @web', () => {
     await expect(
       pageB.getByRole('heading', { name: 'Create your workspace' }),
     ).toBeVisible();
+    await expect(pageB.getByText(workspaceName)).toHaveCount(0);
+
+    // Full navigation must restore the Supabase session from localStorage first;
+    // otherwise the auth guard briefly treats the user as logged out.
+    await expect
+      .poll(async () =>
+        pageB.evaluate(() =>
+          Object.keys(window.localStorage).some((key) =>
+            key.includes('auth-token'),
+          ),
+        ),
+      )
+      .toBe(true);
 
     await pageB.goto('/workspace');
     await expect(pageB).toHaveURL(/\/onboarding$/);
