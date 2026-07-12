@@ -59,11 +59,15 @@ export async function registerApiConsoleUser(
 ): Promise<void> {
   await page.goto('/auth/register');
   await dismissCookieConsentIfVisible(page);
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password', { exact: true }).fill(password);
-  await page.getByLabel('Confirm password').fill(password);
-  await page.locator('#register-accept-terms').click();
-  await page.locator('#register-accept-privacy').click();
+  await page.locator('#register-email').fill(email);
+  await page.locator('#register-password').fill(password);
+  await page.locator('#register-confirm-password').fill(password);
+  const terms = page.locator('#register-accept-terms');
+  await terms.click();
+  await expect(terms).toHaveAttribute('data-state', 'checked');
+  const privacy = page.locator('#register-accept-privacy');
+  await privacy.click();
+  await expect(privacy).toHaveAttribute('data-state', 'checked');
   await page.getByRole('button', { name: 'Create account' }).click();
   await expect(page).toHaveURL(/\/auth\/confirm-email/);
 

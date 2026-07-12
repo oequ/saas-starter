@@ -135,8 +135,12 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 
               <div class="space-y-3">
                 <div class="flex items-start gap-3">
+                  <!--
+                    inputId (not host id): hlm-checkbox uses display:contents,
+                    so id on the host is not a reliable click / label target.
+                  -->
                   <hlm-checkbox
-                    id="register-accept-terms"
+                    inputId="register-accept-terms"
                     formControlName="acceptTerms"
                     class="mt-0.5"
                   />
@@ -160,7 +164,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 
                 <div class="flex items-start gap-3">
                   <hlm-checkbox
-                    id="register-accept-privacy"
+                    inputId="register-accept-privacy"
                     formControlName="acceptPrivacy"
                     class="mt-0.5"
                   />

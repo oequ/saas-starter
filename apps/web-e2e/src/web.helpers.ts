@@ -55,6 +55,12 @@ export async function fetchLatestSignupOtp(email: string): Promise<string> {
   throw new Error(`No signup OTP in Mailpit for ${email}`);
 }
 
+async function checkRegisterConsent(page: Page, inputId: string): Promise<void> {
+  const checkbox = page.locator(`#${inputId}`);
+  await checkbox.click();
+  await expect(checkbox).toHaveAttribute('data-state', 'checked');
+}
+
 /**
  * Register → confirm email (Mailpit OTP) → land on /onboarding.
  * Matches local GoTrue `enable_confirmations = true` and web
@@ -67,13 +73,26 @@ export async function registerUser(
 ): Promise<void> {
   await page.goto('/auth/register');
   await dismissCookieConsentIfVisible(page);
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password', { exact: true }).fill(password);
-  await page.getByLabel('Confirm password').fill(password);
-  await page.locator('#register-accept-terms').click();
-  await page.locator('#register-accept-privacy').click();
+  await page.locator('#register-email').fill(email);
+  await page.locator('#register-password').fill(password);
+  await page.locator('#register-confirm-password').fill(password);
+  await checkRegisterConsent(page, 'register-accept-terms');
+  await checkRegisterConsent(page, 'register-accept-privacy');
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page).toHaveURL(/\/auth\/confirm-email/);
+
+  try {
+    await expect(page).toHaveURL(/\/auth\/confirm-email/, { timeout: 30_000 });
+  } catch (error) {
+    const alertText = await page.getByRole('alert').textContent().catch(() => null);
+    const validation = await page
+      .locator('.text-destructive')
+      .allTextContents()
+      .catch(() => []);
+    throw new Error(
+      `register did not reach /auth/confirm-email (url=${page.url()}; alert=${alertText ?? 'none'}; validation=${validation.join(' | ') || 'none'})`,
+      { cause: error },
+    );
+  }
 
   const otp = await fetchLatestSignupOtp(email);
   await page.locator('#confirm-otp').fill(otp);

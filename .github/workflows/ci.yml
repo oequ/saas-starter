@@ -81,6 +81,7 @@ jobs:
       - name: Export Supabase keys
         run: |
           JSON=$(npx supabase status -o json)
+          echo "SUPABASE_URL=$(echo "$JSON" | jq -r '.API_URL // .APIUrl // "http://localhost:54321"')" >> "$GITHUB_ENV"
           echo "SUPABASE_ANON_KEY=$(echo "$JSON" | jq -r '.ANON_KEY // .PUBLISHABLE_KEY // empty')" >> "$GITHUB_ENV"
           echo "SUPABASE_SERVICE_ROLE_KEY=$(echo "$JSON" | jq -r '.SERVICE_ROLE_KEY // .SECRET_KEY // empty')" >> "$GITHUB_ENV"
 
@@ -92,6 +93,12 @@ jobs:
 
       - name: Web Supabase settings
         run: node scripts/write-web-supabase-settings.mjs
+
+      - name: Verify web auth settings
+        run: |
+          test -f apps/web/src/app/supabase.settings.ts
+          grep -q "requireEmailConfirmation: true" apps/web/src/app/supabase.settings.ts
+          grep -E "url: 'http://(localhost|127\\.0\\.0\\.1):54321'" apps/web/src/app/supabase.settings.ts
 
       - name: Build web
         run: npx nx build web

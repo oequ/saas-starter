@@ -11,13 +11,22 @@ function readAnonKeyFromSupabaseStatus() {
       stdio: ['ignore', 'pipe', 'ignore'],
     });
     const json = JSON.parse(out);
-    return json.ANON_KEY ?? json.anon_key ?? json.API_ANON_KEY ?? null;
+    return (
+      json.ANON_KEY ??
+      json.anon_key ??
+      json.API_ANON_KEY ??
+      json.PUBLISHABLE_KEY ??
+      json.publishable_key ??
+      null
+    );
   } catch {
     return null;
   }
 }
 
-const url = process.env['SUPABASE_URL'] ?? 'http://127.0.0.1:54321';
+// Prefer localhost over 127.0.0.1 so browser Origin matches Auth docs / redirect allowlist.
+const rawUrl = process.env['SUPABASE_URL'] ?? 'http://localhost:54321';
+const url = rawUrl.replace('://127.0.0.1', '://localhost').replace(/\/$/, '');
 const anonKey =
   process.env['SUPABASE_ANON_KEY'] ??
   readAnonKeyFromSupabaseStatus() ??
