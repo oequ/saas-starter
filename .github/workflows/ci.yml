@@ -91,6 +91,9 @@ jobs:
       - name: Public API smoke (demo-runs)
         run: npm run test:demo-runs-http
 
+      - name: Security smoke (block owner member insert)
+        run: npm run test:security:owner-insert
+
       - name: Web Supabase settings
         run: node scripts/write-web-supabase-settings.mjs
 
