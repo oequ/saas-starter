@@ -3,6 +3,7 @@ import {
   handleCors,
   jsonResponse,
 } from '../_shared/cors.ts';
+import { isAllowedReturnUrl } from '../_shared/return-url.ts';
 import { getStripe } from '../_shared/stripe.ts';
 import {
   assertOrgAdmin,
@@ -31,6 +32,10 @@ Deno.serve(async (req) => {
 
     if (!organizationId || !returnUrl) {
       return jsonResponse({ error: 'missing required fields' }, 400);
+    }
+
+    if (!isAllowedReturnUrl(returnUrl)) {
+      return jsonResponse({ error: 'return_url origin not allowed' }, 400);
     }
 
     const userClient = createUserClient(req);

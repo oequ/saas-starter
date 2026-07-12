@@ -411,6 +411,12 @@ function checkAuthRedirects() {
     'warn',
     `In Supabase Dashboard → Auth → URL config, allow: ${expected.join(', ')}`,
   );
+  record(
+    'billing-return-url',
+    'Billing return_url allowlist (manual)',
+    'warn',
+    `Set Edge secret ALLOWED_REDIRECT_ORIGINS=${config.appUrl} (Checkout/Portal reject other origins)`,
+  );
   return true;
 }
 
