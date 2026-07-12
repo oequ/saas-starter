@@ -595,13 +595,18 @@ export class WebBillingAdapter implements BillingPort {
       return supabaseErr('UNAVAILABLE', 'supabaseNotConfigured');
     }
     const tier = planId && planId !== 'free' ? planId : 'free';
-    const { error } = await client.rpc('update_organization_plan', {
-      p_organization_id: organizationId,
-      p_plan_id: tier,
-      p_seats_limit: seatsLimit ?? null,
+    // Mock/CI only: Edge Function asserts org admin and rejects when
+    // BILLING_PROVIDER is stripe/custom. update_organization_plan is
+    // service_role-only (see migration 0034_lock_billing_plan_writes).
+    const { error } = await client.functions.invoke('billing-sync-mock-plan', {
+      body: {
+        organization_id: organizationId,
+        plan_id: tier,
+        seats_limit: seatsLimit ?? null,
+      },
     });
     if (error) {
-      return supabaseErrFromRpc(error);
+      return supabaseErr('UNAVAILABLE', error.message);
     }
     return null;
   }

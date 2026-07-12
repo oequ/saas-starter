@@ -94,6 +94,9 @@ jobs:
       - name: Security smoke (block owner member insert)
         run: npm run test:security:owner-insert
 
+      - name: Security smoke (lock billing plan writes)
+        run: npm run test:security:billing-plan-writes
+
       - name: Web Supabase settings
         run: node scripts/write-web-supabase-settings.mjs
 
