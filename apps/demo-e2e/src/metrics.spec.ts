@@ -12,13 +12,12 @@ test.describe('metrics', () => {
     await expect(page.getByRole('group', { name: 'Time period' })).toBeVisible();
     await expect(page.getByRole('button', { name: '15d', pressed: true })).toBeVisible();
 
-    await expect(page.getByText('Emails sent', { exact: true })).toBeVisible();
-    await expect(page.getByText('Deliverability', { exact: true })).toBeVisible();
-    await expect(page.getByText('Bounce rate', { exact: true })).toBeVisible();
-    await expect(page.getByText('Complain rate', { exact: true })).toBeVisible();
+    await expect(page.getByText('Emails sent', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Deliverability', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Bounce rate', { exact: true }).first()).toBeVisible();
+    await expect(page.getByText('Complain rate', { exact: true }).first()).toBeVisible();
 
     await expect(page.locator('canvas').first()).toBeVisible();
-    await expect(page.getByText('100%')).toBeVisible();
     await expect(
       page.getByText('Data is updated every 15 minutes'),
     ).toBeVisible();

@@ -79,8 +79,9 @@ import { CookieConsentService } from './cookie-consent.service';
           </div>
         </div>
       </section>
-      <oequ-cookie-consent-preferences-dialog />
     }
+    <!-- Keep preferences outside bannerVisible: opening prefs hides the banner. -->
+    <oequ-cookie-consent-preferences-dialog />
   `,
 })
 export class CookieConsentBannerComponent {

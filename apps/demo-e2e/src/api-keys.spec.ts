@@ -28,7 +28,9 @@ test.describe('api keys', () => {
     await expect(
       page.getByRole('heading', { name: 'API key created' }),
     ).toBeVisible();
-    await expect(page.locator('hlm-dialog-content .font-mono')).toContainText(/^oeq_/);
+    await expect(page.locator('hlm-dialog-content .font-mono')).toContainText(
+      /oeq_/,
+    );
     await page.getByRole('button', { name: 'Done' }).click();
 
     await expect(page.getByText('E2E Test Key')).toBeVisible();

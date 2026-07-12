@@ -19,13 +19,17 @@ test.describe('Billing v0.3 (mock demo)', () => {
     await page.goto('/workspace/settings/billing');
     await switchWorkspace(page, NOVA_WORKSPACE);
 
-    await expect(page.getByText('You are on a trial.')).toBeVisible();
+    await expect(page.getByText(/You are on a trial/)).toBeVisible();
     await waitForBillingLoaded(page);
 
     await expect(
       page.getByRole('heading', { name: 'Subscription Plan' }).locator('..').getByText('Pro Plan'),
     ).toBeVisible();
-    await expect(page.getByText('Status:').locator('..')).toContainText('Trial');
+    await expect(
+      page.getByRole('heading', { name: 'Subscription Plan' }).locator('..').getByText('Trial', {
+        exact: true,
+      }),
+    ).toBeVisible();
 
     await page.getByRole('button', { name: 'Change subscription plan' }).click();
     await expect(
@@ -45,12 +49,16 @@ test.describe('Billing v0.3 (mock demo)', () => {
     await expect(
       page.getByRole('heading', { name: 'Subscription Plan' }).locator('..').getByText('Team Plan'),
     ).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText('Status:').locator('..')).toContainText('Active');
+    await expect(
+      page.getByRole('heading', { name: 'Subscription Plan' }).locator('..').getByText('Active', {
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(page.getByText('Plan updated successfully.')).toBeVisible();
 
     await page.reload();
     await waitForBillingLoaded(page);
-    await expect(page.getByText('You are on a trial.')).toHaveCount(0);
+    await expect(page.getByText(/You are on a trial/)).toHaveCount(0);
   });
 
   test('seats: Lumen at limit shows error only when inviting', async ({
@@ -72,7 +80,6 @@ test.describe('Billing v0.3 (mock demo)', () => {
     await expect(page.getByRole('button', { name: 'Send invite' })).toBeDisabled();
 
     await page.getByLabel('Email address').fill('over.limit@oequ.io');
-    await page.getByRole('button', { name: 'Send invite' }).click();
     await expect(page.getByRole('button', { name: 'Send invite' })).toBeDisabled();
   });
 

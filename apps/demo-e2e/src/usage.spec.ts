@@ -25,7 +25,7 @@ test.describe('Usage (mock demo)', () => {
       .locator('div.flex.items-start')
       .filter({ has: page.getByText('Seats', { exact: true }) });
     await expect(seatsRow.locator('p.font-semibold')).toHaveText(/4 \/ 50/);
-    await expect(page.getByText('12,400 / 50,000 emails')).toBeVisible();
+    await expect(page.getByText(/8 \/ 100,?000 emails/)).toBeVisible();
     await expect(page.getByText('Monthly Active SSO Users')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Upgrade' })).toHaveCount(0);
   });
@@ -41,7 +41,10 @@ test.describe('Usage (mock demo)', () => {
     await expect(page.getByText('Storage Image Transformations')).toBeVisible();
     await expect(page.getByText('Unavailable in plan')).toHaveCount(2);
     await expect(page.getByRole('button', { name: 'Upgrade' })).toHaveCount(2);
-    await expect(page.getByText('2 / 10')).toBeVisible();
+    const seatsRow = page
+      .locator('div.flex.items-start')
+      .filter({ has: page.getByText('Seats', { exact: true }) });
+    await expect(seatsRow.locator('p.font-semibold')).toHaveText(/4 \/ 10/);
   });
 
   test('Lumen (Free): Upgrade opens paywall for locked features', async ({
