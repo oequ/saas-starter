@@ -97,18 +97,27 @@ Include auth callback paths your app uses: `/auth/callback`, `/auth/reset-passwo
 
 ### API Developer Console (`apps/api-console`)
 
-Separate Vercel project (or static host) using [`vercel.api-console.json`](../vercel.api-console.json):
+Deploy as a **second** Vercel project from the same GitHub repo (demo stays on root `vercel.json`).
+
+1. Vercel → **Add New… → Project** → import `oequ/saas-starter` again.
+2. **Project Name:** `saas-starter-api-console` (gives `https://saas-starter-api-console.vercel.app`).
+3. **Root Directory:** `apps/api-console` (uses [`apps/api-console/vercel.json`](../apps/api-console/vercel.json)).
+4. Env (Production + Preview):
+
+   | Variable | Purpose |
+   |----------|---------|
+   | `SUPABASE_URL` | Hosted project URL |
+   | `SUPABASE_ANON_KEY` | Publishable anon key |
+
+5. Deploy. Local / CLI equivalent:
 
 ```bash
 npm run build:api-console:vercel
 ```
 
-| Variable | Purpose |
-|----------|---------|
-| `SUPABASE_URL` | Hosted project URL |
-| `SUPABASE_ANON_KEY` | Publishable anon key |
+(Root helper config: [`vercel.api-console.json`](../vercel.api-console.json).)
 
-Auth redirect URLs must include the console origin (e.g. `https://api-console.your-domain.com/**`).
+Auth redirect URLs in Supabase must include the console origin (e.g. `https://saas-starter-api-console.vercel.app/**`).
 
 Merge gate locally: `npm run pre-release:api-console`. CI: job `api-console-e2e` in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
