@@ -8,7 +8,8 @@ export const webSupabaseSettings = {
   stripeEnabled: false,
   /**
    * When true, signup redirects to `/auth/confirm-email` (OTP or email link).
-   * Also set `enable_confirmations = true` in supabase/config.toml — see supabase/README.md.
+   * Must match `[auth.email] enable_confirmations` in supabase/config.toml
+   * (committed default is true). See supabase/README.md.
    */
-  requireEmailConfirmation: false,
+  requireEmailConfirmation: true,
 };

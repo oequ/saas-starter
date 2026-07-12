@@ -245,7 +245,13 @@ export class SupabaseAuthAdapter implements AuthPort {
       return supabaseErrFromAuth(error);
     }
     if (!data.session) {
-      if (requireConfirm) {
+      // GoTrue returns no session when email confirmations are enabled.
+      // Prefer the confirm-email flow over opaque authFailed when the user
+      // was created but not yet confirmed (also covers config drift).
+      const awaitingConfirmation =
+        requireConfirm ||
+        (data.user != null && data.user.email_confirmed_at == null);
+      if (awaitingConfirmation) {
         return supabaseErr('VALIDATION', 'emailConfirmationRequired');
       }
       return supabaseErr('UNKNOWN', 'authFailed');

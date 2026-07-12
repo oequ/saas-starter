@@ -36,7 +36,7 @@ const webSettingsBody = `  url: '${url}',
   anonKey: '${anonKey}',
   billingProvider: ${billingProvider} as const,
   stripeEnabled: ${stripeEnabled},
-  requireEmailConfirmation: false,
+  requireEmailConfirmation: true,
 `;
 
 const apiConsoleSettingsBody = `  url: '${url}',

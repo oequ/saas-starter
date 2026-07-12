@@ -2,6 +2,8 @@ import { expect, type Page } from '@playwright/test';
 
 export const WEB_ACTIVATION_HEADING = 'Welcome to your demo workspace';
 
+const MAILPIT_API = 'http://127.0.0.1:54324/api/v1';
+
 /** Dismiss cookie banner when present (blocks clicks on onboarding). */
 export async function dismissCookieConsentIfVisible(page: Page): Promise<void> {
   const accept = page.getByRole('button', { name: 'Accept all' });
@@ -14,18 +16,68 @@ export function uniqueEmail(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@oequ.io`;
 }
 
+/** Read the latest 6-digit signup OTP for `email` from local Mailpit. */
+export async function fetchLatestSignupOtp(email: string): Promise<string> {
+  for (let attempt = 0; attempt < 24; attempt++) {
+    const listRes = await fetch(`${MAILPIT_API}/messages?limit=25`);
+    if (listRes.ok) {
+      const json = (await listRes.json()) as {
+        messages?: {
+          ID: string;
+          To?: { Address?: string }[];
+        }[];
+      };
+      for (const msg of json.messages ?? []) {
+        const to = (msg.To ?? [])
+          .map((t) => t.Address ?? '')
+          .join(' ')
+          .toLowerCase();
+        if (!to.includes(email.toLowerCase())) {
+          continue;
+        }
+        const detailRes = await fetch(`${MAILPIT_API}/message/${msg.ID}`);
+        if (!detailRes.ok) {
+          continue;
+        }
+        const detail = (await detailRes.json()) as {
+          Text?: string;
+          HTML?: string;
+        };
+        const text = detail.Text ?? detail.HTML ?? '';
+        const match = text.match(/\b(\d{6})\b/);
+        if (match?.[1]) {
+          return match[1];
+        }
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error(`No signup OTP in Mailpit for ${email}`);
+}
+
+/**
+ * Register → confirm email (Mailpit OTP) → land on /onboarding.
+ * Matches local GoTrue `enable_confirmations = true` and web
+ * `requireEmailConfirmation: true`.
+ */
 export async function registerUser(
   page: Page,
   email: string,
   password = 'password123',
 ): Promise<void> {
   await page.goto('/auth/register');
+  await dismissCookieConsentIfVisible(page);
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByLabel('Confirm password').fill(password);
   await page.locator('#register-accept-terms').click();
   await page.locator('#register-accept-privacy').click();
   await page.getByRole('button', { name: 'Create account' }).click();
+  await expect(page).toHaveURL(/\/auth\/confirm-email/);
+
+  const otp = await fetchLatestSignupOtp(email);
+  await page.locator('#confirm-otp').fill(otp);
+  await page.getByRole('button', { name: 'Confirm email' }).click();
   await expect(page).toHaveURL(/\/onboarding$/);
 }
 
