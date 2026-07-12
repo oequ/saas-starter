@@ -8,6 +8,7 @@ import {
   getStripe,
   priceIdForPlan,
 } from '../_shared/stripe.ts';
+import { isAllowedReturnUrl } from '../_shared/return-url.ts';
 import {
   assertOrgAdmin,
   createServiceClient,
@@ -21,31 +22,6 @@ interface CheckoutBody {
   return_url?: string;
   /** Hint from client; server uses Postgres `seats_used` for Team quantity. */
   seat_quantity?: number;
-}
-
-function isAllowedReturnUrl(url: string): boolean {
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    return false;
-  }
-
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-    return false;
-  }
-
-  const allowedCsv = Deno.env.get('ALLOWED_REDIRECT_ORIGINS');
-  if (allowedCsv) {
-    const origins = allowedCsv.split(',').map((o) => o.trim().toLowerCase());
-    return origins.includes(parsed.origin.toLowerCase());
-  }
-
-  if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
-    return true;
-  }
-
-  return parsed.protocol === 'https:';
 }
 
 Deno.serve(async (req) => {

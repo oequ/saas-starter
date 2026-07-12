@@ -205,6 +205,12 @@ npm run stripe:smoke:ci
 | `billing-list-invoices` | yes | Invoice list |
 | `stripe-webhook` | no | Idempotent sync via `apply_billing_subscription` |
 
+`return_url` for Checkout and Portal is validated in `_shared/return-url.ts`. Locally (no `ALLOWED_REDIRECT_ORIGINS`) only `localhost` / `127.0.0.1` origins are accepted. In production set:
+
+```bash
+supabase secrets set ALLOWED_REDIRECT_ORIGINS=https://your-app.vercel.app
+```
+
 ## Troubleshooting
 
 | Symptom | Fix |

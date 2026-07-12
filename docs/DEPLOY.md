@@ -34,11 +34,15 @@ Deploy billing functions and set secrets (Stripe test or live keys):
 
 ```bash
 supabase secrets set STRIPE_SECRET_KEY=sk_... STRIPE_WEBHOOK_SECRET=whsec_... STRIPE_PRICE_TEAM=price_...
+# Comma-separated app origins for Checkout / Portal return_url (required in prod).
+# Without this secret, Edge only allows localhost / 127.0.0.1 (fail closed).
+supabase secrets set ALLOWED_REDIRECT_ORIGINS=https://your-app.vercel.app
 supabase functions deploy billing-create-checkout
 supabase functions deploy billing-create-portal
 supabase functions deploy billing-cancel-subscription
 supabase functions deploy billing-update-subscription
 supabase functions deploy billing-list-invoices
+supabase functions deploy billing-sync-mock-plan
 supabase functions deploy stripe-webhook
 ```
 

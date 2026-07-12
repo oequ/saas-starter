@@ -97,6 +97,9 @@ jobs:
       - name: Security smoke (lock billing plan writes)
         run: npm run test:security:billing-plan-writes
 
+      - name: Security smoke (billing return_url allowlist)
+        run: npm run test:security:return-url
+
       - name: Web Supabase settings
         run: node scripts/write-web-supabase-settings.mjs
 
