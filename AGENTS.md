@@ -2,6 +2,14 @@
 
 Machine-readable context for AI coding assistants (Cursor, Copilot, etc.).
 
+## Git workflow (agents)
+
+- Branch from `main` with **human-readable** names: `fix/...`, `feat/...`, `docs/...`, `chore/...`.
+- Do **not** use platform-generated prefixes such as `cursor/` or opaque suffixes (e.g. `-02e1`).
+- One logical change per pull request; never push directly to `main`.
+- Commit subjects: conventional imperative English (`fix(security): ...`, `feat(billing): ...`).
+- See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Commands
 
 - Install: `npm install`

@@ -13,7 +13,7 @@ For the full-stack app see the [README](./README.md#full-stack-supabase-local).
 
 ## Development workflow
 
-1. **Branch** from `main` with a descriptive name (`fix/...`, `feat/...`, `docs/...`).
+1. **Branch** from `main` with a descriptive human-readable name (`fix/...`, `feat/...`, `docs/...`, `chore/...`). Do not use agent/platform prefixes (`cursor/…`) or opaque ID suffixes.
 2. Make changes — one logical change per commit.
 3. Run checks locally before pushing:
 
