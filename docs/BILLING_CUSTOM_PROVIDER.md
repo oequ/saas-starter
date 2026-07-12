@@ -123,7 +123,7 @@ select link_organization_billing_provider(
 Billing UI calls `BillingPort.listInvoices` → Edge Function **`billing-list-invoices`**:
 
 - **`billingProvider: 'stripe'`** — live list from Stripe API (not stored in Postgres in v1).
-- **`billingProvider: 'custom'`** (and other non-Stripe providers) — rows from **`organization_invoices`** (migration `0014`).
+- **`custom`** (and other non-Stripe providers) — rows from **`organization_invoices`** (migration `0014`). Direct table SELECT and `list_organization_invoices` are **admin/owner only** (migrations `0023`, `0035`).
 
 On payment success (or receipt issued), upsert a row from your webhook:
 
