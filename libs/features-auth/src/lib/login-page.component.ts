@@ -16,7 +16,7 @@ import {
   TranslocoService,
   translatePortError,
 } from '@oequ/i18n';
-import { AUTH_PORT, DEMO_AUTH_EMAIL, DEMO_AUTH_PASSWORD } from '@oequ/ports';
+import { AUTH_PORT, LOGIN_FORM_PREFILL } from '@oequ/ports';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -159,6 +159,8 @@ export class LoginPageComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly transloco = inject(TranslocoService);
+  /** Demo-only; web/api-console omit `LOGIN_FORM_PREFILL` → empty fields. */
+  private readonly prefill = inject(LOGIN_FORM_PREFILL, { optional: true });
 
   protected readonly inputClass = AUTH_INPUT_CLASS;
   protected readonly signingIn = signal(false);
@@ -169,11 +171,11 @@ export class LoginPageComponent {
     email: FormControl<string>;
     password: FormControl<string>;
   }>({
-    email: new FormControl(DEMO_AUTH_EMAIL, {
+    email: new FormControl(this.prefill?.email ?? '', {
       nonNullable: true,
       validators: [Validators.required, Validators.email],
     }),
-    password: new FormControl(DEMO_AUTH_PASSWORD, {
+    password: new FormControl(this.prefill?.password ?? '', {
       nonNullable: true,
       validators: [Validators.required],
     }),

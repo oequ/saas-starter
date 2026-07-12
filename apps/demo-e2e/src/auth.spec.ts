@@ -25,6 +25,7 @@ test.describe('auth', () => {
       page.getByRole('heading', { name: 'Sign in', level: 1 }),
     ).toBeVisible();
 
+    await page.locator('#login-email').fill(DEMO_AUTH_EMAIL);
     await page.locator('#login-password').fill(DEMO_AUTH_PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
 
@@ -40,6 +41,7 @@ test.describe('auth', () => {
     await page.getByRole('menuitem', { name: 'Sign out' }).click();
     await expect(page).toHaveURL(/\/auth\/login$/);
 
+    await page.locator('#login-email').fill(DEMO_AUTH_EMAIL);
     await page.locator('#login-password').fill('wrong');
     await page.getByRole('button', { name: 'Sign in' }).click();
 

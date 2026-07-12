@@ -1,5 +1,6 @@
 export * from './lib/demo-auth.constants';
 export * from './lib/demo-auth.extension';
+export * from './lib/login-form-prefill';
 export * from './lib/auth.port';
 export * from './lib/help-panel.port';
 export * from './lib/support.port';
