@@ -29,6 +29,7 @@
     "functions:serve": "supabase functions serve --env-file supabase/.env",
     "test:demo-runs-http": "node scripts/demo-runs-http-smoke.mjs",
     "test:auth-signup": "node scripts/auth-signup-smoke.mjs",
+    "test:security:owner-insert": "node scripts/security-block-owner-insert-smoke.mjs",
     "stripe:smoke:ci": "node scripts/stripe-ci-smoke.mjs"
   },
   "private": true,
