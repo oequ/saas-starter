@@ -24,9 +24,15 @@ function readAnonKeyFromSupabaseStatus() {
   }
 }
 
-// Prefer localhost over 127.0.0.1 so browser Origin matches Auth docs / redirect allowlist.
-const rawUrl = process.env['SUPABASE_URL'] ?? 'http://localhost:54321';
-const url = rawUrl.replace('://127.0.0.1', '://localhost').replace(/\/$/, '');
+/**
+ * Keep IPv4 loopback for the Supabase API URL.
+ * Chromium often resolves `localhost` to ::1 while Docker Kong listens on
+ * 127.0.0.1 only — browser signUp then fails with opaque authFailed in CI.
+ * App Origin / Auth redirect allowlist stay on http://localhost:4201
+ * (see supabase/config.toml); that is separate from this API base URL.
+ */
+const rawUrl = process.env['SUPABASE_URL'] ?? 'http://127.0.0.1:54321';
+const url = rawUrl.replace('://localhost', '://127.0.0.1').replace(/\/$/, '');
 const anonKey =
   process.env['SUPABASE_ANON_KEY'] ??
   readAnonKeyFromSupabaseStatus() ??

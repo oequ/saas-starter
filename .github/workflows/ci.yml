@@ -98,7 +98,11 @@ jobs:
         run: |
           test -f apps/web/src/app/supabase.settings.ts
           grep -q "requireEmailConfirmation: true" apps/web/src/app/supabase.settings.ts
-          grep -E "url: 'http://(localhost|127\\.0\\.0\\.1):54321'" apps/web/src/app/supabase.settings.ts
+          # API URL must be IPv4 loopback — localhost can resolve to ::1 in Chromium.
+          grep -q "url: 'http://127.0.0.1:54321'" apps/web/src/app/supabase.settings.ts
+
+      - name: Auth signup smoke (GoTrue)
+        run: npm run test:auth-signup
 
       - name: Build web
         run: npx nx build web

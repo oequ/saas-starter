@@ -188,7 +188,13 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
               </div>
 
               @if (errorMessage(); as message) {
-                <p class="text-destructive text-sm" role="alert">{{ message }}</p>
+                <p
+                  class="text-destructive text-sm"
+                  role="alert"
+                  [attr.data-port-error-message]="errorDetail()"
+                >
+                  {{ message }}
+                </p>
               }
 
               <button
@@ -230,6 +236,8 @@ export class RegisterPageComponent {
   protected readonly signingUp = signal(false);
   protected readonly submitAttempted = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  /** Raw adapter/GoTrue message for e2e diagnostics (UI still shows translated copy). */
+  protected readonly errorDetail = signal<string | null>(null);
 
   protected readonly form = new FormGroup(
     {
@@ -265,6 +273,7 @@ export class RegisterPageComponent {
 
     this.signingUp.set(true);
     this.errorMessage.set(null);
+    this.errorDetail.set(null);
 
     const { email, password, acceptTerms, acceptPrivacy } =
       this.form.getRawValue();
@@ -284,6 +293,7 @@ export class RegisterPageComponent {
         });
         return;
       }
+      this.errorDetail.set(result.error.message?.trim() || null);
       this.errorMessage.set(
         translatePortError(result.error, this.transloco),
       );

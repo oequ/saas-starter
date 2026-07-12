@@ -1,6 +1,7 @@
 /** Copy to `supabase.settings.ts` and paste keys from `npm run db:status`. */
 export const webSupabaseSettings = {
-  url: 'http://localhost:54321',
+  // Prefer 127.0.0.1 for the API URL (Docker/Kong). Keep the app on localhost:4201.
+  url: 'http://127.0.0.1:54321',
   anonKey: 'sb_publishable_…',
   /** `mock` | `stripe` | `custom` — see docs/BILLING_CUSTOM_PROVIDER.md */
   billingProvider: 'mock' as const,

@@ -129,7 +129,7 @@ Run from the **repository root** (folder that contains `supabase/`), not from in
 
 ### Password reset (`apps/web`)
 
-Local Auth is configured for **`http://localhost:4201`** in [`config.toml`](config.toml) (`site_url` + `additional_redirect_urls`). Use the same host in the browser (`localhost`, not `127.0.0.1`) — on Windows the dev server may not answer on `127.0.0.1`. After changing that file, run `npm run db:stop` then `npm run db:start`.
+Local Auth is configured for **`http://localhost:4201`** in [`config.toml`](config.toml) (`site_url` + `additional_redirect_urls`). Open the **app** on `localhost` (not `127.0.0.1`) — on Windows the dev server may not answer on `127.0.0.1`. Keep the **Supabase API URL** in `supabase.settings.ts` as `http://127.0.0.1:54321` (CI writer enforces this): Chromium often resolves `localhost` to `::1` while Kong listens on IPv4 only. After changing `config.toml`, run `npm run db:stop` then `npm run db:start`.
 
 1. In the app: **Forgot password** → enter the email of a registered user.
 2. Open **Mailpit** (local mail UI): http://127.0.0.1:54324 — open the recovery message and click the link.

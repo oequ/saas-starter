@@ -83,13 +83,17 @@ export async function registerUser(
   try {
     await expect(page).toHaveURL(/\/auth\/confirm-email/, { timeout: 30_000 });
   } catch (error) {
-    const alertText = await page.getByRole('alert').textContent().catch(() => null);
+    const alert = page.getByRole('alert');
+    const alertText = await alert.textContent().catch(() => null);
+    const portDetail = await alert
+      .getAttribute('data-port-error-message')
+      .catch(() => null);
     const validation = await page
       .locator('.text-destructive')
       .allTextContents()
       .catch(() => []);
     throw new Error(
-      `register did not reach /auth/confirm-email (url=${page.url()}; alert=${alertText ?? 'none'}; validation=${validation.join(' | ') || 'none'})`,
+      `register did not reach /auth/confirm-email (url=${page.url()}; alert=${alertText ?? 'none'}; portDetail=${portDetail ?? 'none'}; validation=${validation.join(' | ') || 'none'})`,
       { cause: error },
     );
   }
