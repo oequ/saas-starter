@@ -32,6 +32,9 @@ Official flow: [Local development with Supabase CLI](https://supabase.com/docs/g
 | `0030_public_api_rate_limits.sql` | Per-key rate limit windows |
 | `0031_oss_usage_units_and_demo_runs.sql` | Usage units, demo runs, public API RPCs |
 | `0032_oss_usage_units_org_bootstrap.sql` | Seed usage balance on `create_organization`; harden `ensure_api_project` |
+| `0033_block_owner_member_insert.sql` | Block `organization_members` INSERT with `role = owner` |
+| `0034_lock_billing_plan_writes.sql` | Column-scoped org UPDATE; `update_organization_plan` service_role only |
+| `0035_restrict_invoice_select_to_admin.sql` | `organization_invoices` SELECT admin-only (matches RPC from 0023) |
 
 Edge Functions (Deno 2, see `config.toml`): `public-v1` (OSS REST API), `billing-create-checkout`, `billing-create-portal`, `billing-cancel-subscription`, `billing-update-subscription`, `billing-list-invoices`, `stripe-webhook`; example `billing-custom-webhook.example` for other providers. Public API: [docs/PUBLIC_API.md](../docs/PUBLIC_API.md). Stripe: [docs/STRIPE_LOCAL.md](../docs/STRIPE_LOCAL.md). Custom: [docs/BILLING_CUSTOM_PROVIDER.md](../docs/BILLING_CUSTOM_PROVIDER.md).
 

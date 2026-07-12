@@ -32,6 +32,7 @@
     "test:security:owner-insert": "node scripts/security-block-owner-insert-smoke.mjs",
     "test:security:billing-plan-writes": "node scripts/security-lock-billing-plan-writes-smoke.mjs",
     "test:security:return-url": "node scripts/security-return-url-allowlist-smoke.mjs",
+    "test:security:invoice-select": "node scripts/security-invoice-select-admin-smoke.mjs",
     "stripe:smoke:ci": "node scripts/stripe-ci-smoke.mjs"
   },
   "private": true,
