@@ -50,9 +50,11 @@ test.describe('auth (Supabase) @web', () => {
     await createWorkspaceViaOnboarding(page, `ChPass ${Date.now()}`);
 
     await page.goto('/account/security');
-    await page.getByPlaceholder('Current password').fill(oldPassword);
-    await page.getByPlaceholder('New password').fill(newPassword);
-    await page.getByPlaceholder('Confirm new password').fill(newPassword);
+    await page.getByPlaceholder('Current password', { exact: true }).fill(oldPassword);
+    await page.getByPlaceholder('New password', { exact: true }).fill(newPassword);
+    await page
+      .getByPlaceholder('Confirm new password', { exact: true })
+      .fill(newPassword);
     await page.getByRole('button', { name: 'Save changes' }).click();
 
     await expect(page.getByText('Password updated.')).toBeVisible();
