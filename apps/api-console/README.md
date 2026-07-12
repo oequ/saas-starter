@@ -35,6 +35,11 @@ On Windows if Edge in Docker fails DNS: `npm run functions:serve` in another ter
 
 ## Deploy (Vercel)
 
-Use `vercel.api-console.json` as the project config. Set `SUPABASE_URL` and `SUPABASE_ANON_KEY` in Vercel env.
+Second Vercel project from this monorepo (do not reuse the demo project):
 
-See [docs/PUBLIC_API.md](../../docs/PUBLIC_API.md) for the backend contract.
+1. Import `oequ/saas-starter` again → name `saas-starter-api-console`
+2. Root Directory: `apps/api-console` (picks up `vercel.json` here)
+3. Env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`
+4. Production URL: `https://saas-starter-api-console.vercel.app`
+
+See [docs/DEPLOY.md](../../docs/DEPLOY.md) and [docs/PUBLIC_API.md](../../docs/PUBLIC_API.md).
