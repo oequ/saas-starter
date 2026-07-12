@@ -15,8 +15,32 @@ const WORKSPACE_SLUG_BY_NAME: Record<string, string> = {
   [LUMEN_WORKSPACE]: 'lumen',
 };
 
+/** Dismiss the GDPR banner so it does not intercept workspace clicks. */
+export async function dismissCookieConsent(page: Page): Promise<void> {
+  const reject = page.getByRole('button', { name: 'Reject all', exact: true });
+  if (await reject.isVisible().catch(() => false)) {
+    await reject.click();
+    await expect(
+      page.getByRole('region', { name: 'Cookie consent' }),
+    ).toHaveCount(0);
+    return;
+  }
+  await page.evaluate(() => {
+    localStorage.setItem(
+      'oequ-cookie-consent',
+      JSON.stringify({
+        version: 1,
+        preferences: { analytics: false, marketing: false },
+        updatedAt: new Date().toISOString(),
+        source: 'reject_all',
+      }),
+    );
+  });
+}
+
 export async function signInAsDemo(page: Page): Promise<void> {
   await page.goto('/auth/login');
+  await dismissCookieConsent(page);
   await page.getByRole('button', { name: 'Sign in' }).click();
 }
 

@@ -23,6 +23,7 @@ import {
   portOk,
   type PortResult,
   resolveCurrentPlanId,
+  seatLimitForPlanId,
   validateMockPaymentMethodInput,
 } from '@oequ/ports';
 import { mockErr } from './mock-port-error';
@@ -433,14 +434,18 @@ export class MockBillingAdapter implements BillingPort {
     const targetTier = planId as CommercialPlanId;
     const isDowngrade =
       comparePlanTiers(targetTier, resolveCurrentPlanId(current)) < 0;
+    /** Paid plan change ends a trial (upgrade checkout or downgrade confirm). */
+    const leavesTrial =
+      current.status === 'trialing' && targetTier !== 'free';
 
     return {
       ...current,
       planId,
       planName: plan?.name ?? planId,
-      status: isDowngrade && current.status === 'trialing' ? 'active' : current.status,
+      status: leavesTrial ? 'active' : current.status,
       cancelAtPeriodEnd: false,
-      trialEnd: isDowngrade ? null : current.trialEnd,
+      trialEnd: leavesTrial || isDowngrade ? null : current.trialEnd,
+      seatsLimit: seatLimitForPlanId(targetTier, MOCK_BILLING_PLANS),
       meters: mergeMetersForPlan(
         targetTier,
         current.meters,
