@@ -7,7 +7,7 @@
 | **Run** | `npx nx serve demo` → http://localhost:4200 | `npm run start:web` → http://localhost:4201 |
 | **Backend** | All mock (`provideDemoAdapters`) | Auth, org, metrics, API keys, emails: **Supabase**; billing **mock** (default) or **Stripe** |
 | **Needs** | `npm install` only | Docker + `npm run db:start` |
-| **Ship target** | GitHub Pages, BYO API | Local/prod Supabase project |
+| **Ship target** | Vercel (root project), BYO API | Local/prod Supabase project |
 
 Locked versions: [docs/STACK.md](./docs/STACK.md) · DB: [supabase/README.md](./supabase/README.md)
 
