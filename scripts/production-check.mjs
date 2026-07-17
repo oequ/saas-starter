@@ -150,12 +150,23 @@ async function checkSupabaseReachable() {
 
 async function checkAnonKeyValid() {
   try {
-    const res = await fetchWithAnon('/rest/v1/', { method: 'HEAD' });
+    // Root `/rest/v1/` often returns 401 on hosted even with a valid key.
+    // Probe a real table instead (same as schema checks).
+    const res = await fetchWithAnon('/rest/v1/organizations?select=id&limit=0');
     if (res.status === 401 || res.status === 403) {
       record('anon-key', 'Anon key accepted by REST', 'fail', `HTTP ${res.status}`);
       return false;
     }
-    record('anon-key', 'Anon key accepted by REST', 'pass');
+    if (!res.ok && res.status !== 404 && res.status !== 406) {
+      record(
+        'anon-key',
+        'Anon key accepted by REST',
+        'warn',
+        `HTTP ${res.status}`,
+      );
+      return true;
+    }
+    record('anon-key', 'Anon key accepted by REST', 'pass', `HTTP ${res.status}`);
     return true;
   } catch (err) {
     record(
@@ -253,28 +264,44 @@ async function checkSchemaProbes() {
   return ok;
 }
 
+function isGatewayMissingFunction(status, body) {
+  if (status !== 404) {
+    return false;
+  }
+  // Platform gateway when the slug is not deployed.
+  // App-level 404 (e.g. public-v1 unknown route) must not count as missing.
+  return (
+    body.includes('Requested function was not found') ||
+    body.includes('Function not found')
+  );
+}
+
+async function probeEdgeFunction(name) {
+  const res = await fetch(`${config.url}/functions/v1/${name}`, {
+    method: 'POST',
+    headers: {
+      apikey: config.anonKey,
+      Authorization: `Bearer ${config.anonKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: '{}',
+  });
+  const body = await res.text();
+  return { status: res.status, body };
+}
+
 async function checkEdgeFunctions() {
   let ok = true;
-  for (const name of manifest.edgeFunctions) {
+  const required = manifest.requiredEdgeFunctions ?? manifest.edgeFunctions ?? [];
+  const optional = manifest.optionalEdgeFunctions ?? [];
+
+  for (const name of required) {
     try {
-      const res = await fetch(`${config.url}/functions/v1/${name}`, {
-        method: 'POST',
-        headers: {
-          apikey: config.anonKey,
-          Authorization: `Bearer ${config.anonKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: '{}',
-      });
-      if (res.status === 404) {
-        record(
-          `fn-${name}`,
-          `Edge Function ${name}`,
-          'fail',
-          'not deployed',
-        );
+      const { status, body } = await probeEdgeFunction(name);
+      if (isGatewayMissingFunction(status, body)) {
+        record(`fn-${name}`, `Edge Function ${name}`, 'fail', 'not deployed');
         ok = false;
-      } else if (res.status === 503) {
+      } else if (status === 503) {
         record(
           `fn-${name}`,
           `Edge Function ${name}`,
@@ -282,12 +309,7 @@ async function checkEdgeFunctions() {
           'runtime unavailable (start functions:serve locally or deploy to hosted project)',
         );
       } else {
-        record(
-          `fn-${name}`,
-          `Edge Function ${name}`,
-          'pass',
-          `HTTP ${res.status}`,
-        );
+        record(`fn-${name}`, `Edge Function ${name}`, 'pass', `HTTP ${status}`);
       }
     } catch (err) {
       record(
@@ -297,6 +319,36 @@ async function checkEdgeFunctions() {
         err instanceof Error ? err.message : String(err),
       );
       ok = false;
+    }
+  }
+
+  for (const name of optional) {
+    try {
+      const { status, body } = await probeEdgeFunction(name);
+      if (isGatewayMissingFunction(status, body)) {
+        record(
+          `fn-${name}`,
+          `Edge Function ${name}`,
+          'warn',
+          'not deployed (optional — Stripe/billing path)',
+        );
+      } else if (status === 503) {
+        record(
+          `fn-${name}`,
+          `Edge Function ${name}`,
+          'warn',
+          'runtime unavailable',
+        );
+      } else {
+        record(`fn-${name}`, `Edge Function ${name}`, 'pass', `HTTP ${status}`);
+      }
+    } catch (err) {
+      record(
+        `fn-${name}`,
+        `Edge Function ${name}`,
+        'warn',
+        err instanceof Error ? err.message : String(err),
+      );
     }
   }
   return ok;
