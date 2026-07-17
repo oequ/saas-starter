@@ -1,12 +1,14 @@
 {
-  "edgeFunctions": [
+  "requiredEdgeFunctions": [
+    "public-v1"
+  ],
+  "optionalEdgeFunctions": [
     "billing-create-checkout",
     "billing-create-portal",
     "billing-cancel-subscription",
     "billing-update-subscription",
     "billing-list-invoices",
-    "stripe-webhook",
-    "public-v1"
+    "stripe-webhook"
   ],
   "schemaProbes": [
     {
