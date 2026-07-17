@@ -122,7 +122,7 @@ libs/data-access-supabase     →  Supabase auth/org adapters
 ## Monorepo layout
 
 ```text
-apps/demo                 # Mock demo · GitHub Pages · PWA (production builds)
+apps/demo                 # Mock demo · Vercel · PWA (production builds)
 apps/web                  # Full-stack shell (same routes as demo)
 apps/demo-e2e             # Playwright + README screenshots
 libs/ports                # AuthPort, OrgPort, BillingPort, …
@@ -153,8 +153,7 @@ supabase/                 # Migrations, seed, local CLI config
 | [docs/adr/](./docs/adr/) | Architecture decision records |
 | [supabase/README.md](./supabase/README.md) | Docker, `db:*` scripts, member SQL |
 
-**Live mock demo (Pages):** https://oequ.github.io/saas-starter/  
-**Marketing:** https://oequ.github.io/saas-starter-landing/
+**Live mock demo (Vercel):** https://saas-starter-two-iota.vercel.app/
 
 ---
 

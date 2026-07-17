@@ -15,7 +15,7 @@ For the full production runbook (billing secrets, Stripe, deeper smoke), see
 
 | Surface | Backend | Typical host |
 |---------|---------|--------------|
-| `apps/demo` | Mock only (no Supabase) | GitHub Pages or root Vercel project |
+| `apps/demo` | Mock only (no Supabase) | Root Vercel project (`vercel.json`) |
 | `apps/web` | Hosted Supabase | Separate Vercel project (or static host) |
 | `apps/api-console` | Hosted Supabase | Second Vercel project, Root Directory `apps/api-console` |
 
@@ -127,7 +127,7 @@ npx supabase secrets set ALLOWED_REDIRECT_ORIGINS=https://your-web.vercel.app
 Same pattern with Root Directory / build for `apps/web`, or inject settings via
 your fork’s env story. See [DEPLOY.md §4](./DEPLOY.md#4-frontend-vercel-or-static-host).
 
-**Mock demo** stays on GitHub Pages / root `vercel.json` — no Supabase env required.
+**Mock demo** stays on the root Vercel project (`vercel.json`) — no Supabase env required.
 
 ### 7. Pre-flight against hosted
 
