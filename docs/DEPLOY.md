@@ -4,6 +4,11 @@ Checklist for shipping `apps/web` against a **hosted Supabase** project (e.g. Ve
 
 Local pre-release (`npm run pre-release:web`) validates the app against a **local** stack. Use `npm run production:check` before or after pointing production env vars at your hosted project.
 
+**First hosted deploy?** Follow the sequential checklist in
+[HOSTED_FIRST_RUN.md](./HOSTED_FIRST_RUN.md) (project → Auth URLs → `db push` →
+Edge → frontend host → smoke). Use this runbook for the full production path
+(billing secrets, Stripe webhook, deeper verification).
+
 ---
 
 ## 1. Supabase project

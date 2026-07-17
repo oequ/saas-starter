@@ -102,7 +102,7 @@ libs/data-access-supabase     →  Supabase auth/org adapters
 
 | Gap | What you do |
 |-----|-------------|
-| **Prod deploy** | Hosted Supabase, Edge secrets (`STRIPE_*`), production webhook URL, web env — [DEPLOY.md](docs/DEPLOY.md) |
+| **Prod deploy** | First hosted path — [HOSTED_FIRST_RUN.md](docs/HOSTED_FIRST_RUN.md); full runbook (Stripe, secrets) — [DEPLOY.md](docs/DEPLOY.md) |
 | **Stripe in PR CI** | `e2e:web:release` uses mock only |
 | **Stripe nightly CI** | API smoke workflow (webhook + seat bump) — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md#cie2e); needs GitHub secrets |
 | **Stripe UI smoke** | Manual on your machine: Checkout + Members — [STRIPE_LOCAL.md](docs/STRIPE_LOCAL.md) |
@@ -145,6 +145,7 @@ supabase/                 # Migrations, seed, local CLI config
 | [docs/STRIPE_LOCAL.md](./docs/STRIPE_LOCAL.md) | Local Stripe + Edge Functions smoke |
 | [docs/PUBLIC_API.md](./docs/PUBLIC_API.md) | OSS public REST API (keys, demo-runs, local smoke) |
 | [apps/api-console/README.md](./apps/api-console/README.md) | API Developer Console (local :4202) |
+| [docs/HOSTED_FIRST_RUN.md](./docs/HOSTED_FIRST_RUN.md) | First hosted Supabase + frontend checklist (ordered) |
 | [docs/DEPLOY.md](./docs/DEPLOY.md) | Hosted Supabase + Vercel launch runbook |
 | [docs/BILLING_CUSTOM_PROVIDER.md](./docs/BILLING_CUSTOM_PROVIDER.md) | Custom billing provider integration |
 | [docs/STACK.md](./docs/STACK.md) | Version pins before `npm install` anything |
@@ -152,7 +153,7 @@ supabase/                 # Migrations, seed, local CLI config
 | [docs/adr/](./docs/adr/) | Architecture decision records |
 | [supabase/README.md](./supabase/README.md) | Docker, `db:*` scripts, member SQL |
 
-**Live mock demo (Pages):** https://oequ.github.io/angular-saas-starter-ui/  
+**Live mock demo (Pages):** https://oequ.github.io/saas-starter/  
 **Marketing:** https://oequ.github.io/saas-starter-landing/
 
 ---
