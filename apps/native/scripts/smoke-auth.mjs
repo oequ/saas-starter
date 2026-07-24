@@ -1,13 +1,55 @@
 /**
  * One-off live smoke against local Supabase (same Auth path as apps/native).
- * Run from repo root: node apps/native/scripts/smoke-auth.mjs
+ *
+ * From apps/native (loads `.env` if present):
+ *   node scripts/smoke-auth.mjs
+ *
+ * Or set EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABASE_ANON_KEY explicitly.
  */
+import { readFileSync, existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 
-const URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? 'http://127.0.0.1:54321';
-const KEY =
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
-  'sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH';
+function loadDotEnv() {
+  const envPath = join(dirname(fileURLToPath(import.meta.url)), '..', '.env');
+  if (!existsSync(envPath)) {
+    return;
+  }
+  for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue;
+    }
+    const eq = trimmed.indexOf('=');
+    if (eq <= 0) {
+      continue;
+    }
+    const key = trimmed.slice(0, eq).trim();
+    let value = trimmed.slice(eq + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    if (process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+}
+
+loadDotEnv();
+
+const URL = process.env.EXPO_PUBLIC_SUPABASE_URL?.trim() || 'http://127.0.0.1:54321';
+const KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY?.trim() || '';
+if (!KEY) {
+  console.error(
+    'Missing EXPO_PUBLIC_SUPABASE_ANON_KEY. Copy apps/native/.env.example to .env and fill from `npm run db:status`, then re-run.',
+  );
+  process.exit(1);
+}
+
 const MAILPIT = 'http://127.0.0.1:54324/api/v1';
 const email = `native-smoke-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@oequ.io`;
 const password = 'password123';
