@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Oequ Companion",
+    "slug": "oequ-companion",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "oequ-companion",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "io.oequ.companion"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "io.oequ.companion",
+      "versionCode": 1,
+      "softwareKeyboardLayoutMode": "resize",
+      "usesCleartextTraffic": true
+    },    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

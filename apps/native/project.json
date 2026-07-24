@@ -1,0 +1,72 @@
+{
+  "name": "native",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/native",
+  "tags": ["type:app", "platform:native"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/native",
+        "command": "npm run typecheck"
+      }
+    },
+    "start": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/native",
+        "command": "npm start"
+      }
+    },
+    "start-tunnel": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/native",
+        "command": "npm run start:tunnel"
+      }
+    },
+    "android": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/native",
+        "command": "npm run android"
+      }
+    },
+    "ios": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/native",
+        "command": "npm run ios"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/native",
+        "command": "npm run typecheck"
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/native",
+        "command": "npm install --legacy-peer-deps"
+      }
+    },
+    "apk-debug": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/native",
+        "command": "npm run apk:debug"
+      }
+    },
+    "apk-release": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/native",
+        "command": "npm run apk:release"
+      }
+    }
+  }
+}

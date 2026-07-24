@@ -6,6 +6,7 @@
     "start": "nx serve demo",
     "start:web": "nx serve web",
     "start:api-console": "nx serve api-console",
+    "start:native": "nx start native",
     "build:api-console:vercel": "node scripts/vercel-build-api-console.mjs",
     "build:demo:vercel": "node scripts/vercel-build-demo.mjs",
     "build": "nx build demo",

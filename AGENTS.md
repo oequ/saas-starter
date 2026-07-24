@@ -16,6 +16,7 @@ Machine-readable context for AI coding assistants (Cursor, Copilot, etc.).
 - Dev server (demo): `npx nx serve demo`
 - Dev server (web): `npm run start:web` (requires Docker + `npm run db:start`)
 - API console: `npm run start:api-console` → http://localhost:4202 — see [apps/api-console/README.md](apps/api-console/README.md)
+- Native companion (Expo): `npm run start:native` — see [apps/native/README.md](apps/native/README.md) (Supabase Auth; own `package.json` under `apps/native`); local APK: [apps/native/BUILD_ANDROID.md](apps/native/BUILD_ANDROID.md)
 - API console merge gate: `npm run pre-release:api-console` (local, Docker); CI job `api-console-e2e` runs `@api-console` Playwright on PRs
 - Lint: `npx nx run-many -t lint`
 - Test: `npx nx run-many -t test --projects=ports`
@@ -31,6 +32,8 @@ Machine-readable context for AI coding assistants (Cursor, Copilot, etc.).
 ```text
 apps/demo/                    # Mock-only demo app (GitHub Pages, PWA)
 apps/web/                     # Full-stack app (Supabase backend)
+apps/api-console/             # API Developer Console
+apps/native/                  # Expo companion (Supabase Auth; own package.json)
 apps/demo-e2e/                # Playwright E2E for demo
 apps/web-e2e/                 # Playwright E2E for web (@web tag)
 libs/ports/                   # Framework-free port interfaces ONLY
