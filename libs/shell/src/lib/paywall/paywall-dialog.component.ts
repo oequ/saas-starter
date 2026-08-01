@@ -11,21 +11,8 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideCheck } from '@ng-icons/lucide';
-import {
-  BILLING_PORT,
-  checkoutBillableSeatCount,
-  COMMERCIAL_PLAN_IDS,
-  STRIPE_BILLING_ENABLED,
-  comparePlanTiers,
-  formatUsageNumber,
-  getDowngradeBlocker,
-  isAllowedStripeRedirectUrl,
-  ORG_PORT,
-  resolveCurrentPlanId,
-  type BillingPlan,
-  type BillingSummary,
-  type CommercialPlanId,
-} from '@oequ/ports';
+import { checkoutBillableSeatCount, COMMERCIAL_PLAN_IDS, comparePlanTiers, formatUsageNumber, getDowngradeBlocker, isAllowedStripeRedirectUrl, resolveCurrentPlanId, type BillingPlan, type BillingSummary, type CommercialPlanId } from '@oequ/ports';
+import { BILLING_PORT, STRIPE_BILLING_ENABLED, ORG_PORT } from '@oequ/ports-angular';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';

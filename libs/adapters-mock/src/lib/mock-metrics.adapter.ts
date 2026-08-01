@@ -1,13 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  METRICS_PORT,
-  type MetricsDashboard,
-  type MetricsFilters,
-  type MetricsPort,
-  type OrganizationId,
-  portOk,
-  type PortResult,
-} from '@oequ/ports';
+import { type MetricsDashboard, type MetricsFilters, type MetricsPort, type OrganizationId, portOk, type PortResult } from '@oequ/ports';
+import { METRICS_PORT } from '@oequ/ports-angular';
 
 import { buildMockMetricsDashboard } from './data/mock-metrics-data';
 import { MockEmailsAdapter } from './mock-emails.adapter';

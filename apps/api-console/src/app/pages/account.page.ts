@@ -9,7 +9,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ORG_PORT } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 

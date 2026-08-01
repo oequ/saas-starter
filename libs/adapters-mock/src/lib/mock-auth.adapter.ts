@@ -1,18 +1,6 @@
 import { Injectable, Injector, inject } from '@angular/core';
-import {
-  AUTH_FEATURES,
-  AUTH_PORT,
-  type AuthClaims,
-  type AuthPort,
-  type AuthSession,
-  type AuthSessionDevice,
-  type AuthUser,
-  type EmailPasswordCredentials,
-  type OrgContextClaim,
-  type RegisterCredentials,
-  portOk,
-  type PortResult,
-} from '@oequ/ports';
+import { type AuthClaims, type AuthPort, type AuthSession, type AuthSessionDevice, type AuthUser, type EmailPasswordCredentials, type OrgContextClaim, type RegisterCredentials, portOk, type PortResult } from '@oequ/ports';
+import { AUTH_FEATURES, AUTH_PORT } from '@oequ/ports-angular';
 
 import { mockErr } from './mock-port-error';
 import { BehaviorSubject, type Observable } from 'rxjs';

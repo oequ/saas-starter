@@ -9,18 +9,8 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import {
-  BILLING_PORT,
-  isAllowedStripeRedirectUrl,
-  STRIPE_BILLING_ENABLED,
-  formatPlanLabel,
-  resolveCurrentPlanId,
-  USAGE_SETTINGS_PATH,
-  type BillingSummary,
-  type Invoice,
-  type InvoiceStatus,
-  type SubscriptionStatus,
-} from '@oequ/ports';
+import { isAllowedStripeRedirectUrl, formatPlanLabel, resolveCurrentPlanId, USAGE_SETTINGS_PATH, type BillingSummary, type Invoice, type InvoiceStatus, type SubscriptionStatus } from '@oequ/ports';
+import { BILLING_PORT, STRIPE_BILLING_ENABLED } from '@oequ/ports-angular';
 import {
   TranslocoPipe,
   TranslocoService,

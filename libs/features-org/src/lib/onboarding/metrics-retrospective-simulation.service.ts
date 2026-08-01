@@ -1,13 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
-import {
-  EMAILS_PORT,
-  buildRetrospectiveEmailRecords,
-  type MetricsDashboard,
-  type OrganizationId,
-  type RetrospectiveSendPeriod,
-  retrospectivePeriodToMetricsPeriod,
-  type MetricsPeriod,
-} from '@oequ/ports';
+import { buildRetrospectiveEmailRecords, type MetricsDashboard, type OrganizationId, type RetrospectiveSendPeriod, retrospectivePeriodToMetricsPeriod, type MetricsPeriod } from '@oequ/ports';
+import { EMAILS_PORT } from '@oequ/ports-angular';
 import { TranslocoService, translatePortError } from '@oequ/i18n';
 import { toast } from '@spartan-ng/brain/sonner';
 

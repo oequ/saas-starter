@@ -25,16 +25,8 @@ import {
   TranslocoService,
   portErrorToError,
 } from '@oequ/i18n';
-import {
-  API_KEYS_PORT,
-  EMAILS_PORT,
-  type EmailListPeriod,
-  type EmailStatusFilter,
-  type OutboundEmail,
-  type OutboundEmailStatus,
-  emailStatusBadgeClass,
-  formatEmailSentRelative,
-} from '@oequ/ports';
+import { type EmailListPeriod, type EmailStatusFilter, type OutboundEmail, type OutboundEmailStatus, emailStatusBadgeClass, formatEmailSentRelative } from '@oequ/ports';
+import { API_KEYS_PORT, EMAILS_PORT } from '@oequ/ports-angular';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';

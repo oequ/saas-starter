@@ -5,7 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { ACTIVATION_PORT, ORG_PORT } from '@oequ/ports';
+import { ACTIVATION_PORT, ORG_PORT } from '@oequ/ports-angular';
 import { firstValueFrom } from 'rxjs';
 
 @Component({

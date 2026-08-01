@@ -1,4 +1,3 @@
-import { InjectionToken } from '@angular/core';
 import type { Observable } from 'rxjs';
 
 import type { PortResult } from './models/common.model';
@@ -71,4 +70,3 @@ export interface OrgPort {
   selectPersonal(): Promise<PortResult<void>>;
 }
 
-export const ORG_PORT = new InjectionToken<OrgPort>('ORG_PORT');

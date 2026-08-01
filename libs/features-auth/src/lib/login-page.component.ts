@@ -16,7 +16,7 @@ import {
   TranslocoService,
   translatePortError,
 } from '@oequ/i18n';
-import { AUTH_PORT, LOGIN_FORM_PREFILL } from '@oequ/ports';
+import { AUTH_PORT, LOGIN_FORM_PREFILL } from '@oequ/ports-angular';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';

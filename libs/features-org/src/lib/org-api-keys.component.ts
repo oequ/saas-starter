@@ -24,15 +24,8 @@ import {
   portErrorToError,
   translatePortError,
 } from '@oequ/i18n';
-import {
-  API_KEYS_PORT,
-  type ApiKey,
-  type ApiKeyPermission,
-  type ApiKeyPermissionFilter,
-  type CreateApiKeyInput,
-  formatCreatedRelativeTime,
-  formatRelativeTime,
-} from '@oequ/ports';
+import { type ApiKey, type ApiKeyPermission, type ApiKeyPermissionFilter, type CreateApiKeyInput, formatCreatedRelativeTime, formatRelativeTime } from '@oequ/ports';
+import { API_KEYS_PORT } from '@oequ/ports-angular';
 import { isApiShell, SHELL_CONFIG } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';

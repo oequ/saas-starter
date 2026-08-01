@@ -1,12 +1,6 @@
 import { Injectable } from '@angular/core';
-import {
-  ACTIVATION_PORT,
-  type ActivationPort,
-  type ActivationStatus,
-  type OrganizationId,
-  portOk,
-  type PortResult,
-} from '@oequ/ports';
+import { type ActivationPort, type ActivationStatus, type OrganizationId, portOk, type PortResult } from '@oequ/ports';
+import { ACTIVATION_PORT } from '@oequ/ports-angular';
 
 import { MOCK_ORGANIZATIONS } from './data/mock-data';
 

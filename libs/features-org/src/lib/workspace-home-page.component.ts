@@ -15,11 +15,8 @@ import {
   lucideCreditCard,
   lucideUsers,
 } from '@ng-icons/lucide';
-import {
-  BILLING_PORT,
-  formatPlanLabel,
-  ORG_PORT,
-} from '@oequ/ports';
+import { formatPlanLabel } from '@oequ/ports';
+import { BILLING_PORT, ORG_PORT } from '@oequ/ports-angular';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCheckboxImports } from '@spartan-ng/helm/checkbox';

@@ -1,0 +1,29 @@
+{
+  "name": "ports-angular",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ports-angular/src",
+  "projectType": "library",
+  "tags": ["type:ports", "framework:angular"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/ports-angular",
+        "main": "libs/ports-angular/src/index.ts",
+        "tsConfig": "libs/ports-angular/tsconfig.lib.json",
+        "assets": ["libs/ports-angular/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/libs/ports-angular"
+      }
+    }
+  }
+}

@@ -1,31 +1,6 @@
 import { Injectable, Injector, inject } from '@angular/core';
-import {
-  alignBillingSummarySeats,
-  BILLING_PORT,
-  checkoutBillableSeatCount,
-  isPerSeatBillingPlan,
-  TEAM_PLAN_MAX_SEATS,
-  type AddPaymentMethodInput,
-  type BillingPort,
-  type BillingPlan,
-  type BillingSummary,
-  type CheckoutSession,
-  type CommercialPlanId,
-  type InvoiceListPage,
-  type OrganizationId,
-  type PaymentMethod,
-  type PortalSession,
-  comparePlanTiers,
-  detectCardBrandFromNumber,
-  getDowngradeBlocker,
-  getPlanChangeDirection,
-  normalizeCardNumber,
-  portOk,
-  type PortResult,
-  resolveCurrentPlanId,
-  seatLimitForPlanId,
-  validateMockPaymentMethodInput,
-} from '@oequ/ports';
+import { alignBillingSummarySeats, checkoutBillableSeatCount, isPerSeatBillingPlan, TEAM_PLAN_MAX_SEATS, type AddPaymentMethodInput, type BillingPort, type BillingPlan, type BillingSummary, type CheckoutSession, type CommercialPlanId, type InvoiceListPage, type OrganizationId, type PaymentMethod, type PortalSession, comparePlanTiers, detectCardBrandFromNumber, getDowngradeBlocker, getPlanChangeDirection, normalizeCardNumber, portOk, type PortResult, resolveCurrentPlanId, seatLimitForPlanId, validateMockPaymentMethodInput } from '@oequ/ports';
+import { BILLING_PORT } from '@oequ/ports-angular';
 import { mockErr } from './mock-port-error';
 import { BehaviorSubject, type Observable } from 'rxjs';
 

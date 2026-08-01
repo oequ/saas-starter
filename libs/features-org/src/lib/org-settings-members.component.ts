@@ -11,23 +11,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideEllipsis, lucideSearch, lucideUsers } from '@ng-icons/lucide';
-import {
-  BILLING_PORT,
-  BILLING_PROVIDER_ID,
-  countMembersTowardSeats,
-  formatSeatUsageValue,
-  isBillingPaymentBlocked,
-  isBillingSeatsExhausted,
-  needsPerSeatSeatSyncAfterRemove,
-  needsPerSeatSeatSyncBeforeInvite,
-  needsStripeSeatChargeConfirmBeforeInvite,
-  ORG_PORT,
-  targetSeatQuantityAfterMemberRemoved,
-  targetSeatQuantityForInvite,
-  type BillingProviderId,
-  type OrganizationMember,
-  type OrgRole,
-} from '@oequ/ports';
+import { countMembersTowardSeats, formatSeatUsageValue, isBillingPaymentBlocked, isBillingSeatsExhausted, needsPerSeatSeatSyncAfterRemove, needsPerSeatSeatSyncBeforeInvite, needsStripeSeatChargeConfirmBeforeInvite, targetSeatQuantityAfterMemberRemoved, targetSeatQuantityForInvite, type BillingProviderId, type OrganizationMember, type OrgRole } from '@oequ/ports';
+import { BILLING_PORT, BILLING_PROVIDER_ID, ORG_PORT } from '@oequ/ports-angular';
 import {
   TranslocoPipe,
   TranslocoService,

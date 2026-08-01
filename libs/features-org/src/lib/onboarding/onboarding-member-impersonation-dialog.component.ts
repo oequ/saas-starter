@@ -15,12 +15,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {
-  ORG_PORT,
-  formatMemberDisplayLabel,
-  formatOrgRole,
-  type OrganizationMember,
-} from '@oequ/ports';
+import { formatMemberDisplayLabel, formatOrgRole, type OrganizationMember } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 import {
   TranslocoPipe,
   TranslocoService,

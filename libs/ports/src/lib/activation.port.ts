@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 import type { PortResult } from './models/common.model';
 import type { ActivationStatus } from './models/activation.model';
 import type { OrganizationId } from './models/org.model';
@@ -18,6 +16,3 @@ export interface ActivationPort {
   ): Promise<PortResult<void>>;
 }
 
-export const ACTIVATION_PORT = new InjectionToken<ActivationPort>(
-  'ACTIVATION_PORT',
-);

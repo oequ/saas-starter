@@ -1,18 +1,6 @@
 import { Injectable } from '@angular/core';
-import {
-  EMAILS_PORT,
-  type EmailListQuery,
-  type EmailsPort,
-  emailPeriodCutoffIso,
-  type OutboundEmail,
-  type OrganizationId,
-  portOk,
-  type PortResult,
-  resolveCurrentPlanId,
-  type SimulateOutboundEmailRecord,
-  type SimulateOutboundEmailsInput,
-  type SimulateOutboundEmailsResult,
-} from '@oequ/ports';
+import { type EmailListQuery, type EmailsPort, emailPeriodCutoffIso, type OutboundEmail, type OrganizationId, portOk, type PortResult, resolveCurrentPlanId, type SimulateOutboundEmailRecord, type SimulateOutboundEmailsInput, type SimulateOutboundEmailsResult } from '@oequ/ports';
+import { EMAILS_PORT } from '@oequ/ports-angular';
 
 import { MockApiKeysAdapter } from './mock-api-keys.adapter';
 import { MockAuthAdapter } from './mock-auth.adapter';

@@ -7,10 +7,8 @@ import {
   resource,
   signal,
 } from '@angular/core';
-import {
-  INTEGRATIONS_PORT,
-  type IntegrationCatalogItem,
-} from '@oequ/ports';
+import type { IntegrationCatalogItem } from '@oequ/ports';
+import { INTEGRATIONS_PORT } from '@oequ/ports-angular';
 import {
   TranslocoPipe,
   TranslocoService,

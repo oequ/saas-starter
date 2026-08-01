@@ -21,7 +21,7 @@ import {
   lucideUser,
 } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@oequ/i18n';
-import { AUTH_PORT } from '@oequ/ports';
+import { AUTH_PORT } from '@oequ/ports-angular';
 import {
   HlmDropdownMenuImports,
   provideHlmDropdownMenuConfig,

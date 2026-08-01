@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ORG_PORT } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 
 import { OnboardingActivationComponent } from './onboarding/onboarding-activation.component';
 import { OnboardingCreateWorkspaceComponent } from './onboarding/onboarding-create-workspace.component';

@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, type UrlTree } from '@angular/router';
-import { AUTH_PORT, ORG_PORT, type Organization } from '@oequ/ports';
+import type { Organization } from '@oequ/ports';
+import { AUTH_PORT, ORG_PORT } from '@oequ/ports-angular';
 import { firstValueFrom } from 'rxjs';
 
 import { isApiShell, SHELL_CONFIG } from './shell-config';

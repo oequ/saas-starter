@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 /** Prerequisite steps must be done before the final complete step. */
 export type ActivationStepKind = 'prerequisite' | 'complete';
 
@@ -41,7 +39,3 @@ export interface ActivationOnboardingConfig {
   readonly demoSteps?: readonly ActivationDemoStepConfig[];
 }
 
-export const ACTIVATION_ONBOARDING_CONFIG =
-  new InjectionToken<ActivationOnboardingConfig>(
-    'ACTIVATION_ONBOARDING_CONFIG',
-  );

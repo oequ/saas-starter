@@ -1,13 +1,6 @@
 import { Injectable } from '@angular/core';
-import {
-  INTEGRATIONS_PORT,
-  type IntegrationCatalogItem,
-  type IntegrationsPort,
-  type OrganizationId,
-  portOk,
-  type PortResult,
-  type WorkspaceIntegration,
-} from '@oequ/ports';
+import { type IntegrationCatalogItem, type IntegrationsPort, type OrganizationId, portOk, type PortResult, type WorkspaceIntegration } from '@oequ/ports';
+import { INTEGRATIONS_PORT } from '@oequ/ports-angular';
 
 import {
   cloneMockIntegrationsSeed,

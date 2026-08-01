@@ -1,19 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  PROJECT_PORT,
-  type AddProjectMemberInput,
-  type CreateProjectInput,
-  type OrganizationId,
-  type OrganizationProject,
-  type ProjectId,
-  type ProjectMember,
-  type ProjectMemberRole,
-  type ProjectPort,
-  portOk,
-  type PortResult,
-  type UpdateProjectInput,
-  type UpdateProjectMemberRoleInput,
-} from '@oequ/ports';
+import { type AddProjectMemberInput, type CreateProjectInput, type OrganizationId, type OrganizationProject, type ProjectId, type ProjectMember, type ProjectMemberRole, type ProjectPort, portOk, type PortResult, type UpdateProjectInput, type UpdateProjectMemberRoleInput } from '@oequ/ports';
+import { PROJECT_PORT } from '@oequ/ports-angular';
 
 import { SupabaseClientService } from './supabase-client.service';
 import { supabaseErr } from './supabase-port-error';

@@ -1,4 +1,3 @@
-import { InjectionToken } from '@angular/core';
 import type { Observable } from 'rxjs';
 
 import type {
@@ -85,14 +84,10 @@ export interface AuthPort {
   revokeAllOtherSessions(): Promise<PortResult<void>>;
 }
 
-export const AUTH_PORT = new InjectionToken<AuthPort>('AUTH_PORT');
-
 /** UI/auth behavior flags (e.g. from `SupabaseConfig` in full-stack apps). */
 export interface AuthFeatures {
   readonly requireEmailConfirmation?: boolean;
 }
-
-export const AUTH_FEATURES = new InjectionToken<AuthFeatures>('AUTH_FEATURES');
 
 export function isEmailConfirmationRequiredError(error: PortError): boolean {
   return (

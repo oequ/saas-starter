@@ -8,11 +8,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import {
-  API_KEYS_PORT,
-  ORG_PORT,
-  USAGE_UNITS_PORT,
-} from '@oequ/ports';
+import { API_KEYS_PORT, ORG_PORT, USAGE_UNITS_PORT } from '@oequ/ports-angular';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { map } from 'rxjs';

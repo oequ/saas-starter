@@ -1,19 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  countMembersTowardSeats,
-  isValidOrganizationSlug,
-  ORG_PORT,
-  type CreateOrganizationInput,
-  type InviteMemberInput,
-  type UpdateMemberRoleInput,
-  type Organization,
-  type OrganizationId,
-  type OrganizationMember,
-  type OrgPort,
-  portOk,
-  type PortResult,
-  type UpdateOrganizationInput,
-} from '@oequ/ports';
+import { countMembersTowardSeats, isValidOrganizationSlug, type CreateOrganizationInput, type InviteMemberInput, type UpdateMemberRoleInput, type Organization, type OrganizationId, type OrganizationMember, type OrgPort, portOk, type PortResult, type UpdateOrganizationInput } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
 import {

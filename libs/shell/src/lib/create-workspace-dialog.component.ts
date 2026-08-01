@@ -12,11 +12,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {
-  isValidOrganizationSlug,
-  ORG_PORT,
-  slugifyOrganizationName,
-} from '@oequ/ports';
+import { isValidOrganizationSlug, slugifyOrganizationName } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 import {
   TranslocoPipe,
   TranslocoService,

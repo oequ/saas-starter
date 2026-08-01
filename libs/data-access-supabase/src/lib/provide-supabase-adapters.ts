@@ -5,18 +5,9 @@ import {
   provideAppInitializer,
 } from '@angular/core';
 import { provideMockIntegrationsSupport } from '@oequ/adapters-mock';
-import {
-  ACTIVATION_PORT,
-  API_KEYS_PORT,
-  BILLING_PORT,
-  EMAILS_PORT,
-  METRICS_PORT,
-  BILLING_PROVIDER_ID,
-  STRIPE_BILLING_ENABLED,
-} from '@oequ/ports';
+import { ACTIVATION_PORT, API_KEYS_PORT, BILLING_PORT, EMAILS_PORT, METRICS_PORT, BILLING_PROVIDER_ID, STRIPE_BILLING_ENABLED, AUTH_FEATURES } from '@oequ/ports-angular';
 import { distinctUntilChanged, filter, map } from 'rxjs';
 
-import { AUTH_FEATURES } from '@oequ/ports';
 import {
   resolveBillingProvider,
   SUPABASE_CONFIG,

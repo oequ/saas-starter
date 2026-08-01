@@ -19,7 +19,7 @@ import {
   translatePortError,
 } from '@oequ/i18n';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
-import { AUTH_PORT } from '@oequ/ports';
+import { AUTH_PORT } from '@oequ/ports-angular';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';

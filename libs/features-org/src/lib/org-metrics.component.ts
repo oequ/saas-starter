@@ -10,14 +10,8 @@ import {
 } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideGlobe } from '@ng-icons/lucide';
-import {
-  METRICS_PORT,
-  type MetricsDomainId,
-  type MetricsEventFilter,
-  type MetricsFilters,
-  type MetricsPeriod,
-  formatMetricsLastUpdated,
-} from '@oequ/ports';
+import { type MetricsDomainId, type MetricsEventFilter, type MetricsFilters, type MetricsPeriod, formatMetricsLastUpdated } from '@oequ/ports';
+import { METRICS_PORT } from '@oequ/ports-angular';
 import {
   TranslocoPipe,
   TranslocoService,

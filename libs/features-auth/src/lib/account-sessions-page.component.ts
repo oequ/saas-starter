@@ -9,7 +9,8 @@ import {
   TranslocoService,
   translatePortError,
 } from '@oequ/i18n';
-import { AUTH_PORT, type AuthSessionDevice } from '@oequ/ports';
+import type { AuthSessionDevice } from '@oequ/ports';
+import { AUTH_PORT } from '@oequ/ports-angular';
 import { HlmBadgeImports } from '@spartan-ng/helm/badge';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
