@@ -1,6 +1,6 @@
-export {
-  ACTIVATION_ONBOARDING_CONFIG,
-  type ActivationOnboardingConfig,
-  type ActivationStepConfig,
-  type ActivationStepKind,
+export type {
+  ActivationOnboardingConfig,
+  ActivationStepConfig,
+  ActivationStepKind,
 } from '@oequ/ports';
+export { ACTIVATION_ONBOARDING_CONFIG } from '@oequ/ports-angular';

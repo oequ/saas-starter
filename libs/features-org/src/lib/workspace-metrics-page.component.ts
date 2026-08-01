@@ -4,7 +4,7 @@ import {
   inject,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ORG_PORT } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 
 import { OrgMetricsComponent } from './org-metrics.component';
 

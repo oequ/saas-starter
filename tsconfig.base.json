@@ -20,6 +20,9 @@
       "@oequ/ports": [
         "./libs/ports/src/index.ts"
       ],
+      "@oequ/ports-angular": [
+        "./libs/ports-angular/src/index.ts"
+      ],
       "@oequ/shell": [
         "./libs/shell/src/index.ts"
       ],

@@ -1,27 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { MockBillingAdapter } from '@oequ/adapters-mock';
-import {
-  BILLING_PORT,
-  checkoutBillableSeatCount,
-  effectiveTeamSeatsLimitFromSnapshot,
-  isPerSeatBillingPlan,
-  portOk,
-  resolveCurrentPlanId,
-  TEAM_PLAN_MAX_SEATS,
-  type AddPaymentMethodInput,
-  type BillingPort,
-  type BillingPlan,
-  type BillingSummary,
-  type CheckoutSession,
-  type Invoice,
-  type InvoiceListPage,
-  type InvoiceStatus,
-  type OrganizationId,
-  type PaymentMethod,
-  type PortalSession,
-  type PortResult,
-  type SubscriptionStatus,
-} from '@oequ/ports';
+import { checkoutBillableSeatCount, effectiveTeamSeatsLimitFromSnapshot, isPerSeatBillingPlan, portOk, resolveCurrentPlanId, TEAM_PLAN_MAX_SEATS, type AddPaymentMethodInput, type BillingPort, type BillingPlan, type BillingSummary, type CheckoutSession, type Invoice, type InvoiceListPage, type InvoiceStatus, type OrganizationId, type PaymentMethod, type PortalSession, type PortResult, type SubscriptionStatus } from '@oequ/ports';
+import { BILLING_PORT } from '@oequ/ports-angular';
 import type { Observable } from 'rxjs';
 
 import { resolveBillingProvider, SUPABASE_CONFIG } from './supabase-config';

@@ -11,7 +11,8 @@ import {
   TranslocoService,
   portErrorToError,
 } from '@oequ/i18n';
-import { BILLING_PORT, billingStatusBanner, ORG_PORT } from '@oequ/ports';
+import { billingStatusBanner } from '@oequ/ports';
+import { BILLING_PORT, ORG_PORT } from '@oequ/ports-angular';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 

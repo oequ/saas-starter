@@ -11,19 +11,8 @@ import {
 import { RouterLink } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideChevronRight, lucideExternalLink } from '@ng-icons/lucide';
-import {
-  BILLING_PORT,
-  billingMeterUsagePercent,
-  billingPeriodLabel,
-  billingSeatUsagePercent,
-  formatPlanLabel,
-  formatSeatUsageValue,
-  formatUsageMeterValue,
-  formatUsageNumber,
-  resolveCurrentPlanId,
-  type BillingSummary,
-  type UsageMeter,
-} from '@oequ/ports';
+import { billingMeterUsagePercent, billingPeriodLabel, billingSeatUsagePercent, formatPlanLabel, formatSeatUsageValue, formatUsageMeterValue, formatUsageNumber, resolveCurrentPlanId, type BillingSummary, type UsageMeter } from '@oequ/ports';
+import { BILLING_PORT } from '@oequ/ports-angular';
 import {
   TranslocoPipe,
   TranslocoService,

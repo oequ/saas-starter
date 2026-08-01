@@ -5,12 +5,8 @@ import {
   provideAppInitializer,
 } from '@angular/core';
 
-import {
-  DEMO_AUTH_EMAIL,
-  DEMO_AUTH_EXTENSION,
-  DEMO_AUTH_PASSWORD,
-  LOGIN_FORM_PREFILL,
-} from '@oequ/ports';
+import { DEMO_AUTH_EMAIL, DEMO_AUTH_PASSWORD } from '@oequ/ports';
+import { DEMO_AUTH_EXTENSION, LOGIN_FORM_PREFILL } from '@oequ/ports-angular';
 import {
   MOCK_AUTH_PROVIDER,
   MockAuthAdapter,

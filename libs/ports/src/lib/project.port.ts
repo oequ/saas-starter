@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 import type { PortResult } from './models/common.model';
 import type { OrganizationId } from './models/org.model';
 import type {
@@ -76,4 +74,3 @@ export interface ProjectPort {
   ): Promise<PortResult<void>>;
 }
 
-export const PROJECT_PORT = new InjectionToken<ProjectPort>('PROJECT_PORT');

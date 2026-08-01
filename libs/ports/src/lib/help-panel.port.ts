@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 export type HelpPanelView = 'hub' | 'contact';
 
 export interface HelpPanelPort {
@@ -7,6 +5,3 @@ export interface HelpPanelPort {
   close(): void;
 }
 
-export const HELP_PANEL_PORT = new InjectionToken<HelpPanelPort>(
-  'HELP_PANEL_PORT',
-);

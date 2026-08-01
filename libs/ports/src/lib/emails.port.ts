@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 import type {
   EmailListQuery,
   OutboundEmail,
@@ -23,4 +21,3 @@ export interface EmailsPort {
   ): Promise<PortResult<SimulateOutboundEmailsResult>>;
 }
 
-export const EMAILS_PORT = new InjectionToken<EmailsPort>('EMAILS_PORT');

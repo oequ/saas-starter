@@ -1,14 +1,6 @@
 import { Injectable } from '@angular/core';
-import {
-  API_KEYS_PORT,
-  type ApiKey,
-  type ApiKeysPort,
-  type CreateApiKeyInput,
-  type CreatedApiKey,
-  type OrganizationId,
-  portOk,
-  type PortResult,
-} from '@oequ/ports';
+import { type ApiKey, type ApiKeysPort, type CreateApiKeyInput, type CreatedApiKey, type OrganizationId, portOk, type PortResult } from '@oequ/ports';
+import { API_KEYS_PORT } from '@oequ/ports-angular';
 
 import { cloneMockApiKeysSeed } from './data/mock-api-keys-data';
 import { mockErr } from './mock-port-error';

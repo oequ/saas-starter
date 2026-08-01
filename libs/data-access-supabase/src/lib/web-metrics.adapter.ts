@@ -1,14 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  buildMetricsDashboardFromEmails,
-  METRICS_PORT,
-  type MetricsDashboard,
-  type MetricsFilters,
-  type MetricsPort,
-  type OrganizationId,
-  portOk,
-  type PortResult,
-} from '@oequ/ports';
+import { buildMetricsDashboardFromEmails, type MetricsDashboard, type MetricsFilters, type MetricsPort, type OrganizationId, portOk, type PortResult } from '@oequ/ports';
+import { METRICS_PORT } from '@oequ/ports-angular';
 
 import { SupabaseEmailsAdapter } from './supabase-emails.adapter';
 

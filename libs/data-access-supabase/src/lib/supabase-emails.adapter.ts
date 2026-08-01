@@ -1,15 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  EMAILS_PORT,
-  type EmailListQuery,
-  type EmailsPort,
-  type OutboundEmail,
-  type OrganizationId,
-  portOk,
-  type PortResult,
-  type SimulateOutboundEmailsInput,
-  type SimulateOutboundEmailsResult,
-} from '@oequ/ports';
+import { type EmailListQuery, type EmailsPort, type OutboundEmail, type OrganizationId, portOk, type PortResult, type SimulateOutboundEmailsInput, type SimulateOutboundEmailsResult } from '@oequ/ports';
+import { EMAILS_PORT } from '@oequ/ports-angular';
 
 import { SupabaseClientService } from './supabase-client.service';
 import { supabaseErr } from './supabase-port-error';

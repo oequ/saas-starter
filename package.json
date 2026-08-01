@@ -10,6 +10,7 @@
     "build:demo:vercel": "node scripts/vercel-build-demo.mjs",
     "build": "nx build demo",
     "build:pages": "nx build demo --configuration=github-pages",
+    "check:ports-pure": "node scripts/check-ports-pure.mjs",
     "lint": "nx run-many -t lint --all",
     "e2e": "nx e2e demo-e2e",
     "e2e:web": "nx e2e web-e2e",
@@ -42,7 +43,8 @@
     "npm": ">=11"
   },
   "overrides": {
-    "shell-quote": "1.9.0"
+    "shell-quote": "1.9.0",
+    "fast-uri": "3.1.5"
   },
   "dependencies": {
     "@angular/cdk": "~21.2.11",

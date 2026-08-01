@@ -1,12 +1,6 @@
 import { Injectable } from '@angular/core';
-import {
-  SUPPORT_PORT,
-  type SupportPort,
-  type SupportTicketInput,
-  type SupportTicketResult,
-  portOk,
-  type PortResult,
-} from '@oequ/ports';
+import { type SupportPort, type SupportTicketInput, type SupportTicketResult, portOk, type PortResult } from '@oequ/ports';
+import { SUPPORT_PORT } from '@oequ/ports-angular';
 
 import { mockErr } from './mock-port-error';
 

@@ -1,14 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  portOk,
-  type ApiUsageEvent,
-  type ApiUsageEventFilter,
-  type OrganizationId,
-  type PortResult,
-  USAGE_UNITS_PORT,
-  type UsageUnitBalance,
-  type UsageUnitsPort,
-} from '@oequ/ports';
+import { portOk, type ApiUsageEvent, type ApiUsageEventFilter, type OrganizationId, type PortResult, type UsageUnitBalance, type UsageUnitsPort } from '@oequ/ports';
+import { USAGE_UNITS_PORT } from '@oequ/ports-angular';
 
 import { SupabaseClientService } from './supabase-client.service';
 import { supabaseErr } from './supabase-port-error';

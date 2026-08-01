@@ -19,7 +19,7 @@ import {
   TranslocoService,
   translatePortError,
 } from '@oequ/i18n';
-import { ORG_PORT } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 import { SETTINGS_FORM_FIELD_CLASS } from '@oequ/shell';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';

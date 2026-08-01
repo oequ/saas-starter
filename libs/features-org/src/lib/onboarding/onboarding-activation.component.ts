@@ -9,14 +9,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { lucideLineChart, lucideUserRound } from '@ng-icons/lucide';
-import {
-  ACTIVATION_PORT,
-  DEMO_AUTH_EXTENSION,
-  ORG_PORT,
-  formatMemberDisplayLabel,
-  formatOrgRole,
-  type OrganizationMember,
-} from '@oequ/ports';
+import { formatMemberDisplayLabel, formatOrgRole, type OrganizationMember } from '@oequ/ports';
+import { ACTIVATION_PORT, DEMO_AUTH_EXTENSION, ORG_PORT } from '@oequ/ports-angular';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';

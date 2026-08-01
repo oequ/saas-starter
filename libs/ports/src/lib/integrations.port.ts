@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 import type {
   IntegrationCatalogItem,
   WorkspaceIntegration,
@@ -25,6 +23,3 @@ export interface IntegrationsPort {
   ): Promise<PortResult<void>>;
 }
 
-export const INTEGRATIONS_PORT = new InjectionToken<IntegrationsPort>(
-  'INTEGRATIONS_PORT',
-);

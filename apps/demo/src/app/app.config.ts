@@ -9,7 +9,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideDemoAdapters } from '@oequ/adapters-mock';
 import { LocalePreferenceService, provideOequI18n } from '@oequ/i18n';
-import { ACTIVATION_ONBOARDING_CONFIG, HELP_PANEL_PORT } from '@oequ/ports';
+import { ACTIVATION_ONBOARDING_CONFIG, HELP_PANEL_PORT } from '@oequ/ports-angular';
 
 import { DEMO_EMAIL_ACTIVATION_CONFIG } from './demo-activation.config';
 import {

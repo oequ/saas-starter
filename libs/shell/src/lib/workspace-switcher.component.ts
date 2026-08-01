@@ -15,7 +15,7 @@ import {
   lucideChevronsUpDown,
   lucidePlus,
 } from '@ng-icons/lucide';
-import { ORG_PORT } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 import { CreateWorkspaceDialogService } from './create-workspace-dialog.service';
 import { SHELL_SIDEBAR_SELECT_TRIGGER_CLASS } from './settings-layout.tokens';
 import {

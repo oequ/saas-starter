@@ -2,7 +2,7 @@ import {
   EnvironmentProviders,
   makeEnvironmentProviders,
 } from '@angular/core';
-import { DEMO_AUTH_EXTENSION } from '@oequ/ports';
+import { DEMO_AUTH_EXTENSION } from '@oequ/ports-angular';
 
 import { MockAuthAdapter } from './mock-auth.adapter';
 import {

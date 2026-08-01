@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, resource } from '@angular/c
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ORG_PORT, USAGE_UNITS_PORT } from '@oequ/ports';
+import { ORG_PORT, USAGE_UNITS_PORT } from '@oequ/ports-angular';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 
 @Component({

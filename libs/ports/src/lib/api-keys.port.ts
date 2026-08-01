@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 import type {
   ApiKey,
   CreateApiKeyInput,
@@ -22,4 +20,3 @@ export interface ApiKeysPort {
   ): Promise<PortResult<void>>;
 }
 
-export const API_KEYS_PORT = new InjectionToken<ApiKeysPort>('API_KEYS_PORT');

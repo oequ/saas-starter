@@ -36,7 +36,8 @@ import {
   lucideUsers,
 } from '@ng-icons/lucide';
 import { TranslocoPipe } from '@oequ/i18n';
-import { ORG_PORT, type Organization } from '@oequ/ports';
+import type { Organization } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 import { HlmBreadcrumbImports } from '@spartan-ng/helm/breadcrumb';
 import { HlmIcon } from '@spartan-ng/helm/icon';
 import { HlmSidebarImports, HlmSidebarService } from '@spartan-ng/helm/sidebar';

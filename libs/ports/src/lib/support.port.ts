@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 import type {
   SupportTicketInput,
   SupportTicketResult,
@@ -12,4 +10,3 @@ export interface SupportPort {
   ): Promise<PortResult<SupportTicketResult>>;
 }
 
-export const SUPPORT_PORT = new InjectionToken<SupportPort>('SUPPORT_PORT');

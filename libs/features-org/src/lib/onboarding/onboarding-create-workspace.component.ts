@@ -10,11 +10,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {
-  isValidOrganizationSlug,
-  ORG_PORT,
-  slugifyOrganizationName,
-} from '@oequ/ports';
+import { isValidOrganizationSlug, slugifyOrganizationName } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmInput } from '@spartan-ng/helm/input';

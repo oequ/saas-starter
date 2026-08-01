@@ -1,14 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  API_KEYS_PORT,
-  type ApiKey,
-  type ApiKeysPort,
-  type CreateApiKeyInput,
-  type CreatedApiKey,
-  type OrganizationId,
-  portOk,
-  type PortResult,
-} from '@oequ/ports';
+import { type ApiKey, type ApiKeysPort, type CreateApiKeyInput, type CreatedApiKey, type OrganizationId, portOk, type PortResult } from '@oequ/ports';
+import { API_KEYS_PORT } from '@oequ/ports-angular';
 
 import { SupabaseClientService } from './supabase-client.service';
 import { supabaseErr } from './supabase-port-error';

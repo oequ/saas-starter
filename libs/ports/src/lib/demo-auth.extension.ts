@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 import type { AuthSession } from './models/auth.model';
 import type { OrgRole } from './models/org.model';
 import type { PortResult } from './models/common.model';
@@ -23,6 +21,3 @@ export interface DemoAuthExtension {
   ): Promise<PortResult<AuthSession>>;
 }
 
-export const DEMO_AUTH_EXTENSION = new InjectionToken<DemoAuthExtension>(
-  'DEMO_AUTH_EXTENSION',
-);

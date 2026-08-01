@@ -1,19 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  isValidOrganizationSlug,
-  ORG_PORT,
-  type CreateOrganizationInput,
-  type InviteMemberInput,
-  type UpdateMemberRoleInput,
-  type Organization,
-  type OrganizationId,
-  type OrganizationMember,
-  type OrgPort,
-  type OrgRole,
-  portOk,
-  type PortResult,
-  type UpdateOrganizationInput,
-} from '@oequ/ports';
+import { isValidOrganizationSlug, type CreateOrganizationInput, type InviteMemberInput, type UpdateMemberRoleInput, type Organization, type OrganizationId, type OrganizationMember, type OrgPort, type OrgRole, portOk, type PortResult, type UpdateOrganizationInput } from '@oequ/ports';
+import { ORG_PORT } from '@oequ/ports-angular';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
 import { SupabaseAuthAdapter } from './supabase-auth.adapter';

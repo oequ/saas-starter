@@ -1,5 +1,3 @@
-import { InjectionToken } from '@angular/core';
-
 import type { PortResult } from './models/common.model';
 import type { OrganizationId } from './models/org.model';
 import type {
@@ -21,6 +19,3 @@ export interface UsageUnitsPort {
   ): Promise<PortResult<readonly ApiUsageEvent[]>>;
 }
 
-export const USAGE_UNITS_PORT = new InjectionToken<UsageUnitsPort>(
-  'USAGE_UNITS_PORT',
-);

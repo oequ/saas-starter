@@ -17,7 +17,8 @@ import {
   TranslocoService,
   translatePortError,
 } from '@oequ/i18n';
-import { SUPPORT_PORT, type SupportImpact } from '@oequ/ports';
+import type { SupportImpact } from '@oequ/ports';
+import { SUPPORT_PORT } from '@oequ/ports-angular';
 import { toast } from '@spartan-ng/brain/sonner';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
