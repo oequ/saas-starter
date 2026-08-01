@@ -6,6 +6,7 @@
     "@angular/core": ">=21.0.0 <22.0.0",
     "@angular/forms": ">=21.0.0 <22.0.0",
     "@oequ/ports": "0.0.1",
+    "@oequ/ports-angular": "0.0.1",
     "@oequ/shell": "0.0.1",
     "rxjs": "^7.5.0"
   },
