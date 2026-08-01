@@ -43,7 +43,8 @@
     "npm": ">=11"
   },
   "overrides": {
-    "shell-quote": "1.9.0"
+    "shell-quote": "1.9.0",
+    "fast-uri": "3.1.5"
   },
   "dependencies": {
     "@angular/cdk": "~21.2.11",
