@@ -1,6 +1,22 @@
-import { Injectable, Injector, inject } from '@angular/core';
-import { type AuthClaims, type AuthPort, type AuthSession, type AuthSessionDevice, type AuthUser, type EmailPasswordCredentials, type OrgContextClaim, type RegisterCredentials, portOk, type PortResult } from '@oequ/ports';
-import { AUTH_FEATURES, AUTH_PORT } from '@oequ/ports-angular';
+import { Optional, type Provider } from '@angular/core';
+import {
+  type AuthClaims,
+  type AuthFeatures,
+  type AuthPort,
+  type AuthSession,
+  type AuthSessionDevice,
+  type AuthUser,
+  type EmailPasswordCredentials,
+  type OrgContextClaim,
+  type RegisterCredentials,
+  portOk,
+  type PortResult,
+} from '@oequ/ports';
+import {
+  AUTH_FEATURES,
+  AUTH_PORT,
+  DEMO_AUTH_EXTENSION,
+} from '@oequ/ports-angular';
 
 import { mockErr } from './mock-port-error';
 import { BehaviorSubject, type Observable } from 'rxjs';
@@ -12,7 +28,6 @@ import {
   MOCK_DEMO_PASSWORD,
   MOCK_SESSION_DEVICES,
 } from './data/mock-data';
-import { MockOrgAdapter } from './mock-org.adapter';
 
 const DEMO_SIGNED_IN_STORAGE_KEY = 'oequ-demo-signed-in';
 const MOCK_PASSWORD_RECOVERY_KEY = 'oequ-mock-password-recovery';
@@ -159,11 +174,10 @@ export function orgClaimForOrganization(
   return { organizationId, role: 'owner' };
 }
 
-@Injectable()
+/** Plain AuthPort mock — wire via provideMockAuth() (no @Injectable). */
 export class MockAuthAdapter implements AuthPort {
-  private readonly injector = inject(Injector);
-  private readonly authFeatures = inject(AUTH_FEATURES, { optional: true });
   private sessions = [...MOCK_SESSION_DEVICES];
+  private zeroOrgsHook: (() => void) | null = null;
 
   private readonly sessionSubject = new BehaviorSubject<AuthSession | null>(
     initialSession(),
@@ -171,6 +185,13 @@ export class MockAuthAdapter implements AuthPort {
 
   readonly session$: Observable<AuthSession | null> =
     this.sessionSubject.asObservable();
+
+  constructor(private readonly authFeatures: AuthFeatures | null) {}
+
+  /** Demo signup/OTP: Org registers setZeroOrganizations without an Auth→Org import cycle. */
+  bindZeroOrganizationsHook(hook: () => void): void {
+    this.zeroOrgsHook = hook;
+  }
 
   resetMockState(): void {
     clearImpersonationSession();
@@ -277,7 +298,7 @@ export class MockAuthAdapter implements AuthPort {
     setSignedInFlag(true);
     this.sessions = [...MOCK_SESSION_DEVICES];
     this.sessionSubject.next(session);
-    this.injector.get(MockOrgAdapter).setZeroOrganizations();
+    this.zeroOrgsHook?.();
 
     return portOk(session);
   }
@@ -323,7 +344,7 @@ export class MockAuthAdapter implements AuthPort {
     setSignedInFlag(true);
     this.sessions = [...MOCK_SESSION_DEVICES];
     this.sessionSubject.next(session);
-    this.injector.get(MockOrgAdapter).setZeroOrganizations();
+    this.zeroOrgsHook?.();
 
     return portOk(session);
   }
@@ -486,7 +507,24 @@ export class MockAuthAdapter implements AuthPort {
   }
 }
 
-export const MOCK_AUTH_PROVIDER = {
-  provide: AUTH_PORT,
-  useExisting: MockAuthAdapter,
-};
+/** Factory-wired MockAuthAdapter; optionally shared as AUTH_PORT + DEMO_AUTH_EXTENSION. */
+export function provideMockAuth(options?: {
+  bindAuthPort?: boolean;
+}): Provider[] {
+  const bindAuthPort = options?.bindAuthPort !== false;
+  return [
+    {
+      provide: MockAuthAdapter,
+      useFactory: (features: AuthFeatures | null) =>
+        new MockAuthAdapter(features),
+      deps: [[new Optional(), AUTH_FEATURES]],
+    },
+    ...(bindAuthPort
+      ? [{ provide: AUTH_PORT, useExisting: MockAuthAdapter }]
+      : []),
+    {
+      provide: DEMO_AUTH_EXTENSION,
+      useExisting: MockAuthAdapter,
+    },
+  ];
+}

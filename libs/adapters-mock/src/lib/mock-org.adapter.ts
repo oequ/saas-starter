@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { type Provider } from '@angular/core';
 import { countMembersTowardSeats, isValidOrganizationSlug, type CreateOrganizationInput, type InviteMemberInput, type UpdateMemberRoleInput, type Organization, type OrganizationId, type OrganizationMember, type OrgPort, portOk, type PortResult, type UpdateOrganizationInput } from '@oequ/ports';
 import { ORG_PORT } from '@oequ/ports-angular';
 import { BehaviorSubject, type Observable } from 'rxjs';
@@ -123,7 +123,7 @@ function resolveInitialDemoOrgState(): {
   };
 }
 
-@Injectable()
+/** Plain OrgPort mock — wire via provideMockOrg() (no @Injectable). */
 export class MockOrgAdapter implements OrgPort {
   private readonly initialState = resolveInitialDemoOrgState();
 
@@ -142,13 +142,15 @@ export class MockOrgAdapter implements OrgPort {
   readonly activeOrganization$: Observable<Organization | null> =
     this.activeOrganizationSubject.asObservable();
 
-  private readonly authAdapter = inject(MockAuthAdapter);
-
   constructor(
+    private readonly authAdapter: MockAuthAdapter,
     private readonly billingAdapter: MockBillingAdapter,
     private readonly activationAdapter: MockActivationAdapter,
     private readonly apiKeysAdapter: MockApiKeysAdapter,
   ) {
+    this.authAdapter.bindZeroOrganizationsHook(() =>
+      this.setZeroOrganizations(),
+    );
     this.syncAllBillingSeatUsage();
   }
 
@@ -555,7 +557,26 @@ export class MockOrgAdapter implements OrgPort {
   }
 }
 
-export const MOCK_ORG_PROVIDER = {
-  provide: ORG_PORT,
-  useExisting: MockOrgAdapter,
-};
+export function provideMockOrg(): Provider[] {
+  return [
+    {
+      provide: MockOrgAdapter,
+      useFactory: (
+        auth: MockAuthAdapter,
+        billing: MockBillingAdapter,
+        activation: MockActivationAdapter,
+        apiKeys: MockApiKeysAdapter,
+      ) => new MockOrgAdapter(auth, billing, activation, apiKeys),
+      deps: [
+        MockAuthAdapter,
+        MockBillingAdapter,
+        MockActivationAdapter,
+        MockApiKeysAdapter,
+      ],
+    },
+    {
+      provide: ORG_PORT,
+      useExisting: MockOrgAdapter,
+    },
+  ];
+}

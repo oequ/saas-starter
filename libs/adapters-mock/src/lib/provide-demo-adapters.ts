@@ -6,31 +6,15 @@ import {
 } from '@angular/core';
 
 import { DEMO_AUTH_EMAIL, DEMO_AUTH_PASSWORD } from '@oequ/ports';
-import { DEMO_AUTH_EXTENSION, LOGIN_FORM_PREFILL } from '@oequ/ports-angular';
-import {
-  MOCK_AUTH_PROVIDER,
-  MockAuthAdapter,
-} from './mock-auth.adapter';
-import {
-  MockActivationAdapter,
-} from './mock-activation.adapter';
-import {
-  MockApiKeysAdapter,
-} from './mock-api-keys.adapter';
-import {
-  MockEmailsAdapter,
-} from './mock-emails.adapter';
-import {
-  MockIntegrationsAdapter,
-} from './mock-integrations.adapter';
-import {
-  MockBillingAdapter,
-} from './mock-billing.adapter';
+import { LOGIN_FORM_PREFILL } from '@oequ/ports-angular';
+import { MockAuthAdapter, provideMockAuth } from './mock-auth.adapter';
+import { MockActivationAdapter } from './mock-activation.adapter';
+import { MockApiKeysAdapter } from './mock-api-keys.adapter';
+import { MockEmailsAdapter } from './mock-emails.adapter';
+import { MockIntegrationsAdapter } from './mock-integrations.adapter';
+import { MockBillingAdapter } from './mock-billing.adapter';
 import { provideMockNonAuthAdapters } from './provide-mock-non-auth-adapters';
-import {
-  MOCK_ORG_PROVIDER,
-  MockOrgAdapter,
-} from './mock-org.adapter';
+import { MockOrgAdapter, provideMockOrg } from './mock-org.adapter';
 import { MockProjectAdapter } from './mock-project.adapter';
 
 declare global {
@@ -44,13 +28,9 @@ declare global {
 
 export function provideDemoAdapters(): EnvironmentProviders {
   return makeEnvironmentProviders([
-    MockAuthAdapter,
-    MockOrgAdapter,
-    MOCK_AUTH_PROVIDER,
-    {
-      provide: DEMO_AUTH_EXTENSION,
-      useExisting: MockAuthAdapter,
-    },
+    ...provideMockAuth(),
+    provideMockNonAuthAdapters(),
+    ...provideMockOrg(),
     {
       provide: LOGIN_FORM_PREFILL,
       useValue: {
@@ -58,8 +38,6 @@ export function provideDemoAdapters(): EnvironmentProviders {
         password: DEMO_AUTH_PASSWORD,
       },
     },
-    MOCK_ORG_PROVIDER,
-    provideMockNonAuthAdapters(),
     provideAppInitializer(() => {
       if (typeof window === 'undefined') {
         return;

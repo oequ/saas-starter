@@ -1,4 +1,4 @@
-import { Injectable, Injector, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { alignBillingSummarySeats, checkoutBillableSeatCount, isPerSeatBillingPlan, TEAM_PLAN_MAX_SEATS, type AddPaymentMethodInput, type BillingPort, type BillingPlan, type BillingSummary, type CheckoutSession, type CommercialPlanId, type InvoiceListPage, type OrganizationId, type PaymentMethod, type PortalSession, comparePlanTiers, detectCardBrandFromNumber, getDowngradeBlocker, getPlanChangeDirection, normalizeCardNumber, portOk, type PortResult, resolveCurrentPlanId, seatLimitForPlanId, validateMockPaymentMethodInput } from '@oequ/ports';
 import { BILLING_PORT } from '@oequ/ports-angular';
 import { mockErr } from './mock-port-error';
@@ -19,7 +19,7 @@ import {
   billableOutboundCount,
   countBillableEmailsToday,
 } from './email-usage-stats';
-import { MockEmailsAdapter } from './mock-emails.adapter';
+import type { MockEmailsAdapter } from './mock-emails.adapter';
 
 const DEMO_BILLING_SUMMARIES_KEY = 'oequ-demo-billing-summaries';
 
@@ -87,7 +87,7 @@ function writeSummariesSnapshot(summaries: Map<string, BillingSummary>): void {
 
 @Injectable()
 export class MockBillingAdapter implements BillingPort {
-  private readonly injector = inject(Injector);
+  private emailsAdapter: MockEmailsAdapter | null = null;
 
   private pendingCheckout: { organizationId: string; planId: string } | null =
     null;
@@ -108,6 +108,11 @@ export class MockBillingAdapter implements BillingPort {
   readonly summary$: Observable<BillingSummary | null> =
     this.summarySubject.asObservable();
 
+  /** Breaks Billing↔Emails cycle (Emails ctor calls this). */
+  bindEmailsAdapter(emails: MockEmailsAdapter): void {
+    this.emailsAdapter = emails;
+  }
+
   async getSummary(
     organizationId: OrganizationId,
     abortSignal?: AbortSignal,
@@ -127,7 +132,7 @@ export class MockBillingAdapter implements BillingPort {
     summary: BillingSummary,
     organizationId: OrganizationId,
   ): BillingSummary {
-    const emailsAdapter = this.injector.get(MockEmailsAdapter, null);
+    const emailsAdapter = this.emailsAdapter;
     if (!emailsAdapter) {
       return summary;
     }
