@@ -9,14 +9,8 @@ import {
   MOCK_BILLING_PROVIDER,
   MockBillingAdapter,
 } from './mock-billing.adapter';
-import {
-  MOCK_INTEGRATIONS_PROVIDER,
-  MockIntegrationsAdapter,
-} from './mock-integrations.adapter';
-import {
-  MOCK_SUPPORT_PROVIDER,
-  MockSupportAdapter,
-} from './mock-support.adapter';
+import { provideMockIntegrations } from './mock-integrations.adapter';
+import { provideMockSupport } from './mock-support.adapter';
 
 /** Billing (for WebBillingAdapter), integrations, support — `apps/web` Supabase path. */
 export function provideMockIntegrationsSupport(): EnvironmentProviders {
@@ -27,10 +21,8 @@ export function provideMockIntegrationsSupport(): EnvironmentProviders {
       useExisting: MockAuthAdapter,
     },
     MockBillingAdapter,
-    MockIntegrationsAdapter,
-    MockSupportAdapter,
+    ...provideMockIntegrations(),
+    ...provideMockSupport(),
     MOCK_BILLING_PROVIDER,
-    MOCK_INTEGRATIONS_PROVIDER,
-    MOCK_SUPPORT_PROVIDER,
   ]);
 }

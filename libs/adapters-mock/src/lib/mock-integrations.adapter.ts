@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import type { Provider } from '@angular/core';
 import { type IntegrationCatalogItem, type IntegrationsPort, type OrganizationId, portOk, type PortResult, type WorkspaceIntegration } from '@oequ/ports';
-import { INTEGRATIONS_PORT } from '@oequ/ports-angular';
+import { provideIntegrationsPort } from '@oequ/ports-angular';
 
 import {
   cloneMockIntegrationsSeed,
@@ -48,7 +48,7 @@ function writeSnapshot(connectedByOrg: Map<string, WorkspaceIntegration[]>): voi
   sessionStorage.setItem(DEMO_INTEGRATIONS_SNAPSHOT_KEY, JSON.stringify(record));
 }
 
-@Injectable()
+/** Plain IntegrationsPort mock — wire via provideMockIntegrations() (no @Injectable). */
 export class MockIntegrationsAdapter implements IntegrationsPort {
   private connectedByOrg = readSnapshot() ?? cloneMockIntegrationsSeed();
 
@@ -121,7 +121,11 @@ export class MockIntegrationsAdapter implements IntegrationsPort {
   }
 }
 
-export const MOCK_INTEGRATIONS_PROVIDER = {
-  provide: INTEGRATIONS_PORT,
-  useExisting: MockIntegrationsAdapter,
-};
+/** Single shared MockIntegrationsAdapter instance for INTEGRATIONS_PORT + concrete class token. */
+export function provideMockIntegrations(): Provider[] {
+  const integrations = new MockIntegrationsAdapter();
+  return [
+    { provide: MockIntegrationsAdapter, useValue: integrations },
+    provideIntegrationsPort(integrations),
+  ];
+}

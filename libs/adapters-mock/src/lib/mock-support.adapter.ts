@@ -1,6 +1,12 @@
-import { Injectable } from '@angular/core';
-import { type SupportPort, type SupportTicketInput, type SupportTicketResult, portOk, type PortResult } from '@oequ/ports';
-import { SUPPORT_PORT } from '@oequ/ports-angular';
+import type { Provider } from '@angular/core';
+import {
+  type SupportPort,
+  type SupportTicketInput,
+  type SupportTicketResult,
+  portOk,
+  type PortResult,
+} from '@oequ/ports';
+import { provideSupportPort } from '@oequ/ports-angular';
 
 import { mockErr } from './mock-port-error';
 
@@ -15,7 +21,7 @@ function randomTicketId(): string {
   return `OEQU-${suffix}`;
 }
 
-@Injectable()
+/** Plain SupportPort mock — wire via provideMockSupport() (no @Injectable). */
 export class MockSupportAdapter implements SupportPort {
   async submitTicket(
     input: SupportTicketInput,
@@ -37,7 +43,11 @@ export class MockSupportAdapter implements SupportPort {
   }
 }
 
-export const MOCK_SUPPORT_PROVIDER = {
-  provide: SUPPORT_PORT,
-  useExisting: MockSupportAdapter,
-};
+/** Single shared MockSupportAdapter instance for SUPPORT_PORT + concrete class token. */
+export function provideMockSupport(): Provider[] {
+  const support = new MockSupportAdapter();
+  return [
+    { provide: MockSupportAdapter, useValue: support },
+    provideSupportPort(support),
+  ];
+}

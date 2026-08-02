@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import type { Provider } from '@angular/core';
 import { type ApiKey, type ApiKeysPort, type CreateApiKeyInput, type CreatedApiKey, type OrganizationId, portOk, type PortResult } from '@oequ/ports';
 import { API_KEYS_PORT } from '@oequ/ports-angular';
 
@@ -35,9 +35,9 @@ function mapApiKey(row: DbApiKeyRow): ApiKey {
   };
 }
 
-@Injectable()
+/** Plain ApiKeysPort adapter — wire via provideSupabaseApiKeys() (no @Injectable). */
 export class SupabaseApiKeysAdapter implements ApiKeysPort {
-  private readonly supabase = inject(SupabaseClientService);
+  constructor(private readonly supabase: SupabaseClientService) {}
 
   async listKeys(
     organizationId: OrganizationId,
@@ -108,7 +108,18 @@ export class SupabaseApiKeysAdapter implements ApiKeysPort {
   }
 }
 
-export const SUPABASE_API_KEYS_PROVIDER = {
-  provide: API_KEYS_PORT,
-  useExisting: SupabaseApiKeysAdapter,
-};
+/** Factory-wired SupabaseApiKeysAdapter shared as API_KEYS_PORT. */
+export function provideSupabaseApiKeys(): Provider[] {
+  return [
+    {
+      provide: SupabaseApiKeysAdapter,
+      useFactory: (supabase: SupabaseClientService) =>
+        new SupabaseApiKeysAdapter(supabase),
+      deps: [SupabaseClientService],
+    },
+    {
+      provide: API_KEYS_PORT,
+      useExisting: SupabaseApiKeysAdapter,
+    },
+  ];
+}

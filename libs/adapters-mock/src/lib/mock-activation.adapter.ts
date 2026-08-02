@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import type { Provider } from '@angular/core';
 import { type ActivationPort, type ActivationStatus, type OrganizationId, portOk, type PortResult } from '@oequ/ports';
-import { ACTIVATION_PORT } from '@oequ/ports-angular';
+import { provideActivationPort } from '@oequ/ports-angular';
 
 import { MOCK_ORGANIZATIONS } from './data/mock-data';
 
@@ -37,7 +37,7 @@ function removeStatus(organizationId: OrganizationId): void {
   localStorage.removeItem(`${STORAGE_PREFIX}${organizationId}`);
 }
 
-@Injectable()
+/** Plain ActivationPort mock — wire via provideMockActivation() (no @Injectable). */
 export class MockActivationAdapter implements ActivationPort {
   private readonly mockOrgIds = new Set(
     MOCK_ORGANIZATIONS.map((org) => org.id),
@@ -97,7 +97,11 @@ export class MockActivationAdapter implements ActivationPort {
   }
 }
 
-export const MOCK_ACTIVATION_PROVIDER = {
-  provide: ACTIVATION_PORT,
-  useExisting: MockActivationAdapter,
-};
+/** Single shared MockActivationAdapter instance for ACTIVATION_PORT + concrete class token. */
+export function provideMockActivation(): Provider[] {
+  const activation = new MockActivationAdapter();
+  return [
+    { provide: MockActivationAdapter, useValue: activation },
+    provideActivationPort(activation),
+  ];
+}

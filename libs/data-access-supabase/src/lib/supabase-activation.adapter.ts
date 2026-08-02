@@ -1,14 +1,20 @@
-import { inject, Injectable } from '@angular/core';
-import { type ActivationPort, type ActivationStatus, type OrganizationId, portOk, type PortResult } from '@oequ/ports';
+import type { Provider } from '@angular/core';
+import {
+  type ActivationPort,
+  type ActivationStatus,
+  type OrganizationId,
+  portOk,
+  type PortResult,
+} from '@oequ/ports';
 import { ACTIVATION_PORT } from '@oequ/ports-angular';
 
 import { SupabaseClientService } from './supabase-client.service';
 import { supabaseErr } from './supabase-port-error';
 import { supabaseErrFromRpc } from './supabase-rpc-error';
 
-@Injectable()
+/** Plain ActivationPort adapter — wire via provideSupabaseActivation() (no @Injectable). */
 export class SupabaseActivationAdapter implements ActivationPort {
-  private readonly supabase = inject(SupabaseClientService);
+  constructor(private readonly supabase: SupabaseClientService) {}
 
   async getStatus(
     organizationId: OrganizationId,
@@ -55,7 +61,18 @@ export class SupabaseActivationAdapter implements ActivationPort {
   }
 }
 
-export const SUPABASE_ACTIVATION_PROVIDER = {
-  provide: ACTIVATION_PORT,
-  useExisting: SupabaseActivationAdapter,
-};
+/** Factory-wired SupabaseActivationAdapter shared as ACTIVATION_PORT. */
+export function provideSupabaseActivation(): Provider[] {
+  return [
+    {
+      provide: SupabaseActivationAdapter,
+      useFactory: (supabase: SupabaseClientService) =>
+        new SupabaseActivationAdapter(supabase),
+      deps: [SupabaseClientService],
+    },
+    {
+      provide: ACTIVATION_PORT,
+      useExisting: SupabaseActivationAdapter,
+    },
+  ];
+}

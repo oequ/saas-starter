@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import type { Provider } from '@angular/core';
 import { type ApiKey, type ApiKeysPort, type CreateApiKeyInput, type CreatedApiKey, type OrganizationId, portOk, type PortResult } from '@oequ/ports';
-import { API_KEYS_PORT } from '@oequ/ports-angular';
+import { provideApiKeysPort } from '@oequ/ports-angular';
 
 import { cloneMockApiKeysSeed } from './data/mock-api-keys-data';
 import { mockErr } from './mock-port-error';
@@ -58,7 +58,7 @@ function writeSnapshot(keysByOrg: Map<string, ApiKey[]>): void {
   sessionStorage.setItem(DEMO_API_KEYS_SNAPSHOT_KEY, JSON.stringify(record));
 }
 
-@Injectable()
+/** Plain ApiKeysPort mock — wire via provideMockApiKeys() (no @Injectable). */
 export class MockApiKeysAdapter implements ApiKeysPort {
   private keysByOrg = readSnapshot() ?? cloneMockApiKeysSeed();
 
@@ -134,7 +134,11 @@ export class MockApiKeysAdapter implements ApiKeysPort {
   }
 }
 
-export const MOCK_API_KEYS_PROVIDER = {
-  provide: API_KEYS_PORT,
-  useExisting: MockApiKeysAdapter,
-};
+/** Single shared MockApiKeysAdapter instance for API_KEYS_PORT + concrete class token. */
+export function provideMockApiKeys(): Provider[] {
+  const apiKeys = new MockApiKeysAdapter();
+  return [
+    { provide: MockApiKeysAdapter, useValue: apiKeys },
+    provideApiKeysPort(apiKeys),
+  ];
+}
