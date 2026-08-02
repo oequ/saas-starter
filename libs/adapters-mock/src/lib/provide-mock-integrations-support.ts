@@ -2,9 +2,8 @@ import {
   EnvironmentProviders,
   makeEnvironmentProviders,
 } from '@angular/core';
-import { DEMO_AUTH_EXTENSION } from '@oequ/ports-angular';
 
-import { MockAuthAdapter } from './mock-auth.adapter';
+import { provideMockAuth } from './mock-auth.adapter';
 import {
   MOCK_BILLING_PROVIDER,
   MockBillingAdapter,
@@ -15,11 +14,7 @@ import { provideMockSupport } from './mock-support.adapter';
 /** Billing (for WebBillingAdapter), integrations, support — `apps/web` Supabase path. */
 export function provideMockIntegrationsSupport(): EnvironmentProviders {
   return makeEnvironmentProviders([
-    MockAuthAdapter,
-    {
-      provide: DEMO_AUTH_EXTENSION,
-      useExisting: MockAuthAdapter,
-    },
+    ...provideMockAuth({ bindAuthPort: false }),
     MockBillingAdapter,
     ...provideMockIntegrations(),
     ...provideMockSupport(),

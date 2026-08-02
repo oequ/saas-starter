@@ -100,6 +100,7 @@ export class MockEmailsAdapter implements EmailsPort {
     private readonly billingAdapter: MockBillingAdapter,
     private readonly apiKeysAdapter: MockApiKeysAdapter,
   ) {
+    this.billingAdapter.bindEmailsAdapter(this);
     const snapshot = readSnapshot();
     if (snapshot) {
       for (const [orgId, emails] of Object.entries(snapshot)) {
