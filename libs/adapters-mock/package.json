@@ -6,7 +6,9 @@
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "peerDependencies": {
+    "@angular/compiler": ">=21.0.0 <22.0.0",
     "@angular/core": ">=21.0.0 <22.0.0",
+    "@analogjs/vitest-angular": "^2.0.0",
     "@oequ/ports": "0.0.1",
     "@oequ/ports-angular": "0.0.1",
     "rxjs": "^7.5.0"
