@@ -27,32 +27,39 @@ export function SignInPage({ onSignedIn }: Props) {
   }
 
   return (
-    <main className="page">
-      <h1>React shell</h1>
-      <p className="muted">Mock AuthPort — same demo credentials as Angular demo.</p>
-      <form className="card" onSubmit={onSubmit}>
-        <label>
-          Email
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="username"
-          />
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-          />
-        </label>
-        {error ? <p className="error">{error}</p> : null}
-        <button type="submit" disabled={pending}>
-          {pending ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
+    <main className="shell-signin">
+      <div className="shell-signin__inner">
+        <p className="brand" aria-label="Oequ">
+          Oe<span>qu</span>
+        </p>
+        <h1>Sign in</h1>
+        <p className="lede">
+          Mock AuthPort — same demo credentials as the Angular shell.
+        </p>
+        <form className="auth-form" onSubmit={onSubmit}>
+          <label>
+            Email
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+            />
+          </label>
+          <label>
+            Password
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+          </label>
+          {error ? <p className="error">{error}</p> : null}
+          <button className="btn btn--primary" type="submit" disabled={pending}>
+            {pending ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
