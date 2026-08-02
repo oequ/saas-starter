@@ -1,3 +1,17 @@
+import type {
+  ActivationPort,
+  ApiKeysPort,
+  AuthPort,
+  BillingPort,
+  EmailsPort,
+  IntegrationsPort,
+  MetricsPort,
+  OrgPort,
+  ProjectPort,
+  SupportPort,
+  UsageUnitsPort,
+} from '@oequ/ports';
+
 import {
   ACTIVATION_ONBOARDING_CONFIG,
   ACTIVATION_PORT,
@@ -18,6 +32,17 @@ import {
   SUPPORT_PORT,
   USAGE_UNITS_PORT,
 } from './injection-tokens';
+import { provideActivationPort } from './provide-activation-port';
+import { provideApiKeysPort } from './provide-api-keys-port';
+import { provideAuthPort } from './provide-auth-port';
+import { provideBillingPort } from './provide-billing-port';
+import { provideEmailsPort } from './provide-emails-port';
+import { provideIntegrationsPort } from './provide-integrations-port';
+import { provideMetricsPort } from './provide-metrics-port';
+import { provideOrgPort } from './provide-org-port';
+import { provideProjectPort } from './provide-project-port';
+import { provideSupportPort } from './provide-support-port';
+import { provideUsageUnitsPort } from './provide-usage-units-port';
 
 describe('@oequ/ports-angular', () => {
   it('exposes injection tokens', () => {
@@ -48,5 +73,93 @@ describe('@oequ/ports-angular', () => {
   it('billing token factories default to mock / disabled stripe', () => {
     expect(BILLING_PROVIDER_ID).toBeTruthy();
     expect(STRIPE_BILLING_ENABLED).toBeTruthy();
+  });
+
+  it('provideAuthPort binds useValue to AUTH_PORT', () => {
+    const impl = {} as AuthPort;
+    expect(provideAuthPort(impl)).toEqual({
+      provide: AUTH_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideOrgPort binds useValue to ORG_PORT', () => {
+    const impl = {} as OrgPort;
+    expect(provideOrgPort(impl)).toEqual({
+      provide: ORG_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideBillingPort binds useValue to BILLING_PORT', () => {
+    const impl = {} as BillingPort;
+    expect(provideBillingPort(impl)).toEqual({
+      provide: BILLING_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideProjectPort binds useValue to PROJECT_PORT', () => {
+    const impl = {} as ProjectPort;
+    expect(provideProjectPort(impl)).toEqual({
+      provide: PROJECT_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideApiKeysPort binds useValue to API_KEYS_PORT', () => {
+    const impl = {} as ApiKeysPort;
+    expect(provideApiKeysPort(impl)).toEqual({
+      provide: API_KEYS_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideEmailsPort binds useValue to EMAILS_PORT', () => {
+    const impl = {} as EmailsPort;
+    expect(provideEmailsPort(impl)).toEqual({
+      provide: EMAILS_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideMetricsPort binds useValue to METRICS_PORT', () => {
+    const impl = {} as MetricsPort;
+    expect(provideMetricsPort(impl)).toEqual({
+      provide: METRICS_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideIntegrationsPort binds useValue to INTEGRATIONS_PORT', () => {
+    const impl = {} as IntegrationsPort;
+    expect(provideIntegrationsPort(impl)).toEqual({
+      provide: INTEGRATIONS_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideSupportPort binds useValue to SUPPORT_PORT', () => {
+    const impl = {} as SupportPort;
+    expect(provideSupportPort(impl)).toEqual({
+      provide: SUPPORT_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideActivationPort binds useValue to ACTIVATION_PORT', () => {
+    const impl = {} as ActivationPort;
+    expect(provideActivationPort(impl)).toEqual({
+      provide: ACTIVATION_PORT,
+      useValue: impl,
+    });
+  });
+
+  it('provideUsageUnitsPort binds useValue to USAGE_UNITS_PORT', () => {
+    const impl = {} as UsageUnitsPort;
+    expect(provideUsageUnitsPort(impl)).toEqual({
+      provide: USAGE_UNITS_PORT,
+      useValue: impl,
+    });
   });
 });

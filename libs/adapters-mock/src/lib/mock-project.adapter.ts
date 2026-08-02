@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import type { Provider } from '@angular/core';
 import { type AddProjectMemberInput, type CreateProjectInput, type OrganizationId, type OrganizationProject, type ProjectId, type ProjectMember, type ProjectPort, portOk, type PortResult, type UpdateProjectInput, type UpdateProjectMemberRoleInput } from '@oequ/ports';
-import { PROJECT_PORT } from '@oequ/ports-angular';
+import { provideProjectPort } from '@oequ/ports-angular';
 
 import { cloneMockProjectsSeed } from './data/mock-projects-data';
 import { mockErr } from './mock-port-error';
@@ -27,7 +27,7 @@ function randomId(): string {
   return `proj-${Date.now()}`;
 }
 
-@Injectable()
+/** Plain ProjectPort mock — wire via provideMockProject() (no @Injectable). */
 export class MockProjectAdapter implements ProjectPort {
   private seed = cloneMockProjectsSeed();
 
@@ -227,7 +227,11 @@ export class MockProjectAdapter implements ProjectPort {
   }
 }
 
-export const MOCK_PROJECT_PROVIDER = {
-  provide: PROJECT_PORT,
-  useExisting: MockProjectAdapter,
-};
+/** Single shared MockProjectAdapter instance for PROJECT_PORT + concrete class token. */
+export function provideMockProject(): Provider[] {
+  const project = new MockProjectAdapter();
+  return [
+    { provide: MockProjectAdapter, useValue: project },
+    provideProjectPort(project),
+  ];
+}

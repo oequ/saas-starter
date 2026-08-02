@@ -5,7 +5,11 @@ import {
   provideAppInitializer,
 } from '@angular/core';
 import { provideMockIntegrationsSupport } from '@oequ/adapters-mock';
-import { ACTIVATION_PORT, API_KEYS_PORT, BILLING_PORT, EMAILS_PORT, METRICS_PORT, BILLING_PROVIDER_ID, STRIPE_BILLING_ENABLED, AUTH_FEATURES } from '@oequ/ports-angular';
+import {
+  BILLING_PROVIDER_ID,
+  STRIPE_BILLING_ENABLED,
+  AUTH_FEATURES,
+} from '@oequ/ports-angular';
 import { distinctUntilChanged, filter, map } from 'rxjs';
 
 import {
@@ -13,8 +17,12 @@ import {
   SUPABASE_CONFIG,
   type SupabaseConfig,
 } from './supabase-config';
-import { SupabaseActivationAdapter, SUPABASE_ACTIVATION_PROVIDER } from './supabase-activation.adapter';
-import { SupabaseApiKeysAdapter, SUPABASE_API_KEYS_PROVIDER } from './supabase-api-keys.adapter';
+import {
+  provideSupabaseActivation,
+} from './supabase-activation.adapter';
+import {
+  provideSupabaseApiKeys,
+} from './supabase-api-keys.adapter';
 import { SupabaseAuthAdapter, SUPABASE_AUTH_PROVIDER } from './supabase-auth.adapter';
 import { SupabaseClientService } from './supabase-client.service';
 import { SupabaseEmailsAdapter, SUPABASE_EMAILS_PROVIDER } from './supabase-emails.adapter';
@@ -22,8 +30,7 @@ import { SupabaseOrgAdapter, SUPABASE_ORG_PROVIDER } from './supabase-org.adapte
 import { WebBillingAdapter, WEB_BILLING_PROVIDER } from './web-billing.adapter';
 import { WebMetricsAdapter, WEB_METRICS_PROVIDER } from './web-metrics.adapter';
 import {
-  SupabaseProjectAdapter,
-  SUPABASE_PROJECT_PROVIDER,
+  provideSupabaseProject,
 } from './supabase-project.adapter';
 import {
   SupabaseUsageUnitsAdapter,
@@ -71,18 +78,15 @@ export function provideWebAdapters(
     provideMockIntegrationsSupport(),
     makeEnvironmentProviders([
       WebBillingAdapter,
-      SupabaseApiKeysAdapter,
+      ...provideSupabaseApiKeys(),
       SupabaseEmailsAdapter,
       WebMetricsAdapter,
-      SupabaseActivationAdapter,
-      SupabaseProjectAdapter,
+      ...provideSupabaseActivation(),
+      ...provideSupabaseProject(),
       SupabaseUsageUnitsAdapter,
       WEB_BILLING_PROVIDER,
-      SUPABASE_API_KEYS_PROVIDER,
       SUPABASE_EMAILS_PROVIDER,
       WEB_METRICS_PROVIDER,
-      SUPABASE_ACTIVATION_PROVIDER,
-      SUPABASE_PROJECT_PROVIDER,
       SUPABASE_USAGE_UNITS_PROVIDER,
       {
         provide: BILLING_PROVIDER_ID,

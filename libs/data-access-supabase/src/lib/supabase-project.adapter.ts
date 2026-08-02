@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import type { Provider } from '@angular/core';
 import { type AddProjectMemberInput, type CreateProjectInput, type OrganizationId, type OrganizationProject, type ProjectId, type ProjectMember, type ProjectMemberRole, type ProjectPort, portOk, type PortResult, type UpdateProjectInput, type UpdateProjectMemberRoleInput } from '@oequ/ports';
 import { PROJECT_PORT } from '@oequ/ports-angular';
 
@@ -52,9 +52,9 @@ function mapMember(row: DbProjectMemberRow): ProjectMember {
   };
 }
 
-@Injectable()
+/** Plain ProjectPort adapter — wire via provideSupabaseProject() (no @Injectable). */
 export class SupabaseProjectAdapter implements ProjectPort {
-  private readonly supabase = inject(SupabaseClientService);
+  constructor(private readonly supabase: SupabaseClientService) {}
 
   async listProjects(
     organizationId: OrganizationId,
@@ -265,7 +265,18 @@ export class SupabaseProjectAdapter implements ProjectPort {
   }
 }
 
-export const SUPABASE_PROJECT_PROVIDER = {
-  provide: PROJECT_PORT,
-  useExisting: SupabaseProjectAdapter,
-};
+/** Factory-wired SupabaseProjectAdapter shared as PROJECT_PORT. */
+export function provideSupabaseProject(): Provider[] {
+  return [
+    {
+      provide: SupabaseProjectAdapter,
+      useFactory: (supabase: SupabaseClientService) =>
+        new SupabaseProjectAdapter(supabase),
+      deps: [SupabaseClientService],
+    },
+    {
+      provide: PROJECT_PORT,
+      useExisting: SupabaseProjectAdapter,
+    },
+  ];
+}
