@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { Optional, PLATFORM_ID, type Provider } from '@angular/core';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import {
@@ -8,11 +8,14 @@ import {
   type SupabaseConfig,
 } from './supabase-config';
 
-@Injectable()
+/** Plain Supabase client holder — wire via provideSupabaseClient() (no @Injectable). */
 export class SupabaseClientService {
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly config = inject(SUPABASE_CONFIG, { optional: true });
   private client: SupabaseClient | null | undefined;
+
+  constructor(
+    private readonly platformId: object | string,
+    private readonly config?: SupabaseConfig | null,
+  ) {}
 
   configured(): boolean {
     return isSupabaseConfigured(this.config);
@@ -47,4 +50,15 @@ export class SupabaseClientService {
   static fromConfig(config: SupabaseConfig): SupabaseConfig {
     return config;
   }
+}
+
+export function provideSupabaseClient(): Provider[] {
+  return [
+    {
+      provide: SupabaseClientService,
+      useFactory: (platformId: object, config: SupabaseConfig | null) =>
+        new SupabaseClientService(platformId, config),
+      deps: [PLATFORM_ID, [new Optional(), SUPABASE_CONFIG]],
+    },
+  ];
 }

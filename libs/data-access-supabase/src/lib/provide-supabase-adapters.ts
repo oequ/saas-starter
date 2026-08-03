@@ -17,21 +17,18 @@ import {
   SUPABASE_CONFIG,
   type SupabaseConfig,
 } from './supabase-config';
+import { provideSupabaseActivation } from './supabase-activation.adapter';
+import { provideSupabaseApiKeys } from './supabase-api-keys.adapter';
+import { SupabaseAuthAdapter, provideSupabaseAuth } from './supabase-auth.adapter';
+import { provideSupabaseClient } from './supabase-client.service';
 import {
-  provideSupabaseActivation,
-} from './supabase-activation.adapter';
-import {
-  provideSupabaseApiKeys,
-} from './supabase-api-keys.adapter';
-import { SupabaseAuthAdapter, SUPABASE_AUTH_PROVIDER } from './supabase-auth.adapter';
-import { SupabaseClientService } from './supabase-client.service';
-import { SupabaseEmailsAdapter, SUPABASE_EMAILS_PROVIDER } from './supabase-emails.adapter';
-import { SupabaseOrgAdapter, SUPABASE_ORG_PROVIDER } from './supabase-org.adapter';
+  SupabaseEmailsAdapter,
+  SUPABASE_EMAILS_PROVIDER,
+} from './supabase-emails.adapter';
+import { SupabaseOrgAdapter, provideSupabaseOrg } from './supabase-org.adapter';
 import { WebBillingAdapter, WEB_BILLING_PROVIDER } from './web-billing.adapter';
 import { WebMetricsAdapter, WEB_METRICS_PROVIDER } from './web-metrics.adapter';
-import {
-  provideSupabaseProject,
-} from './supabase-project.adapter';
+import { provideSupabaseProject } from './supabase-project.adapter';
 import {
   SupabaseUsageUnitsAdapter,
   SUPABASE_USAGE_UNITS_PROVIDER,
@@ -48,11 +45,9 @@ export function provideSupabaseAdapters(
         requireEmailConfirmation: config.requireEmailConfirmation === true,
       },
     },
-    SupabaseClientService,
-    SupabaseAuthAdapter,
-    SupabaseOrgAdapter,
-    SUPABASE_AUTH_PROVIDER,
-    SUPABASE_ORG_PROVIDER,
+    ...provideSupabaseClient(),
+    ...provideSupabaseAuth(),
+    ...provideSupabaseOrg(),
     provideAppInitializer(() => {
       const org = inject(SupabaseOrgAdapter);
       const auth = inject(SupabaseAuthAdapter);

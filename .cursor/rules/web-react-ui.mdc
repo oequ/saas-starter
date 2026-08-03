@@ -1,0 +1,11 @@
+---
+description: React shell UI — not Spartan
+globs: apps/web-react/**/*
+alwaysApply: false
+---
+
+# web-react UI
+
+- Do **not** use Spartan (`@spartan-ng/helm/*`, `@spartan-ng/mcp`).
+- Compose with local `apps/web-react/src/styles.css` tokens only.
+- See `apps/web-react/AGENTS.md`.

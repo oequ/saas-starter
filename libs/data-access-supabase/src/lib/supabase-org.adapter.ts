@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { type Provider } from '@angular/core';
 import { isValidOrganizationSlug, type CreateOrganizationInput, type InviteMemberInput, type UpdateMemberRoleInput, type Organization, type OrganizationId, type OrganizationMember, type OrgPort, type OrgRole, portOk, type PortResult, type UpdateOrganizationInput } from '@oequ/ports';
 import { ORG_PORT } from '@oequ/ports-angular';
 import { BehaviorSubject, type Observable } from 'rxjs';
@@ -113,11 +113,8 @@ function mapInvitation(row: DbOrganizationInvitation): OrganizationMember {
   };
 }
 
-@Injectable()
+/** Plain OrgPort adapter — wire via provideSupabaseOrg() (no @Injectable). */
 export class SupabaseOrgAdapter implements OrgPort {
-  private readonly supabase = inject(SupabaseClientService);
-  private readonly authAdapter = inject(SupabaseAuthAdapter);
-
   private readonly organizationsSubject = new BehaviorSubject<
     readonly Organization[]
   >([]);
@@ -131,7 +128,10 @@ export class SupabaseOrgAdapter implements OrgPort {
   readonly activeOrganization$: Observable<Organization | null> =
     this.activeOrganizationSubject.asObservable();
 
-  constructor() {
+  constructor(
+    private readonly supabase: SupabaseClientService,
+    private readonly authAdapter: SupabaseAuthAdapter,
+  ) {
     void this.reloadFromDatabase();
   }
 
@@ -565,7 +565,16 @@ export class SupabaseOrgAdapter implements OrgPort {
   }
 }
 
-export const SUPABASE_ORG_PROVIDER = {
-  provide: ORG_PORT,
-  useExisting: SupabaseOrgAdapter,
-};
+export function provideSupabaseOrg(): Provider[] {
+  return [
+    {
+      provide: SupabaseOrgAdapter,
+      useFactory: (
+        supabase: SupabaseClientService,
+        auth: SupabaseAuthAdapter,
+      ) => new SupabaseOrgAdapter(supabase, auth),
+      deps: [SupabaseClientService, SupabaseAuthAdapter],
+    },
+    { provide: ORG_PORT, useExisting: SupabaseOrgAdapter },
+  ];
+}
