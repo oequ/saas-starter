@@ -15,7 +15,8 @@
 - Tokens live in [`src/styles.css`](./src/styles.css). Primitives in [`src/components/ui`](./src/components/ui).
 - Config: [`components.json`](./components.json). Utils: [`src/lib/utils.ts`](./src/lib/utils.ts) (`cn`).
 - **Not Spartan.** Do not use `@spartan-ng/helm/*`, `@spartan-ng/mcp`, or Angular `libs/ui`.
-- Add components: from `apps/web-react` run `npx shadcn@latest add <name> -y` (prefer Radix; keep tokens in sync with Angular web).
+- Add components: from `apps/web-react` run `npx shadcn@latest add <name>` (Radix). After add, convert `@/` imports to **relative** paths — Nx `@nx/enforce-module-boundaries` rejects `@/` within the app.
+- Keep tokens in sync with Angular `apps/web/src/styles.css`.
 
 ## Ports wiring
 
