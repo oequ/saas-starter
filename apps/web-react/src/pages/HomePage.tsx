@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { AuthSession, Organization } from '@oequ/ports';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 import { usePorts } from '../PortsContext';
 
 type Props = {
@@ -42,63 +52,82 @@ export function HomePage({ onSignedOut }: Props) {
   }
 
   return (
-    <div className="shell-workspace">
-      <header className="shell-workspace__bar">
-        <div>
-          <p className="shell-workspace__brand" aria-label="Oequ">
-            Oe<span>qu</span>
-          </p>
-          <p className="shell-workspace__meta">
-            {session?.user.email ?? '—'}
-            {session?.claims.org
-              ? ` · org ${session.claims.org.organizationId} (${session.claims.org.role})`
-              : ' · no org claim'}
-          </p>
+    <div className="bg-background min-h-svh">
+      <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 border-b backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold tracking-tight">Oequ</p>
+            <p className="text-muted-foreground truncate text-xs">
+              {session?.user.email ?? '—'}
+              {session?.claims.org
+                ? ` · org ${session.claims.org.organizationId} (${session.claims.org.role})`
+                : ' · no org claim'}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => void signOut()}
+          >
+            Sign out
+          </Button>
         </div>
-        <button
-          className="btn btn--ghost"
-          type="button"
-          onClick={() => void signOut()}
-        >
-          Sign out
-        </button>
       </header>
 
-      <main className="shell-workspace__main">
-        <h1>Workspace</h1>
-        <p className="muted">Choose an organization to continue.</p>
+      <main className="mx-auto w-full max-w-lg px-4 py-10">
+        <h1 className="text-2xl font-semibold tracking-tight">Workspace</h1>
+        <p className="text-muted-foreground mt-2 mb-6 text-sm">
+          Choose an organization to continue.
+        </p>
 
-        <section className="org-panel" aria-labelledby="orgs-heading">
-          <h2 id="orgs-heading">Organizations</h2>
-          <p className="org-active">
-            Active: <strong>{active?.name ?? 'none'}</strong>
-            {active ? ` (${active.slug})` : ''}
-          </p>
-          <ul className="org-list">
-            {organizations.map((item) => {
-              const isActive = active?.id === item.id;
-              return (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    className={isActive ? 'is-active' : undefined}
-                    disabled={busySlug === item.slug || isActive}
-                    onClick={() => void selectOrg(item.slug)}
-                  >
-                    {item.name}
-                    <span className="org-hint">
-                      {isActive
-                        ? 'Active workspace'
-                        : busySlug === item.slug
-                          ? 'Switching…'
-                          : item.slug}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Organizations</CardTitle>
+            <CardDescription>
+              Active:{' '}
+              <span className="text-foreground font-medium">
+                {active?.name ?? 'none'}
+              </span>
+              {active ? ` (${active.slug})` : ''}
+            </CardDescription>
+          </CardHeader>
+          <Separator />
+          <CardContent className="space-y-2 p-4">
+            {organizations.length === 0 ? (
+              <p className="text-muted-foreground text-sm">No organizations.</p>
+            ) : (
+              <ul className="space-y-2">
+                {organizations.map((item) => {
+                  const isActive = active?.id === item.id;
+                  return (
+                    <li key={item.id}>
+                      <Button
+                        type="button"
+                        variant={isActive ? 'secondary' : 'outline'}
+                        className={cn(
+                          'h-auto w-full flex-col items-start gap-0.5 px-3 py-3 whitespace-normal',
+                          isActive && 'border-border border',
+                        )}
+                        disabled={busySlug === item.slug || isActive}
+                        onClick={() => void selectOrg(item.slug)}
+                      >
+                        <span className="font-medium">{item.name}</span>
+                        <span className="text-muted-foreground text-xs font-normal">
+                          {isActive
+                            ? 'Active workspace'
+                            : busySlug === item.slug
+                              ? 'Switching…'
+                              : item.slug}
+                        </span>
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
   );

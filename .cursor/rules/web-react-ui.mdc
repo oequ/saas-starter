@@ -1,11 +1,12 @@
 ---
-description: React shell UI — not Spartan
+description: React shell UI — shadcn + Angular tokens, not Spartan
 globs: apps/web-react/**/*
 alwaysApply: false
 ---
 
 # web-react UI
 
-- Do **not** use Spartan (`@spartan-ng/helm/*`, `@spartan-ng/mcp`).
-- Compose with local `apps/web-react/src/styles.css` tokens only.
+- Design system: **shadcn/ui (Radix)** under `apps/web-react/src/components/ui` + oklch zinc tokens in `src/styles.css` (parity with Angular `apps/web`).
+- Do **not** import `@spartan-ng/helm/*`, call `@spartan-ng/mcp`, or reuse Angular `libs/ui`.
+- Add UI via `npx shadcn@latest add <name>` from `apps/web-react`; keep token values aligned with `apps/web/src/styles.css`.
 - See `apps/web-react/AGENTS.md`.

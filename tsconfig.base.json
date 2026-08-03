@@ -17,6 +17,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "paths": {
+      "@/*": [
+        "./apps/web-react/src/*"
+      ],
       "@oequ/ports": [
         "./libs/ports/src/index.ts"
       ],
