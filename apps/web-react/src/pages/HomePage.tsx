@@ -23,6 +23,7 @@ export function HomePage({ onSignedOut }: Props) {
   useEffect(() => {
     const orgsSub = org.organizations$.subscribe(setOrganizations);
     const activeSub = org.activeOrganization$.subscribe(setActive);
+    void org.listOrganizations();
     return () => {
       orgsSub.unsubscribe();
       activeSub.unsubscribe();
