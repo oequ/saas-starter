@@ -1,7 +1,7 @@
 # React shell (`apps/web-react`)
 
 Статус: agent notes for this app only  
-Не путать с Angular `apps/web` / Spartan.
+Не путать с Angular `apps/web` / Spartan helm.
 
 ## Stack
 
@@ -11,9 +11,12 @@
 
 ## Design system
 
-- **Not Spartan.** Do not use `@spartan-ng/helm/*`, `@spartan-ng/mcp`, or Angular shell tokens.
-- Style with local [`src/styles.css`](./src/styles.css) CSS variables (Syne/Manrope, cool stone/teal).
-- Prefer extending existing Sign-in / Workspace composition over new card-heavy layouts.
+- **React DS = shadcn/ui (Radix) + Angular oklch zinc tokens** from [`apps/web/src/styles.css`](../web/src/styles.css).
+- Tokens live in [`src/styles.css`](./src/styles.css). Primitives in [`src/components/ui`](./src/components/ui).
+- Config: [`components.json`](./components.json). Utils: [`src/lib/utils.ts`](./src/lib/utils.ts) (`cn`).
+- **Not Spartan.** Do not use `@spartan-ng/helm/*`, `@spartan-ng/mcp`, or Angular `libs/ui`.
+- Add components: from `apps/web-react` run `npx shadcn@latest add <name>` (Radix). After add, convert `@/` imports to **relative** paths — Nx `@nx/enforce-module-boundaries` rejects `@/` within the app.
+- Keep tokens in sync with Angular `apps/web/src/styles.css`.
 
 ## Ports wiring
 
@@ -31,4 +34,4 @@ npm run start:web-react
 
 ## Out of scope (for now)
 
-Register/forgot, settings, billing, api-keys, dual-UI with Angular.
+Register/forgot, settings, billing, api-keys, dual-UI with Angular, full helm→shadcn inventory.
