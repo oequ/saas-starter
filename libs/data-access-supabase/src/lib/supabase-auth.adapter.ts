@@ -1,10 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Optional, type Provider } from '@angular/core';
 import { type AuthClaims, type AuthPort, type AuthSession, type AuthSessionDevice, type AuthUser, type EmailPasswordCredentials, type OrgContextClaim, type RegisterCredentials, portErr, portOk, type PortResult } from '@oequ/ports';
 import { AUTH_PORT } from '@oequ/ports-angular';
 import type { Session } from '@supabase/supabase-js';
 import { BehaviorSubject, type Observable } from 'rxjs';
 
-import { SUPABASE_CONFIG } from './supabase-config';
+import { SUPABASE_CONFIG, type SupabaseConfig } from './supabase-config';
 import { SupabaseClientService } from './supabase-client.service';
 import {
   mapSession,
@@ -13,10 +13,8 @@ import {
 } from './supabase-session.mapper';
 import { supabaseErr, supabaseErrFromAuth } from './supabase-port-error';
 
-@Injectable()
+/** Plain AuthPort adapter — wire via provideSupabaseAuth() (no @Injectable). */
 export class SupabaseAuthAdapter implements AuthPort {
-  private readonly supabase = inject(SupabaseClientService);
-  private readonly config = inject(SUPABASE_CONFIG, { optional: true });
   private orgOverride: OrgContextClaim | null | undefined;
   private passwordRecoveryActive = false;
 
@@ -27,7 +25,10 @@ export class SupabaseAuthAdapter implements AuthPort {
   readonly session$: Observable<AuthSession | null> =
     this.sessionSubject.asObservable();
 
-  constructor() {
+  constructor(
+    private readonly supabase: SupabaseClientService,
+    private readonly config: SupabaseConfig | null,
+  ) {
     const client = this.supabase.getClient();
     if (!client) {
       return;
@@ -582,7 +583,16 @@ export class SupabaseAuthAdapter implements AuthPort {
   }
 }
 
-export const SUPABASE_AUTH_PROVIDER = {
-  provide: AUTH_PORT,
-  useExisting: SupabaseAuthAdapter,
-};
+export function provideSupabaseAuth(): Provider[] {
+  return [
+    {
+      provide: SupabaseAuthAdapter,
+      useFactory: (
+        supabase: SupabaseClientService,
+        config: SupabaseConfig | null,
+      ) => new SupabaseAuthAdapter(supabase, config),
+      deps: [SupabaseClientService, [new Optional(), SUPABASE_CONFIG]],
+    },
+    { provide: AUTH_PORT, useExisting: SupabaseAuthAdapter },
+  ];
+}

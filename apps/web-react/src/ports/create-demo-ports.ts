@@ -7,12 +7,10 @@ import {
 } from '@oequ/adapters-mock';
 import type { AuthPort, OrgPort } from '@oequ/ports';
 
+/** Ports for the React shell (mock composition). */
 export type DemoPorts = {
   auth: AuthPort;
   org: OrgPort;
-  /** Concrete mocks for reset / demo helpers */
-  mockAuth: MockAuthAdapter;
-  mockOrg: MockOrgAdapter;
 };
 
 /** Composition root — plain `new`, no Angular DI. */
@@ -25,7 +23,5 @@ export function createDemoPorts(): DemoPorts {
   return {
     auth: mockAuth,
     org: mockOrg,
-    mockAuth,
-    mockOrg,
   };
 }
