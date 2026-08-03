@@ -18,7 +18,7 @@ export type AppPorts = {
 
 /**
  * Composition root for real Supabase Auth/Org — plain `new`, no Angular DI.
- * Pass platform id `'browser'` so `isPlatformBrowser` accepts the client.
+ * Pass platform id `'browser'` so the plain client opens in the browser.
  */
 export function createWebPorts(config: SupabaseConfig): AppPorts {
   if (!isSupabaseConfigured(config)) {
@@ -51,12 +51,25 @@ export function resolvePortsMode(
   return raw?.trim().toLowerCase() === 'supabase' ? 'supabase' : 'mock';
 }
 
+/** One composition root — React Strict Mode remounts must not spawn a second GoTrueClient. */
+let cachedAppPorts: AppPorts | null = null;
+
 export function createAppPorts(): AppPorts {
+  if (cachedAppPorts) {
+    return cachedAppPorts;
+  }
   const mode = resolvePortsMode();
   if (mode === 'supabase') {
     const url = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim();
     const anonKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '').trim();
-    return createWebPorts({ url, anonKey });
+    cachedAppPorts = createWebPorts({ url, anonKey });
+  } else {
+    cachedAppPorts = createDemoPorts();
   }
-  return createDemoPorts();
+  return cachedAppPorts;
+}
+
+/** Reset only for tests — production keeps one GoTrue client (Strict Mode safe). */
+export function resetAppPortsForTests(): void {
+  cachedAppPorts = null;
 }

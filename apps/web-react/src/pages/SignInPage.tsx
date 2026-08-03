@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { DEMO_AUTH_EMAIL, DEMO_AUTH_PASSWORD } from '@oequ/ports';
 import { usePorts } from '../PortsContext';
+import { resolvePortsMode } from '../ports/create-web-ports';
 
 type Props = {
   onSignedIn: () => void;
@@ -8,6 +9,7 @@ type Props = {
 
 export function SignInPage({ onSignedIn }: Props) {
   const { auth } = usePorts();
+  const portsMode = resolvePortsMode();
   const [email, setEmail] = useState(DEMO_AUTH_EMAIL);
   const [password, setPassword] = useState(DEMO_AUTH_PASSWORD);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +36,9 @@ export function SignInPage({ onSignedIn }: Props) {
         </p>
         <h1>Sign in</h1>
         <p className="lede">
-          Mock AuthPort — same demo credentials as the Angular shell.
+          {portsMode === 'supabase'
+            ? 'Supabase AuthPort — local or hosted project via VITE_SUPABASE_*.'
+            : 'Mock AuthPort — same demo credentials as the Angular shell.'}
         </p>
         <form className="auth-form" onSubmit={onSubmit}>
           <label>
